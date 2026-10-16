@@ -24,7 +24,7 @@
   if(!input.boost)c.nitroTime=0;
   if(input.boost&&!c.nitroHeld&&c.nitroTime<=0&&c.nitroCharge===1&&c.waterMode!=='sinking'&&forward>=-.6){c.nitroDuration=W.nitro.minDuration+Math.random()*(W.nitro.maxDuration-W.nitro.minDuration);c.nitroTime=c.nitroDuration;if(W.onNitroStart)W.onNitroStart(c.nitroDuration);}
   c.nitroHeld=!!input.boost;
-  c.surface=ramp?'RAMP':road?'ASPHALT':sand?'BEACH':'OFF ROAD';c.speed=forward;c.slip=Math.abs(lateral);c.throttle=input.gas?1:0;c.brake=input.brake&&forward>.5?1:0;
+  c.surface=ramp?'RAMP':road?'ASPHALT':sand?'BEACH':'OFF ROAD';c.speed=forward;c.slip=Math.abs(lateral);c.throttle=clamp(Number(input.gas)||0,0,1);c.brake=forward>.5?clamp(Number(input.brake)||0,0,1):0;
   let maxSteer=.56/(1+absSpeed*.027),targetSteer=input.steer*maxSteer;c.steer=mix(c.steer,targetSteer,1-Math.exp(-dt*(input.steer?5.5:7)/Math.sqrt(mass)));let steer=c.steer;
   const overWater=W.height(c.x,c.z)<-.5&&!onBridge,skim=W.waterSkim;
   if(!overWater){c.waterMode='dry';c.skimTime=0;c.waterTime=0;}
@@ -43,7 +43,7 @@
   if(c.waterMode==='skimming'){
    // Momentum carries the car; throttle cannot extend or restart this one-shot timer.
    c.grounded=false;c.contact=0;c.surface='WATER SKIM';c.airtime=0;
-   const drag=.10+(input.brake||input.handbrake?.35:0);
+   const drag=.10+.35*(input.handbrake?1:clamp(Number(input.brake)||0,0,1));
    ax=-c.vx*drag-rx*lateral*.22+sx*thrust*.65;az=-c.vz*drag-rz*lateral*.22+sz*thrust*.65;
    c.yawRate=mix(c.yawRate,clamp(forward/(2.85*size)*Math.tan(steer)*.10,-.28,.28),1-Math.exp(-dt*3));
    c.y=skim.level+Math.sin(time*18)*.018;c.vy=0;
@@ -54,7 +54,8 @@
    ax=-c.vx*1.8;az=-c.vz*1.8;c.vy=Math.max(-3.2,c.vy-3*dt);c.yawRate*=Math.exp(-dt*2);
    c.pitch=mix(c.pitch,-.16,1-Math.exp(-dt*2));c.roll=mix(c.roll,.045,1-Math.exp(-dt*2));c.waterTime+=dt;
   }else if(c.grounded){
-   if(boosting&&input.brake){acc=forward>.6?-11.8:-4.2;}else if(input.gas||boosting){acc=forward<-.6?10:Math.min(7.6*engine,220*engine/(scaledSpeed+12));}else if(input.brake){acc=forward>.6?-11.8:-4.2;}else acc=-Math.sign(forward)*(.20+scaledSpeed*.016);
+   const gas=clamp(Number(input.gas)||0,0,1),brake=clamp(Number(input.brake)||0,0,1);
+   if(boosting&&brake){acc=(forward>.6?-11.8:-4.2)*brake;}else if(gas||boosting){acc=(forward<-.6?10:Math.min(7.6*engine,220*engine/(scaledSpeed+12)))*(boosting?1:gas);}else if(brake){acc=(forward>.6?-11.8:-4.2)*brake;}else acc=-Math.sign(forward)*(.20+scaledSpeed*.016);
    acc=acc*driveScale+thrust;
    if(forward>Math.max(66,spec?.boostMax??66)&&acc>0)acc=0;if(forward<-13*speedScale&&acc<0)acc=0;
    acc-=(scaledForward*Math.abs(scaledForward)*.0016+Math.sign(forward)*(road?.14:sand?.85:.43))*driveScale;

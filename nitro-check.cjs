@@ -34,7 +34,7 @@ try{
  step(3.49,{...idle,boost:true});assert.equal(W.vehicle.waterMode,'skimming');assert(W.vehicle.nitroTime>0);step(.02,{...idle,boost:true});assert.equal(W.vehicle.waterMode,'sinking');assert.equal(W.vehicle.nitroTime,0);
  console.log('PASS: nitro cannot extend the 3.5-second water skim and ends on sinking.');
  const source=fs.readFileSync(__dirname+'/../../public/game.js','utf8'),keys=new Set();
- const input=vm.runInNewContext('('+source.match(/function input\(\)\{[^\n]+/)[0]+')',{keys});
+ const input=vm.runInNewContext('('+source.match(/function input\(\)\{[^\n]+/)[0]+')',{keys,touchDrive:{gas:0,brake:0,steer:0},touchHeld:()=>false});
  for(const key of ['ShiftLeft','ShiftRight']){keys.clear();keys.add(key);assert(input().boost);}
  keys.clear();keys.add('ArrowLeft');assert.equal(input().steer,1);assert(!input().boost);
  console.log('PASS: both Shift keys activate boost and left steering remains corrected.');
