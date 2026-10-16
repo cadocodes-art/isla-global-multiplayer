@@ -6,12 +6,63 @@
  let local,session;try{local=localStorage;session=sessionStorage}catch{}
  const net=W.net={active:false,connected:false,code:'GLOBAL',id:'',host:'',players:[],remotes:new Map(),latency:0};
  let socket=null,identity=null,intent=null,connecting=false,leaving=false,retry=null,connectTimeout=null,attempt=0,lastSend=0,lastPing=0,lastAura=0,pendingAura=0,scoreSeq=0,trafficTargets=null,ui=null,open=false;
+ let chatOpen=false,chatResume=false,chatCategory='Vibes',chatReadyAt=0,chatPendingUntil=0,lastChatHint='';
+ const bubbles=new Map(),chatPoint=new T.Vector3(),chatView=new T.Vector3();
  const send=data=>{if(socket?.readyState===WebSocket.OPEN)socket.send(JSON.stringify(data));};
+ function clearBubbles(){for(const bubble of bubbles.values())bubble.element.remove();bubbles.clear();}
+ function refreshChat(){
+  const wait=Math.max(0,chatReadyAt-performance.now(),chatPendingUntil-performance.now());
+  const hint=!net.connected?'Join the global room to chat.':wait>0?'Next message in '+Math.ceil(wait/1000)+'s':'30 preset messages · Everyone nearby can see your bubble.';
+  if(hint===lastChatHint)return;lastChatHint=hint;$('chatHint').textContent=hint;
+  for(const button of $('chatOptions').querySelectorAll('button'))button.disabled=!net.connected||wait>0;
+ }
+ function drawChat(){
+  const tabs=$('chatTabs'),options=$('chatOptions');tabs.replaceChildren();options.replaceChildren();
+  for(const category of new Set(IslaRules.quickChat.map(m=>m.category))){const button=document.createElement('button');button.type='button';button.textContent=category;button.setAttribute('aria-pressed',String(category===chatCategory));button.onclick=()=>{chatCategory=category;drawChat();$('chatTabs').querySelector('[aria-pressed="true"]').focus();};tabs.append(button);}
+  IslaRules.quickChat.forEach((message,index)=>{if(message.category!==chatCategory)return;const button=document.createElement('button');button.type='button';button.dataset.message=String(index);button.textContent=message.text;button.onclick=()=>sendChat(index);options.append(button);});
+  lastChatHint='';refreshChat();
+ }
+ function closeChat(resume=true){if(!chatOpen)return;chatOpen=false;$('quickChat').classList.add('hidden');$('chatBtn').setAttribute('aria-expanded','false');if(resume)ui.pause(!chatResume);}
+ net.dismissChat=()=>closeChat(false);
+ net.chatOpen=()=>chatOpen;
+ net.toggleChat=()=>{
+  if(chatOpen){closeChat();return;}
+  if(!net.connected){ui.toast('Join the global room to use quick chat.',2.5);return;}
+  if(open||!$('garage').classList.contains('hidden'))return;
+  chatResume=!ui.paused();chatOpen=true;ui.pause(true);$('pause').classList.add('hidden');drawChat();$('quickChat').classList.remove('hidden');$('chatBtn').setAttribute('aria-expanded','true');$('chatClose').focus({preventScroll:true});
+ };
+ function sendChat(message){
+  if(!net.connected||!IslaRules.validChat(message)||performance.now()<Math.max(chatReadyAt,chatPendingUntil)){refreshChat();return;}
+  chatPendingUntil=performance.now()+3000;send({type:'chat',message});closeChat();
+ }
+ function showChat(data){
+  if(!net.active||!IslaRules.validChat(data.message)||!net.players.some(p=>p.id===data.id))return;
+  const existing=bubbles.get(data.id);if(existing)existing.element.remove();
+  const element=document.createElement('div'),card=document.createElement('div'),name=document.createElement('small'),text=document.createElement('span');
+  element.className='car-bubble'+(data.id===net.id?' own':'');element.hidden=true;element.dataset.player=data.id;element.dataset.message=String(data.message);card.className='car-bubble-card';
+  name.textContent=data.id===net.id?'YOU':net.players.find(p=>p.id===data.id).name;text.textContent=IslaRules.quickChat[data.message].text;card.append(name,text);element.append(card);$('carBubbles').append(element);
+  bubbles.set(data.id,{element,until:performance.now()+IslaRules.chatDuration});
+  if(data.id===net.id){chatPendingUntil=0;chatReadyAt=performance.now()+IslaRules.chatCooldown;refreshChat();}
+ }
+ net.renderChat=camera=>{
+  const now=performance.now();if(chatOpen)refreshChat();for(const remote of net.remotes.values())if(remote.tag)remote.tag.visible=true;
+  for(const [id,bubble]of bubbles){
+   const player=net.players.find(p=>p.id===id);
+   if(now>=bubble.until||!player?.connected||!net.active){bubble.element.remove();bubbles.delete(id);continue;}
+   const own=id===net.id,remote=net.remotes.get(id),car=own?W.vehicle:remote?.current,size=own?(W.carMesh?.size||1):(remote?.mesh.size||1);
+   if(!car||(!own&&Math.hypot(car.x-W.vehicle.x,car.z-W.vehicle.z)>220)){bubble.element.hidden=true;continue;}
+   chatPoint.set(car.x,car.y+2.8*size,car.z);chatView.copy(chatPoint).applyMatrix4(camera.matrixWorldInverse);
+   if(chatView.z>=0){bubble.element.hidden=true;continue;}chatPoint.project(camera);
+   if(chatPoint.z<-1||chatPoint.z>1||Math.abs(chatPoint.x)>1.1||Math.abs(chatPoint.y)>1.1){bubble.element.hidden=true;continue;}
+   if(remote?.tag)remote.tag.visible=false;bubble.element.hidden=false;bubble.element.style.transform='translate('+((chatPoint.x+1)*innerWidth/2)+'px,'+((1-chatPoint.y)*innerHeight/2)+'px) translate(-50%,-100%)';bubble.element.style.opacity=String(Math.min(1,(bubble.until-now)/700));
+  }
+ };
  function status(message,error=false){$('roomStatus').textContent=message;$('roomStatus').classList.toggle('error',error);}
  function saveIdentity(){safeWrite(session,'isla-global-v2',identity?JSON.stringify(identity):null);}
  function pose(){const c=W.vehicle,parked=ui.paused()||document.hidden;return {x:c.x,y:c.y,z:c.z,yaw:c.yaw,vx:parked?0:c.vx,vy:parked?0:c.vy,vz:parked?0:c.vz,pitch:c.pitch,roll:c.roll,steer:c.steer,speed:parked?0:c.speed,car:W.garage.selected,color:W.garage.getColor(),nitro:!parked&&c.nitroTime>0,grounded:c.grounded,water:c.waterMode,brake:!!c.brake,parked};}
  function applySpawn(state){W.resetVehicle(true);Object.assign(W.vehicle,{x:state.x,y:state.y,z:state.z,yaw:state.yaw,lastSafe:{x:state.x,z:state.z,yaw:state.yaw}});}
  function drawRoster(){
+  $('chatBtn').disabled=!net.connected;if(!net.connected)closeChat(false);lastChatHint='';
   $('roomLobby').classList.toggle('hidden',!net.active);$('roomEntry').classList.toggle('hidden',net.active);
   $('roomJoin').disabled=connecting;
   $('roomCode').textContent='GLOBAL';$('roomCount').textContent=net.players.filter(p=>p.connected).length+' / '+IslaRules.capacity+' DRIVERS';
@@ -27,22 +78,22 @@
    const score=document.createElement('strong');score.textContent=p?p.score.toLocaleString('en-US'):'—';const swatch=document.createElement('i');swatch.className='driver-paint';swatch.style.backgroundColor=IslaRules.validColor(p?.color)?p.color:'#9a3227';row.append(rank,swatch,name,score);list.append(row);
   }
  }
- function openRoom(){open=true;$('garage').classList.add('hidden');if(ui.started())ui.pause(true);$('pause').classList.add('hidden');$('rooms').classList.remove('hidden');drawRoster();
+ function openRoom(){closeChat(false);open=true;$('garage').classList.add('hidden');if(ui.started())ui.pause(true);$('pause').classList.add('hidden');$('rooms').classList.remove('hidden');drawRoster();
   if(location.protocol==='file:')status('The global room needs the Cloudflare edition. This downloaded game still works solo.');
   else if(!net.active&&!connecting)status('Name your car to join everyone on the islands.');
   $('rooms').scrollTop=0;document.querySelector('.room-panel').scrollTop=0;(net.active?$('roomClose'):$('driverName')).focus({preventScroll:true});
  }
  function closeRoom(){open=false;$('rooms').classList.add('hidden');if(ui.started())ui.pause(false);else $('startBtn').focus();}
- net.closePanel=()=>{if(!open)return false;closeRoom();return true;};
- net.panelOpen=()=>open;
+ net.closePanel=()=>{if(chatOpen){closeChat();return true;}if(!open)return false;closeRoom();return true;};
+ net.panelOpen=()=>open||chatOpen;
  function disposeRemote(remote){W.scene.remove(remote.mesh.root);const geometries=new Set(),materials=new Set(),textures=new Set();remote.mesh.root.traverse(o=>{if(o.geometry&&o.geometry!==W.unitBox&&!o.isSprite)geometries.add(o.geometry);if(o.material)for(const m of Array.isArray(o.material)?o.material:[o.material]){materials.add(m);if(m.map)textures.add(m.map);}});for(const g of geometries)g.dispose();for(const m of materials)m.dispose();for(const t of textures)t.dispose();}
  function clearRemotes(){for(const r of net.remotes.values())disposeRemote(r);net.remotes.clear();}
- function nameTag(name){const texture=W.textureCanvas(512,(c,s)=>{c.fillStyle='#10272be8';c.fillRect(0,160,s,110);c.strokeStyle='#b8edcb';c.lineWidth=4;c.strokeRect(2,162,s-4,106);c.fillStyle='#effff2';c.font='600 34px Arial';c.textAlign='center';c.fillText(name,256,228,480);});const sprite=new T.Sprite(new T.SpriteMaterial({map:texture,transparent:true,depthTest:false,depthWrite:false}));sprite.position.set(0,3.2,0);sprite.scale.set(5,5,1);return sprite;}
+ function nameTag(name){const texture=W.textureCanvas(512,(c,s)=>{c.fillStyle='#10272be8';c.fillRect(0,160,s,110);c.strokeStyle='#b8edcb';c.lineWidth=4;c.strokeRect(2,162,s-4,106);c.fillStyle='#effff2';c.font='600 34px Arial';c.textAlign='center';c.fillText(name,256,228,480);});const sprite=new T.Sprite(new T.SpriteMaterial({map:texture,transparent:true,depthTest:false,depthWrite:false}));sprite.position.set(0,2.4,0);sprite.scale.set(2.6,2.6,1);return sprite;}
  function remoteFor(p){let remote=net.remotes.get(p.id);if(remote&&remote.car!==p.state.car){disposeRemote(remote);net.remotes.delete(p.id);remote=null;}
-  if(!remote){const model=W.carModels.find(m=>m.id===p.state.car)||W.carModels[0],mesh=W.makeCar({...model,color:IslaRules.validColor(p.state.color)?p.state.color:model.color},true);mesh.root.add(nameTag(p.name));remote={mesh,car:p.state.car,current:{...p.state},target:{...p.state},at:performance.now(),connected:p.connected};net.remotes.set(p.id,remote);}
+  if(!remote){const model=W.carModels.find(m=>m.id===p.state.car)||W.carModels[0],mesh=W.makeCar({...model,color:IslaRules.validColor(p.state.color)?p.state.color:model.color},true);const tag=nameTag(p.name);mesh.root.add(tag);remote={mesh,tag,car:p.state.car,current:{...p.state},target:{...p.state},at:performance.now(),connected:p.connected};net.remotes.set(p.id,remote);}
   if(IslaRules.validColor(p.state.color))remote.mesh.paint.color.set(p.state.color).convertSRGBToLinear();remote.target={...p.state};remote.at=performance.now();remote.connected=p.connected;return remote;
  }
- function disconnectToSolo(message){clearTimeout(retry);clearTimeout(connectTimeout);leaving=true;const old=socket;socket=null;old?.close();identity=null;saveIdentity();intent=null;connecting=false;net.active=net.connected=false;net.code='';net.id='';net.players=[];pendingAura=0;trafficTargets=null;clearRemotes();ui.restore();W.initTraffic();W.resetVehicle(true);drawRoster();status(message);}
+ function disconnectToSolo(message){closeChat(false);clearBubbles();chatReadyAt=chatPendingUntil=0;clearTimeout(retry);clearTimeout(connectTimeout);leaving=true;const old=socket;socket=null;old?.close();identity=null;saveIdentity();intent=null;connecting=false;net.active=net.connected=false;net.code='';net.id='';net.players=[];pendingAura=0;trafficTargets=null;clearRemotes();ui.restore();W.initTraffic();W.resetVehicle(true);drawRoster();status(message);}
  net.leave=()=>{send({type:'leave'});disconnectToSolo('You left the global room. Your aura, cars, and paint are still saved.');closeRoom();ui.toast('Back to solo driving.');};
  function connect(){
   clearTimeout(retry);clearTimeout(connectTimeout);
@@ -70,13 +121,15 @@
    }else if(data.type==='frame'&&net.active){
     for(const p of data.players)if(p.id!==net.id)remoteFor(p);
     trafficTargets=data.traffic;
-   }else if(data.type==='building'&&net.active){ui.building(data.id,data.hp,data.speed);}
+   }else if(data.type==='chat'){showChat(data);}
+   else if(data.type==='chatError'){chatPendingUntil=0;if(Number.isFinite(data.retryAfter))chatReadyAt=performance.now()+Math.min(IslaRules.chatCooldown,Math.max(0,data.retryAfter));lastChatHint='';refreshChat();ui.toast(data.message,2.5);}
+   else if(data.type==='building'&&net.active){ui.building(data.id,data.hp,data.speed);}
    else if(data.type==='reset'&&net.active){ui.restore();const me=data.players.find(p=>p.id===net.id);if(me)applySpawn(me.state);trafficTargets=null;ui.toast('The global islands have refreshed.');}
    else if(data.type==='pong'){net.latency=Math.max(0,Date.now()-data.at);$('roomLatency').textContent=net.latency+' ms';}
   };
   ws.onerror=()=>{};
   ws.onclose=()=>{if(socket!==ws||leaving)return;clearTimeout(connectTimeout);net.connected=false;connecting=false;
-   if(net.active){ui.pause(true);status('Connection lost. Your spot is reserved for 90 seconds. Reconnecting…',true);drawRoster();retry=setTimeout(connect,Math.min(8000,1000*2**Math.min(attempt++,3)));}
+   if(net.active){closeChat(false);ui.pause(true);status('Connection lost. Your spot is reserved for 90 seconds. Reconnecting…',true);drawRoster();retry=setTimeout(connect,Math.min(8000,1000*2**Math.min(attempt++,3)));}
    else{drawRoster();status('Could not connect. Try again shortly. The server may be unavailable or its daily free limit may have been reached.',true);}
   };
  }
@@ -109,6 +162,7 @@
  };
  W.initMultiplayer=hooks=>{
   ui=hooks;
+  $('chatBtn').onclick=net.toggleChat;$('chatClose').onclick=()=>closeChat();drawChat();
   const previousEarn=W.onAuraEarn;W.onAuraEarn=(points,best)=>{previousEarn?.(points,best);if(net.connected)pendingAura+=points;};
   $('driverName').value=safeRead(local,'isla-car-name-v2')||'';
   $('roomBtn').onclick=$('friendsBtn').onclick=openRoom;$('roomClose').onclick=closeRoom;

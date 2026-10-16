@@ -88,6 +88,12 @@ export class GlobalRoom extends DurableObject {
    p.state=Object.fromEntries(['x','y','z','yaw','vx','vy','vz','pitch','roll','steer','speed','car','water'].map(k=>[k,s[k]]));p.state.color=s.color.toLowerCase();
    for(const k of ['nitro','grounded','brake','parked'])p.state[k]=s[k]===true;if(p.state.parked)park(p.state);
    if(appearance)this.announce();this.frame();
+  }else if(data.type==='chat'){
+   if(!rules.validChat(data.message))return reply(ws,{type:'chatError',message:'Choose one of the preset messages.'});
+   const remaining=rules.chatCooldown-(now-(p.lastChatAt||0));
+   if(remaining>0)return reply(ws,{type:'chatError',message:'Give it a moment before your next message.',retryAfter:remaining});
+   // Only the preset index is accepted. Identity and bubble lifetime come from the server.
+   p.lastChatAt=now;this.broadcast({type:'chat',id:p.id,message:data.message,duration:rules.chatDuration});
   }else if(data.type==='hit'){
    const b=world.buildings[data.id],s=p.state;
    if(!Number.isInteger(data.id)||!b||this.hp[b.id]<=0||now-(this.hits[b.id]||0)<700||!numeric(data.speed,15,95))return;

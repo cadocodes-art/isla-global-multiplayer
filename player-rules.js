@@ -12,7 +12,15 @@
   return '';
  }
  const validColor=value=>typeof value==='string'&&/^#[0-9a-f]{6}$/i.test(value);
- const rules=Object.freeze({validateName,validColor,protocol:2,capacity:32});
+ const quickChat=Object.freeze([
+  ['Vibes','Hey, drivers!'],['Vibes',"Let's cruise!"],['Vibes','Nice ride!'],['Vibes','Love your color!'],['Vibes','Thanks!'],['Vibes','See you around!'],
+  ['Meet up','Follow me!'],['Meet up',"I'll follow you!"],['Meet up','Meet at the bridge!'],['Meet up',"Let's head to Ruiz!"],['Meet up','To the mountains!'],['Meet up','Wait for me!'],
+  ['Stunts','Watch this!'],['Stunts','Ramp run!'],['Stunts','Send it!'],['Stunts','Water skim time!'],['Stunts','That jump was unreal!'],['Stunts','You almost have as much aura as this game.'],
+  ['Reactions','That was legendary!'],['Reactions','Maximum aura! 💀'],['Reactions','How did you land that?!'],['Reactions','Clean landing!'],['Reactions','We are so back!'],['Reactions','Worth it.'],
+  ['Teamwork','Need a hand?'],['Teamwork',"I'm stuck!"],['Teamwork','On my way!'],['Teamwork','Sorry about that!'],['Teamwork','Careful, traffic!'],['Teamwork','One more run!']
+ ].map(([category,text])=>Object.freeze({category,text})));
+ const validChat=value=>Number.isInteger(value)&&value>=0&&value<quickChat.length;
+ const rules=Object.freeze({validateName,validColor,protocol:2,capacity:32,quickChat,validChat,chatDuration:6000,chatCooldown:3000});
  globalThis.IslaRules=rules;
  if(typeof module!=='undefined'&&module.exports)module.exports=rules;
 })();
