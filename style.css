@@ -32,3 +32,23 @@ body.touch-mode #header{left:max(14px,env(safe-area-inset-left));right:max(14px,
 
 @media(max-width:360px){body.touch-mode #driveStick{width:130px;height:130px}}
 
+/* Mobile announcements share a compact top-center slot, clear of the car. */
+body.touch-mode #auraNotice,body.touch-mode #toast,body.touch-mode #damagePanel{top:calc(max(14px,env(safe-area-inset-top)) + 48px);bottom:auto;left:50%;right:auto;transform:translateX(-50%);width:300px;max-width:calc(100vw - 36px);box-sizing:border-box;pointer-events:none}
+body.touch-mode #auraNotice{padding:8px 11px;border-radius:5px}
+body.touch-mode .aura-award-row{gap:8px}
+body.touch-mode #auraEarned{font-size:18px;line-height:1.15}
+body.touch-mode #auraMultiplier{font-size:12px;padding:3px 5px}
+body.touch-mode #auraStunt{font-size:8px;letter-spacing:.65px;line-height:1.3;margin-top:5px}
+body.touch-mode #auraDetails{font-size:8px;line-height:1.3;margin-top:3px}
+body.touch-mode #auraMessage{font-size:10px;line-height:1.3;margin:5px 0 0}
+body.touch-mode #toast{width:max-content;padding:7px 11px;font-size:9px;line-height:1.35;letter-spacing:.45px;z-index:4}
+body.touch-mode #damagePanel{width:270px;padding:8px 11px}
+body.touch-mode .damage-title{font-size:8px;letter-spacing:.5px;gap:10px}
+body.touch-mode .damage-title span:first-child{max-width:210px}
+body.touch-mode .integrity-track{margin-top:6px}
+body.touch-mode .damage-panel p{font-size:9px;line-height:1.3;margin:5px 0 0}
+/* One announcement at a time prevents simultaneous stunt/boost/impact overlap. */
+body.touch-mode:has(#auraNotice:not(.hidden)) #toast,body.touch-mode:has(#auraNotice:not(.hidden)) #damagePanel,body.touch-mode:has(#toast[style*="opacity: 1"]) #damagePanel{visibility:hidden}
+@media(orientation:portrait){body.touch-mode:has(#auraNotice:not(.hidden),#toast[style*="opacity: 1"],#damagePanel:not(.hidden)) #auraPanel{visibility:hidden}}
+@media(max-height:500px) and (orientation:landscape){body.touch-mode #auraNotice,body.touch-mode #toast,body.touch-mode #damagePanel{max-width:calc(100vw - 320px)}}
+
