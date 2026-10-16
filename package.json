@@ -7,7 +7,7 @@
     "node": ">=22.0.0"
   },
   "scripts": {
-    "build": "node scripts/build-world.cjs",
+    "build": "node prepare-cloudflare.cjs && node scripts/build-world.cjs",
     "dev": "npm run build && wrangler dev",
     "deploy": "npm run build && wrangler deploy",
     "check:worker": "wrangler deploy --dry-run --outdir build",
