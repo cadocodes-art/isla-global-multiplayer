@@ -1,8 +1,8 @@
 {
   "name": "isla-drive-cloudflare",
-  "version": "2.0.0",
+  "version": "1.6.0",
   "private": true,
-  "description": "ISLA Drive — one global island playground on Cloudflare Free",
+  "description": "ISLA V1.6 — Map Maker, community maps, accounts, and global multiplayer",
   "engines": {
     "node": ">=22.0.0"
   },

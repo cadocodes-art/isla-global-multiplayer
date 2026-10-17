@@ -59,3 +59,10 @@ body.touch-mode:has(#auraNotice:not(.hidden)) #toast,body.touch-mode:has(#auraNo
 @media(max-height:540px) and (orientation:landscape){.map-picker{left:auto;top:50%;bottom:auto;right:22px;transform:translateY(-50%);text-align:right}.map-picker-label{max-width:130px}.map-picker-label strong{font-size:13px}.intro-card{margin-top:20px}.intro-specs{margin-top:12px}#intro h1{font-size:38px;line-height:1.04;margin:12px 0}.intro-text{font-size:11px;margin:8px 0 14px}.intro-card .primary{padding:12px 18px}.friends-entry{padding:12px 18px;margin-top:9px}.intro-footer{bottom:15px}.intro-card{max-width:55vw}.map-picker-label small{display:none}}
 
 #specialStatus{margin-top:9px;color:#f4cf85;font-size:9px;letter-spacing:.5px}body.touch-mode #specialStatus{font-size:7px;margin-top:5px}
+
+
+/* Winter map identity; the existing compact touch controls stay available. */
+.peaks-map .map-picker-label>span{color:#e0edf5}.peaks-map .intro-card em{color:#e7f0f6}.peaks-map .intro-card .primary{background:#d7eaf2;color:#243f52}.peaks-map #header{background:linear-gradient(#142b3e66,transparent)}
+
+/* Main-menu version stays clear of the footer and mobile safe areas. */
+.menu-version{position:absolute;right:max(20px,env(safe-area-inset-right));bottom:max(10px,env(safe-area-inset-bottom));padding:4px 7px;border:1px solid #ffffff24;border-radius:3px;background:#10272a99;color:#edf6ef;font:600 11px/1.2 Arial,Helvetica,sans-serif;letter-spacing:1px;pointer-events:none}

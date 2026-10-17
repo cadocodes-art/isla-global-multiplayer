@@ -1,0 +1,290 @@
+{
+  "version": "1.6",
+  "files": [
+    {
+      "name": "three.min.js",
+      "destination": "public/three.min.js",
+      "sha256": "9274bbcec8d96168626c732b5d31c775aa8cfb7eaa0599bec0c175908a2c1ce2"
+    },
+    {
+      "name": "world.js",
+      "destination": "public/world.js",
+      "sha256": "5cf261833e4f5836d01e421f48d74078e9a69ec1e0040993f23ecf2ca03af343"
+    },
+    {
+      "name": "islands.js",
+      "destination": "public/islands.js",
+      "sha256": "6fff1c3ff284ae4ed273bd73257f22d4d6764e6c1ad77dc9ceb2c26a0b37bc86"
+    },
+    {
+      "name": "ramps.js",
+      "destination": "public/ramps.js",
+      "sha256": "1e4918bbafc0e3f874d7386fe2c50dc65617553b0c39eaed82eacb16131717b5"
+    },
+    {
+      "name": "physics.js",
+      "destination": "public/physics.js",
+      "sha256": "e03da1d310a3db9bf3c80b3a0adba30eda53ac11e8ccf73457e0a763ed55779a"
+    },
+    {
+      "name": "aura.js",
+      "destination": "public/aura.js",
+      "sha256": "8952b8f2b819c54c0006e76e94428c514d5ace754def32d4fc51149ec851f07a"
+    },
+    {
+      "name": "player-rules.js",
+      "destination": "public/player-rules.js",
+      "sha256": "ac83ee2524f08978b68d58eb88a3de03cf6813a7d358fc933cb935ce7018332f"
+    },
+    {
+      "name": "garage.js",
+      "destination": "public/garage.js",
+      "sha256": "6fa79ed020b4cb5fd5d2e0d42057724266ff5467503a3964319dd107c8dbc544"
+    },
+    {
+      "name": "traffic.js",
+      "destination": "public/traffic.js",
+      "sha256": "4dae78cb8df44748341ceff726ad297c98b5b22980897c8a0a2419f59ef2f6cb"
+    },
+    {
+      "name": "maps.js",
+      "destination": "public/maps.js",
+      "sha256": "7e2c34cf70a17db6649ba38ba1e3b407fae8dbe05a82fe8152b832ee07af8aa1"
+    },
+    {
+      "name": "peaks.js",
+      "destination": "public/peaks.js",
+      "sha256": "ed15302f86ee7faf108e9a57d6ecaf683a919906c68f0f579f5641b2e6176737"
+    },
+    {
+      "name": "specials.js",
+      "destination": "public/specials.js",
+      "sha256": "9e3bc57f2e21900e2bf377519272bebe167b61599c64316daeee9b91a4e31f46"
+    },
+    {
+      "name": "utility-cars.js",
+      "destination": "public/utility-cars.js",
+      "sha256": "065e54ba14e2743909f83362a34bd07a554ac68ab0f4d523a4782056315536c1"
+    },
+    {
+      "name": "multiplayer.js",
+      "destination": "public/multiplayer.js",
+      "sha256": "6ca510ede618c08c2232ae03845aab5bf8c6eff929a02bd35bb8fbe931d83e14"
+    },
+    {
+      "name": "maker-core.js",
+      "destination": "public/maker-core.js",
+      "sha256": "b1b9801d2ba2db61d2198c57cad4d484f3c2a7f5b8fd01fd4129e31617d1cd86"
+    },
+    {
+      "name": "maker-assets.js",
+      "destination": "public/maker-assets.js",
+      "sha256": "c05d3e54d17be6020fad3ead1f737a699c7d077bfdb72bd3fd4214ce89c3b3ab"
+    },
+    {
+      "name": "community-api.js",
+      "destination": "public/community-api.js",
+      "sha256": "8592500476c0a3f7137cae8d344384452e18d19808da09ed465c97a24e13eb29"
+    },
+    {
+      "name": "map-editor.js",
+      "destination": "public/map-editor.js",
+      "sha256": "5b157ecc437542996427383146a43ce7d35fe04a4866268082c0c0fa99ae29b0"
+    },
+    {
+      "name": "community-ui.js",
+      "destination": "public/community-ui.js",
+      "sha256": "05ec8a8c63655729da92990d0bbab0cbf2182da916b37f3eed1f6e92c78d9e4b"
+    },
+    {
+      "name": "custom-map.js",
+      "destination": "public/custom-map.js",
+      "sha256": "c0c9223d25e9b43654ef675552f6c704a6332edea4c15baef83f5fe9a502d1c3"
+    },
+    {
+      "name": "game.js",
+      "destination": "public/game.js",
+      "sha256": "e1926478d0611afde2297491da2b6b33af7fa680df6cbd53fb162a681ec4c18a"
+    },
+    {
+      "name": "style.css",
+      "destination": "public/style.css",
+      "sha256": "d46f34434d213ddfb809846d66f19d61a2c03a9242ffcf16907a50ebc83338f8"
+    },
+    {
+      "name": "community.css",
+      "destination": "public/community.css",
+      "sha256": "6c907753e3e3653c66c9a0f8bbae356bc604a7de631be14dd3da68ff25f79d83"
+    },
+    {
+      "name": "index.html",
+      "destination": "public/index.html",
+      "sha256": "1c306583b2a9760e391fea53a4d6beff2d8bade7793baac3d6958931e257019d"
+    },
+    {
+      "name": "THREE-LICENSE.txt",
+      "destination": "public/THREE-LICENSE.txt",
+      "sha256": "7dddf7c5b8fd10ee654db8857d75d104b5557889aa5a91fc4ca545ea7c07062f"
+    },
+    {
+      "name": "worker.js",
+      "destination": "src/worker.js",
+      "sha256": "f022042706855f3db466a0133c10d84df36dd4565c26bbe17a78847255b713e8"
+    },
+    {
+      "name": "community.js",
+      "destination": "src/community.js",
+      "sha256": "04db4a16d4f6bfbcd7b021b707619a3d721d26a711c79c6609865524cf85f2ad"
+    },
+    {
+      "name": "traffic (1).js",
+      "destination": "src/traffic.js",
+      "sha256": "056438578cfbbbfb52a24e00b079f88b16db83cc807cabe138f08177c97d3bd4"
+    },
+    {
+      "name": "build-offline.cjs",
+      "destination": "scripts/build-offline.cjs",
+      "sha256": "a7eb6da7ccf3fb59962e6f70c6b5cb117dafa408e6e65333154b8095a5f7c368"
+    },
+    {
+      "name": "build-world.cjs",
+      "destination": "scripts/build-world.cjs",
+      "sha256": "88bd4905a4925c2d8e6e173202ce5875da39906c6ea8c44fa523d62d23fc854c"
+    },
+    {
+      "name": "source-world.cjs",
+      "destination": "scripts/source-world.cjs",
+      "sha256": "0b90eee2695bd610b43a97dd14c008bc877234a014319ca61447c89c692e380e"
+    },
+    {
+      "name": "upgrade-v16-config.cjs",
+      "destination": "scripts/upgrade-v16-config.cjs",
+      "sha256": "52260ac225d8b9afa639a00ea72dcfa47ee5d4da25deaed5e5eadd2d9022b8ac"
+    },
+    {
+      "name": "city.test.cjs",
+      "destination": "test/city.test.cjs",
+      "sha256": "79b235c80cc94d4100f42997f4165006bed941177300c20073da12577d3aaae7"
+    },
+    {
+      "name": "community.test.cjs",
+      "destination": "test/community.test.cjs",
+      "sha256": "79e5b0027acb27fa48de3bd9a1a97f2c44c133deb74a9f421d16246020bd76c2"
+    },
+    {
+      "name": "game.test.cjs",
+      "destination": "test/game.test.cjs",
+      "sha256": "4d285c5ceec093f457f79da0e5b8e98f574dcaaa7ae7d200cd3fc718aa376f90"
+    },
+    {
+      "name": "global.test.cjs",
+      "destination": "test/global.test.cjs",
+      "sha256": "a80795293eaaee8f0a2f3faf264c8f647c4b0998ec1348a11bf1ca1209a3446d"
+    },
+    {
+      "name": "maker.test.cjs",
+      "destination": "test/maker.test.cjs",
+      "sha256": "8f49ee2954c25e5629dfed32e1253bccb7bed09abb45ce6a4298edd070979ae3"
+    },
+    {
+      "name": "paint.test.cjs",
+      "destination": "test/paint.test.cjs",
+      "sha256": "158a47088bf419377659fa4239b7302e84164d412cae42f5aa671db7a281d08d"
+    },
+    {
+      "name": "peaks-network.test.cjs",
+      "destination": "test/peaks-network.test.cjs",
+      "sha256": "44552dc0d8918e884d04a6e9118d1a92b30a1478a26f8a1c76ef3f2f7fb042e3"
+    },
+    {
+      "name": "peaks.test.cjs",
+      "destination": "test/peaks.test.cjs",
+      "sha256": "23e3aebe9a6523de5c528d9a72a8ad1939a1c8e67192727cb84397c5506ce96c"
+    },
+    {
+      "name": "special-cars.test.cjs",
+      "destination": "test/special-cars.test.cjs",
+      "sha256": "1a69e00186fdf8f9180eeb2b5eb834b0b37030a6167b8bb1157031d423afa4c2"
+    },
+    {
+      "name": "touch.test.cjs",
+      "destination": "test/touch.test.cjs",
+      "sha256": "0f88a48f789d23c84887e80945688662574453dd3ccd864eeefbb2646f399217"
+    },
+    {
+      "name": "utility-cars.test.cjs",
+      "destination": "test/utility-cars.test.cjs",
+      "sha256": "15eddd5ba2b57435433cd896f9aa86e0c727adaaff2c30bce7b4bd4cf48a15a8"
+    },
+    {
+      "name": "v16-integration.test.cjs",
+      "destination": "test/v16-integration.test.cjs",
+      "sha256": "ef2ef38a358d6dd0afd6f8383bce87f9ac1f1ab81bb9dcb333e3abb3ae7f65c0"
+    },
+    {
+      "name": "aura-check.cjs",
+      "destination": "test/regression/aura-check.cjs",
+      "sha256": "6eb6bf9c9c49667392601c1e88f7f89bf1b988e27571467a501660431e4b0317"
+    },
+    {
+      "name": "garage-check.cjs",
+      "destination": "test/regression/garage-check.cjs",
+      "sha256": "a2b1be0586969cd0a9cbd64b6f7722edd2182f3adfc956fad1e878ad274fef31"
+    },
+    {
+      "name": "island-check.cjs",
+      "destination": "test/regression/island-check.cjs",
+      "sha256": "41764df328a168dc0f47fe5cd366fd0ca6d23b77a9920aa9c2e4890d06034cc0"
+    },
+    {
+      "name": "nitro-check.cjs",
+      "destination": "test/regression/nitro-check.cjs",
+      "sha256": "e10e0d0cc41645e6d6525f43a83fa21f4b453ec6bca37e4ba6eb72ee33753b72"
+    },
+    {
+      "name": "physics-check.cjs",
+      "destination": "test/regression/physics-check.cjs",
+      "sha256": "c4fb8acc09549e9ec9330adbd76b71155a2232bcbf6997780b21fe9a19877728"
+    },
+    {
+      "name": "ramp-check.cjs",
+      "destination": "test/regression/ramp-check.cjs",
+      "sha256": "f4d56fc00a4ae919a81573ba432687d2f089b2c7fc5ee24f8d60b69b953d944d"
+    },
+    {
+      "name": "traffic-check.cjs",
+      "destination": "test/regression/traffic-check.cjs",
+      "sha256": "7d6f3541c7aaa469e1c2bbff3a2f7660e8dfb741b9496829e90c61cd2883cde4"
+    },
+    {
+      "name": "truck-check.cjs",
+      "destination": "test/regression/truck-check.cjs",
+      "sha256": "eb14de4fd222cdeb10c143f7137fdf3b6f806d924c6b2c6a836d218f60a792cb"
+    },
+    {
+      "name": "water-check.cjs",
+      "destination": "test/regression/water-check.cjs",
+      "sha256": "bc9694d9fbff578b225d3917fbc96a2478bda205fd3b1d4d19f58c471fecacfe"
+    },
+    {
+      "name": "package.json",
+      "destination": "package.json",
+      "sha256": "2d910f0c05f7fefb287b45c0637f37f2508fb34b2c8f7577f4f6dcfb1ec3e222"
+    },
+    {
+      "name": "package-lock.json",
+      "destination": "package-lock.json",
+      "sha256": "8eb11d2710b06576d8b133ca51cebff6f43caad2f623ef32c5edc544ee014e77"
+    },
+    {
+      "name": "prepare-cloudflare.cjs",
+      "destination": "prepare-cloudflare.cjs",
+      "sha256": "ae5e0d9ddb4e93b4b9cdb55ff4ba0985d6d38efdfd4c6efa52d5ef8806dd8d10"
+    },
+    {
+      "name": "README.txt",
+      "destination": "README.txt",
+      "sha256": "f1582025dcd4f52eef6abf5ec605cd17500281485e3d1b538745b73397b2812b"
+    }
+  ]
+}

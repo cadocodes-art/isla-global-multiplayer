@@ -26,7 +26,7 @@
    const award=(label,base,detail)=>{
     this.chainCount++;this.multiplier=Math.min(5,this.chainCount);
     const points=Math.round(base*this.multiplier);
-    this.total+=points;this.chainPoints+=points;this.bestChain=Math.max(this.bestChain,this.chainPoints);W.onAuraEarn?.(points,this.bestChain);
+    if(!W.auraDisabled)this.total+=points;this.chainPoints+=points;this.bestChain=Math.max(this.bestChain,this.chainPoints);W.onAuraEarn?.(points,this.bestChain);
     this.remaining=this.window;this.lastResult=label;
     events.push({label,points,detail});
    };

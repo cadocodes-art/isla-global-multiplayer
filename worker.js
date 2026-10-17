@@ -1,7 +1,10 @@
+
 import {DurableObject} from 'cloudflare:workers';
 import '../public/player-rules.js';
 import world from './world-data.json';
 import {freshTraffic,place,stepTraffic} from './traffic.js';
+import '../public/maker-core.js';
+export {CommunityHub} from './community.js';
 const rules=globalThis.IslaRules,models=new Map(world.cars.map(m=>[m.id,m]));
 const RECONNECT=90000,EMPTY_RESET=600000,MAX_SOCKETS=48;
 const numeric=(n,min,max)=>typeof n==='number'&&Number.isFinite(n)&&n>=min&&n<=max;
@@ -14,8 +17,9 @@ export class GlobalRoom extends DurableObject {
  constructor(ctx,env){
   super(ctx,env);this.ctx=ctx;this.players=new Map();this.meta=new Map();this.attempts=new Map();this.configureMap('islands');this.mapBound=false;this.lastTick=Date.now();this.lastFrame=0;this.emptyAt=Date.now();this.nextAlarm=0;
   ctx.blockConcurrencyWhile(async()=>{
+
    const saved=await ctx.storage.get('world-v2');
-   if(saved){this.configureMap(saved.mapId||'islands');this.mapBound=true;if(Array.isArray(saved.hp)&&saved.hp.length===this.hp.length)this.hp=saved.hp;this.fallenTrees=saved.fallenTrees||[];this.hits=saved.hits||[];this.nukes=saved.nukes||[];this.emptyAt=saved.emptyAt||0;
+   if(saved){if(saved.custom)this.configureCustom(saved.custom);else this.configureMap(saved.mapId||'islands');this.mapBound=true;if(Array.isArray(saved.hp)&&saved.hp.length===this.hp.length)this.hp=saved.hp;this.fallenTrees=saved.fallenTrees||[];this.hits=saved.hits||[];this.nukes=saved.nukes||[];this.emptyAt=saved.emptyAt||0;
     if(saved.traffic?.length===this.world.traffic.length)this.traffic=saved.traffic.map(t=>place(t,this.world));
     for(const p of saved.reservations||[])if(Date.now()-p.disconnectedAt<RECONNECT&&!rules.validateName(p.name))this.players.set(p.id,{...p,ws:null,previous:null});
    }
@@ -25,13 +29,15 @@ export class GlobalRoom extends DurableObject {
    this.nextAlarm=await ctx.storage.getAlarm()||0;this.cleanup();
   });
  }
- configureMap(mapId){this.mapId=mapId==='city'?'city':'islands';this.world=this.mapId==='city'?world.maps.city:world;this.hp=this.world.buildings.map(()=>100);this.hits=[];this.fallenTrees=[];this.nukes=[];this.traffic=freshTraffic(this.world);}
+ configureMap(mapId){this.mapId=['city','peaks'].includes(mapId)?mapId:'islands';this.world=this.mapId==='islands'?world:world.maps[this.mapId];this.hp=this.world.buildings.map(()=>100);this.hits=[];this.fallenTrees=[];this.nukes=[];this.traffic=freshTraffic(this.world);}
+ configureCustom(info){this.custom=info;this.mapId='custom:'+info.id;this.world=globalThis.IslaMaker.worldData(info.document);this.hp=this.world.buildings.map(()=>100);this.hits=[];this.fallenTrees=[];this.nukes=[];this.traffic=freshTraffic(this.world);}
+ async prepareCustom(info){if(this.mapBound){if(!this.custom||this.custom.id!==info.id||this.custom.revision!==info.revision)throw Error('Map version mismatch');return;}this.configureCustom(info);this.mapBound=true;await this.checkpoint();}
  attach(ws,p){const meta=this.meta.get(ws);if(meta)ws.serializeAttachment({meta,player:p?serial(p):null});}
- roster(){return [...this.players.values()].map(p=>({id:p.id,name:p.name,score:p.score,connected:!!p.ws,car:p.state.car,color:p.state.color}));}
+ roster(){return [...this.players.values()].map(p=>({id:p.id,name:p.name,guest:p.guest!==false,score:p.score,connected:!!p.ws,car:p.state.car,color:p.state.color}));}
  broadcast(data){const text=JSON.stringify(data);for(const p of this.players.values())if(p.ws)try{p.ws.send(text);}catch{}}
  announce(){this.broadcast({type:'roster',players:this.roster(),host:null});}
  async schedule(){const now=Date.now(),due=Math.max(now+1,Math.min(now+30000,...this.nukes.map(n=>n.at)));if(this.nextAlarm>now&&this.nextAlarm<=due)return;this.nextAlarm=due;await this.ctx.storage.setAlarm(due);}
- async checkpoint(){await this.ctx.storage.put('world-v2',{mapId:this.mapId,hp:this.hp,hits:this.hits,fallenTrees:this.fallenTrees,nukes:this.nukes,traffic:this.traffic,emptyAt:this.emptyAt,reservations:[...this.players.values()].filter(p=>!p.ws).map(serial)});}
+ async checkpoint(){await this.ctx.storage.put('world-v2',{mapId:this.mapId,custom:this.custom||null,hp:this.hp,hits:this.hits,fallenTrees:this.fallenTrees,nukes:this.nukes,traffic:this.traffic,emptyAt:this.emptyAt,reservations:[...this.players.values()].filter(p=>!p.ws).map(serial)});}
  cleanup(){
   const now=Date.now();let changed=false;
   for(const [id,p]of this.players)if(!p.ws&&now-p.disconnectedAt>=RECONNECT){this.players.delete(id);changed=true;}
@@ -43,7 +49,8 @@ export class GlobalRoom extends DurableObject {
  }
  playerFor(ws){return [...this.players.values()].find(p=>p.ws===ws);}
  async fetch(request){
-  const mapId=new URL(request.url).searchParams.get('map')==='city'?'city':'islands';
+
+  const requested=new URL(request.url).searchParams.get('map'),mapId=requested?.startsWith('custom:')?requested:['city','peaks'].includes(requested)?requested:'islands';
   if(!this.mapBound){this.configureMap(mapId);this.mapBound=true;await this.checkpoint();}
   if(mapId!==this.mapId)return new Response('Wrong map',{status:409});
   this.cleanup();const now=Date.now(),ip=request.headers.get('CF-Connecting-IP')||'local';
@@ -51,21 +58,22 @@ export class GlobalRoom extends DurableObject {
   if(++bucket.count>60)return new Response('Too many connections. Try again shortly.',{status:429});
   if(this.ctx.getWebSockets().length>=MAX_SOCKETS)return new Response('The global room is busy. Try again shortly.',{status:503});
   const pair=new WebSocketPair(),[client,server]=Object.values(pair);
-  this.ctx.acceptWebSocket(server);this.meta.set(server,{createdAt:now,rateAt:now,count:0,lastJoin:0});this.attach(server,null);await this.schedule();
+  this.ctx.acceptWebSocket(server);let account=null;try{account=JSON.parse(request.headers.get('X-Isla-Account')||'null');}catch{}this.meta.set(server,{createdAt:now,rateAt:now,count:0,lastJoin:0,account});this.attach(server,null);await this.schedule();
   return new Response(null,{status:101,webSocket:client});
  }
  async join(ws,data){
   if(this.playerFor(ws))return reply(ws,{type:'error',message:'You are already in the global room.'});
   if(data.v!==rules.protocol)return reply(ws,{type:'error',message:'Refresh the game to join this version.'});
+  const account=this.meta.get(ws)?.account;if(account)data.name=account.username;
   const error=rules.validateName(data.name);if(error)return reply(ws,{type:'error',message:error});
   this.cleanup();let p,resumed=false;
   if(data.type==='resume'){
    p=[...this.players.values()].find(q=>q.token===data.token&&(!q.disconnectedAt||Date.now()-q.disconnectedAt<RECONNECT));
-   if(!p||p.name!==data.name)return reply(ws,{type:'error',message:'Your reserved spot expired. Join the global room again.',expired:true});resumed=true;
+   if(!p||p.name!==data.name||(p.account||null)!==(account?.id||null))return reply(ws,{type:'error',message:'Your reserved spot expired. Join the global room again.',expired:true});resumed=true;
   }else{
    if(this.players.size>=rules.capacity)return reply(ws,{type:'error',message:'The global room is full (32 drivers). Try again shortly.'});
    const used=new Set([...this.players.values()].map(q=>q.slot));let slot=0;while(used.has(slot))slot++;
-   p={id:crypto.randomUUID(),token:crypto.randomUUID()+crypto.randomUUID(),name:data.name,slot,score:0,scoreSeq:0,lastScoreAt:0,lastTrafficHit:0,lastStateAt:0,state:spawn(slot,this.world),previous:null,disconnectedAt:0,ws:null};this.players.set(p.id,p);
+   p={id:crypto.randomUUID(),token:crypto.randomUUID()+crypto.randomUUID(),name:data.name,guest:!account,account:account?.id||null,slot,score:0,scoreSeq:0,lastScoreAt:0,lastTrafficHit:0,lastStateAt:0,state:spawn(slot,this.world),previous:null,disconnectedAt:0,ws:null};this.players.set(p.id,p);
   }
   const old=p.ws;if(old&&old!==ws){this.meta.delete(old);try{old.serializeAttachment({meta:{createdAt:Date.now()},player:null});old.close(4001,'Connection replaced');}catch{}}
   p.ws=ws;p.disconnectedAt=0;this.emptyAt=0;this.attach(ws,p);await this.checkpoint();
@@ -94,9 +102,10 @@ export class GlobalRoom extends DurableObject {
   const liveBuildings=this.world.buildings.filter(b=>this.hp[b.id]>0);
   for(const p of this.players.values())if(p.ws&&p.state.car==='firetruck'&&!p.state.parked&&p.state.water!=='sinking')for(const jet of rules.hoseJets(p.state,liveBuildings))for(const t of this.traffic)if(rules.inHose(jet,t)){t.wetTime=18;if(t.burning){t.burning=false;this.wetDirty=true;}}
  
-  this.broadcast({type:'frame',time:now,players:[...this.players.values()].map(p=>({id:p.id,name:p.name,connected:!!p.ws,state:p.state,nukeRemaining:Math.max(0,rules.nuke.cooldown-(p.nukeCharge||0)/1000)})),traffic:this.traffic.map(t=>[t.x,t.y,t.z,t.yaw,t.vx,t.vz,t.speed,t.distance,!!t.wrecked,!!t.burning,t.wetTime||0])});
+  this.broadcast({type:'frame',time:now,players:[...this.players.values()].map(p=>({id:p.id,name:p.name,guest:p.guest!==false,connected:!!p.ws,state:p.state,nukeRemaining:Math.max(0,rules.nuke.cooldown-(p.nukeCharge||0)/1000)})),traffic:this.traffic.map(t=>[t.x,t.y,t.z,t.yaw,t.vx,t.vz,t.speed,t.distance,!!t.wrecked,!!t.burning,t.wetTime||0])});
  }
  async webSocketMessage(ws,raw){
+
   const meta=this.meta.get(ws);if(!meta)return;
   if(typeof raw!=='string'||raw.length>8192){ws.close(1009,'Invalid message size');return;}
   const now=Date.now();if(now-meta.rateAt>=1000){meta.count=0;meta.rateAt=now;}if(++meta.count>40){ws.close(1008,'Too many messages');return;}
@@ -145,11 +154,18 @@ export class GlobalRoom extends DurableObject {
 export default {
  async fetch(request,env){
   const url=new URL(request.url);
-  if(url.pathname==='/healthz')return Response.json({ok:true,room:'GLOBAL',capacity:rules.capacity,version:rules.protocol,maps:['islands','city']});
+  if(url.pathname.startsWith('/api/')){if(!env.COMMUNITY)return Response.json({error:'Complete the V1.6 CommunityHub setup.'},{status:503});return env.COMMUNITY.getByName('isla-community-v16').fetch(request);}
+  if(url.pathname==='/healthz')return Response.json({ok:true,release:'1.6',room:'GLOBAL',capacity:rules.capacity,version:rules.protocol,maps:['islands','city','peaks']});
   if(url.pathname==='/ws'){
+   if(url.searchParams.get('map')==='obstacle')return new Response('Void Run has been replaced by Islayan Peaks. Refresh your game.',{status:410});
    if(request.method!=='GET'||request.headers.get('Upgrade')?.toLowerCase()!=='websocket')return new Response('WebSocket required',{status:426});
    const origin=request.headers.get('Origin');if(origin&&origin!==url.origin)return new Response('Origin not allowed',{status:403});
-   return env.GLOBAL.getByName(url.searchParams.get('map')==='city'?'isla-global-city-v4':'isla-global-v2').fetch(request);
+   const headers=new Headers(request.headers);headers.delete('X-Isla-Account');
+   const hub=env.COMMUNITY?.getByName('isla-community-v16');if(hub){const account=await hub.internalIdentity(request.headers.get('Cookie'));if(account)headers.set('X-Isla-Account',JSON.stringify(account));}
+   const mapId=url.searchParams.get('map');let room;
+   if(mapId?.startsWith('custom:')){if(!hub)return new Response('Community maps are unavailable',{status:503});try{const info=await hub.internalMap(mapId.slice(7));if(Number(url.searchParams.get('revision'))!==info.revision)return new Response('A new version of this map is available. Refresh before joining.',{status:409});room=env.GLOBAL.getByName('custom-'+info.id+'-r'+info.revision);await room.prepareCustom(info);}catch{return new Response('This map is not available. Refresh the map page.',{status:404});}}
+   else room=env.GLOBAL.getByName(mapId==='peaks'?'isla-global-peaks-v1':mapId==='city'?'isla-global-city-v4':'isla-global-v2');
+   return room.fetch(new Request(request,{headers}));
   }
   return env.ASSETS?env.ASSETS.fetch(request):new Response('Not found',{status:404});
  }

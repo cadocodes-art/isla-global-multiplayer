@@ -1,204 +1,194 @@
-ISLA / STICKCAR, FIRE TRUCK & THE BEAST
+ISLA V1.6 — MAP MAKER, SEARCH & ACCOUNTS
 
-StickCar: 315,000 aura; 270 km/h with nitro. Green, goo-covered tires.
-Drive into a building while holding the gas to climb its wall. Grip lasts
-a random 2-4 seconds, then the car slides down. Releasing the gas or braking
-starts the slide early. Drive away from that wall before trying it again.
+START HERE
 
-Fire Truck: 135,000 aura; 202 km/h with nitro. Both side hoses spray
-automatically while driving. Water leaves wet patches and droplet textures
-on roads, buildings and traffic, darkens sprayed trees, and puts out burning
-traffic wrecks. Wet marks fade after about 18 seconds without more spray.
+Use ISLA-V1.6-Update.zip to update your existing GitHub repository.
+The live game will change only after you upload these files and Cloudflare
+finishes deploying. Your other multiplayer game is not involved.
 
-The Beast: 320,000 aura; 240 km/h with nitro. Six wheels, thick armor,
-slightly bigger than the Big Truck. Ram buildings to demolish them in one
-hit. Traffic becomes crushed black wrecks with fire; trees topple when hit.
-Other player cars keep the game's existing non-collision behavior.
-
-The Big Truck now costs 70,000 aura. Existing ownership and paint are kept.
-All three new cars support custom paint and work on both maps. Multiplayer
-shares the new car models, wall poses, building destruction, trees, wrecks,
-and fire extinguishing; later arrivals see the same destroyed objects.
-
-LOCAL PLAY AND YOUR AURA
-
-Refresh ISLA-Drive.html in the same browser and file location you already
-use. Your local save receives an additional 700,000 aura once. Reloading
-does not repeat it, and your purchases and colors stay intact. The earlier
-825,000 test credit also keeps its original one-time marker. These personal
-credits are only in your offline HTML, not in the public multiplayer build.
-The three new cars total 770,000 aura; the requested extra credit is 700,000.
-
-UPDATE YOUR EXISTING LIVE GAME
-
-1. Extract ISLA-Utility-Cars-Update.zip. It contains 40 files.
+1. Extract ISLA-V1.6-Update.zip into a folder on your computer.
 2. Open https://github.com/cadocodes-art/isla-global-multiplayer
-3. From the main file list, choose Add file > Upload files.
-4. Upload ALL 40 extracted files together. Upload the files, not the ZIP.
-   Keep both traffic.js and traffic (1).js; they serve different purposes.
-   This update preserves your existing wrangler.jsonc and Worker name.
-5. Commit changes and wait for Cloudflare's new deployment to succeed.
-6. Refresh the game in every player's browser. Press G or tap Garage.
+3. Stay in the main file list — the page where package.json and your
+   existing wrangler.jsonc appear. Do not open a subfolder.
+4. Choose Add file > Upload files. Drag ALL the extracted files into it.
+   Upload the actual files, not the ZIP or the folder containing them.
+   Keep both traffic.js and traffic (1).js; they do different jobs.
+   Include isla-v16-upload.json and upgrade-v16-config.cjs.
+5. Commit the changes. Keep your existing wrangler.jsonc in the repository.
+   It is deliberately absent from the update ZIP so your Worker name stays
+   yours. The build adds the new account/map database binding automatically
+   and preserves your existing global-room binding and migration history.
+6. Let the existing Cloudflare deployment run. Keep these commands:
+   Build:  npm run build
+   Deploy: npx wrangler deploy
+7. Refresh https://isla-globe-multiplayer.cadocodes.workers.dev/
+   On a computer, use Ctrl+Shift+R if you still see the previous menu.
 
-No Cloudflare settings changes are needed. This includes the preceding
-city, suburbs, new-car, and high-speed ramp fixes. ISLA-City-Update.zip is
-also updated to this same cumulative set of files.
+The upload checker verifies every update file before rebuilding the folder
+structure. If it names a missing or changed file, upload that exact file
+again from this ZIP. It also prevents older files in folders from silently
+overriding a complete new flat upload.
 
-If your repository has public/src/scripts/test folders, use the matching
-folders from ISLA-Cloudflare.zip instead. Keep your existing Worker name
-in wrangler.jsonc. Mixing old folder files with new flat files will keep
-the old versions, because existing folder files take precedence.
+IMPORTANT: ONE-TIME EMAIL SETUP
 
-VERIFIED
+Accounts use email verification and emailed password-reset codes, as
+planned. The game cannot send those emails until you configure a sender.
+Map Maker, guest driving, and existing global rooms work before this step.
+Account creation clearly explains when email setup is missing.
 
-48 automated checks cover purchases, saved paint, all three speed limits,
-wall climbing and sliding, one-hit impacts, tree restoration, wet surfaces,
-shared wrecks and extinguishing, late joins, reconnects, mobile controls,
-and the existing cars. The city ramp checks cover all 11 cars at 205, 240,
-and 285 km/h with nitro on and off (132 launch cases). The Cloudflare
-Worker also passes a deployment dry run. No live deployment was performed.
+This release uses Resend for outgoing account emails.
 
+1. Open https://resend.com and create/sign into your own account.
+2. Add a domain you own under Domains and follow Resend's verification
+   instructions. Add the DNS records it gives you where that domain's DNS
+   is managed. Wait for the domain to be verified.
+   The shared cadocodes.workers.dev address cannot be used as a domain
+   you own for this verification. Public email delivery requires your own
+   verified sender domain; a domain may have a separate cost if you do not
+   already own one. Resend's test sender is not a public-player solution.
+3. Create an API key with permission to send email for that domain.
+4. In Cloudflare, open Workers & Pages, then your existing ISLA Worker,
+   isla-globe-multiplayer. Open Settings > Variables and Secrets.
+5. Add these three values as Secrets, with the names spelled exactly:
 
-FULL PACKAGE AND OPTIONAL NEW-DEPLOYMENT GUIDE
+   EMAIL_API_KEY
+   The Resend API key you just created.
 
-MANUAL SETUP: GITHUB
+   EMAIL_FROM
+   A sender on your verified domain, for example:
+   ISLA <noreply@your-own-domain.com>
+   Replace the example with your real verified domain.
 
-1. Extract ISLA-Cloudflare.zip into a new folder on your computer.
-2. Sign in at https://github.com as cadocodes-art.
-3. Open https://github.com/new and create a repository named
-   isla-drive-cloudflare. Private is fine. Do not select your other game's
-   repository. You can leave the initial README option off.
-4. Open the new repository's upload link, or Add file > Upload files.
-5. Drag the CONTENTS of the extracted folder into the upload area:
-   public, src, scripts, test, package.json, package-lock.json,
-   wrangler.jsonc, prepare-cloudflare.cjs, README.txt, .node-version,
-   and .gitignore.
-   Upload extracted files, not the ZIP itself or the outer enclosing folder.
-6. Click Commit changes. At the repository's top level, you should see
-   package.json and wrangler.jsonc beside the four folders.
+   OWNER_EMAIL
+   The email address YOU will use to create your ISLA owner account.
+   Only the verified account with this email can approve maps, revoke
+   approval, remove comments, hide maps, and review reports.
 
-MANUAL SETUP: CLOUDFLARE
+6. Save/deploy the secret changes using Cloudflare's button. Keep API keys
+   and passwords in the provider dashboards, never in GitHub files.
+7. Open ISLA, choose the profile icon, and Create an account. Use the email
+   you entered as OWNER_EMAIL. Enter the six-digit code from your inbox.
+8. Open your profile. You should see Owner reports. Published map pages
+   will show your approval controls. Other accounts will not have them.
+9. Try Forgot password once with a test account you control to confirm
+   that reset email delivery works too.
 
-7. Sign in at https://dash.cloudflare.com and select your account.
-8. Go to Workers & Pages > Create application > GitHub
-   (some screens label this Import a repository).
-9. Connect GitHub. If asked which repositories Cloudflare may access, choose
-   only isla-drive-cloudflare. Then select that repository in Cloudflare.
-10. Use these settings:
+Useful provider instructions:
+https://resend.com/docs/dashboard/domains/introduction
+https://resend.com/docs/api-reference/emails/send-email
+https://developers.cloudflare.com/workers/configuration/secrets/
 
-    Worker/project name:   isla-drive
-    Production branch:     main
-    Root directory:        leave blank (repository root)
-    Build command:         npm run build
-    Deploy command:        npx wrangler deploy
-    Node version:          automatic from the included .node-version file
-    Workers plan:          Free
+YOUR EXISTING GARAGE
 
-    The Worker name must match "name": "isla-drive" in wrangler.jsonc.
-    If you already have a Cloudflare Worker with that name, choose a new name
-    in BOTH the file and the dashboard before deploying.
+Guest saves remain on the device where you earned them. Signing in uses
+your account garage. On your own profile, choose Import previous device
+garage to bring your existing aura, cars, and paint into the new account.
+Read the confirmation: this replaces the account garage and can happen
+only once per account. Do this on the device with the save you want.
+After that, sign into the same account on another device to use its garage.
+No new test aura is added by this update.
 
-    Choose a Workers project with a deploy command. This multiplayer server
-    cannot run from a Pages/static-file-only upload. The package already
-    configures its assets and SQLite Durable Object; you do not need to
-    create a separate database, buy a domain, or add a server URL.
+Device-made maps can be copied into an account with Import device maps in
+Map Maker. Your original local maps remain on that device. Cloud account
+maps and device maps are separate, so signing out returns to the device's
+own library and garage. Use one editor tab per map to avoid overwriting a
+newer save from another tab or device.
 
-11. Click Save and Deploy. Wait for a successful production deployment.
-12. Open the provided https://isla-drive.<your-subdomain>.workers.dev address.
-    If Cloudflare asks you to choose a workers.dev subdomain, pick one and
-    finish that account setup. The exact address appears in your dashboard.
-13. Click Global Room, enter a name such as Cado_Truck.01, and join.
-14. Share that same game address with a friend. Both drivers should appear
-    in Global Room's player list. Press G in-game to choose paint.
+MAP MAKER
 
-Future commits to main automatically rebuild this Cloudflare game. This
-procedure makes no changes to your Render service or its repository.
+- 30 original map slots; separate Level copies and Trash sections.
+- Five templates: Grassy plains, Sandy shores, Ocean, Snowy, Road mania.
+- Pick 1,024 m, 2,048 m, or 4,096 m square after choosing the template.
+  Template scenery continues beyond the editable area.
+- Build tools occupy the bottom quarter. Drag a tile into the preview,
+  or choose it and tap the ground. Pan, Orbit, and zoom controls also work
+  on mobile. On desktop, right-drag orbits, Shift-drag pans, wheel zooms.
+- Each visible grid square is 1 square meter. The grid follows your view.
+- Trees, roads, homes, buildings, skyscrapers, apartments, rocks, bushes,
+  ramps, traffic cars, and one starting diamond are included.
+- Choose asphalt or stone for straight, curved, and intersection roads.
+  Join road pieces at their ends. Traffic follows connected road pieces;
+  it turns back at road ends. No roads means no moving traffic.
+- Edit has separate Object and Ground / water modes. Roads follow the
+  ground underneath. Move objects by 0.25, 0.5, 1, or 5 m; rotate and scale
+  from 0.25x to 4x. The diamond arrow chooses the starting direction.
+- Ground elevation uses smooth hills and basins. Below 0 m fills with
+  water; raise the ocean floor above 0 m to make land. Paint grass, sand,
+  or snow in individual cells or use a larger brush.
+- Undo/Redo retain the last 40 edits during an editing session. Ctrl+Z
+  undoes, Ctrl+Y redoes. Delete selected or all of the same kind.
+- The corner menu has Save and play map, Save and exit map, and Save map.
+  Changes also autosave every 30 seconds. Save before closing the tab.
+- First Save and exit asks for a name (30 characters) and description
+  (150 characters). Each save updates the thumbnail from your editor view.
+- Trash can restore maps for five days. After that, they are permanently
+  purged. Deleting a published map also removes it from public discovery.
+- Sharing publishes a snapshot. Editing a draft leaves the last shared
+  version playable. Sharing again publishes a new, unapproved version.
+- Everyone drives their own garage cars. The starting diamond is hidden
+  during driving. Draft testing and unapproved maps do not earn aura.
 
-IF A STEP DOES NOT WORK
+Limits per map: 1,200 objects, 64 traffic cars, 200 terrain edits, and
+12,000 painted cells. These keep custom maps practical in a browser.
+Small maps are the easiest choice on phones.
 
-- Cannot find scripts/build-world.cjs: if GitHub shows all the files in one
-  flat list, the upload lost its folders. The updated package includes
-  prepare-cloudflare.cjs and a package.json that runs it before the build.
-  Upload BOTH updated files together at the repository's main page. The
-  helper restores the expected folders automatically in Cloudflare's build.
-  It identifies the two different traffic.js files even if one was renamed
-  traffic (1).js by a download. Keep Build command as npm run build. Watch the
-  new build triggered by this commit, rather than retrying an old commit.
-- Repository missing: check that Cloudflare's GitHub app can access the new
-  repository under cadocodes-art, then refresh the repository picker.
-- Missing package.json/wrangler configuration: the files may be nested one
-  folder too deep. Move the extracted contents to the repository root, or
-  set Root directory to the folder that actually contains package.json.
-- Worker name mismatch: set the dashboard name to isla-drive, or change the
-  name in wrangler.jsonc to exactly match the dashboard.
-- Wrong Node version: set the build variable NODE_VERSION to 24.18.0 and retry.
-- Asked for paid Durable Objects: this package uses SQLite, which supports
-  Workers Free. Check that the uploaded wrangler.jsonc still includes
-  new_sqlite_classes, and that you are deploying this Cloudflare package.
-- Solo loads but joining fails: open your game address followed by /healthz.
-  It should show ok:true, room:GLOBAL, capacity:32, version:2. If it does not,
-  inspect the Cloudflare deployment log; a static-only upload is insufficient.
-- Version mismatch: refresh both browser tabs after the deployment finishes.
-- Room full: the limit is 32 drivers. Disconnected spots are held for 90 seconds.
-- Lost connection: the game tries to reconnect. If the reservation expires,
-  click Global Room and join again.
+SEARCH, ACCOUNTS & APPROVAL
 
-PLAYTEST DETAILS
+- Seven tabs: Latest approved, Latest unapproved, Most popular approved,
+  Most popular unapproved, Trending, Potential, and Your feed.
+- Searches include maps and creators, sorted by popularity, 9 per page.
+- Popularity combines unique drivers and likes. Trending emphasizes the
+  most recent 48 hours. Potential includes maps by creators with approved
+  maps. Your feed uses follows, played creators, and liked-map templates.
+- Map pages have solo play, a global room for that map, likes, comments,
+  reports, and copying. Each global room holds up to 32 drivers.
+- Comments have a 150-character limit and a server-enforced 20-second
+  cooldown. Common profanity is censored. Reports reach the owner.
+- Copies retain creator credit and cannot receive approval. Identical
+  reuploads are also linked to their source. Manual review is still needed
+  for edited copies and reports; automatic similarity checks are limited.
+- Only owner-approved published versions award aura. Republishing or
+  revoking approval removes that version's eligibility and approval star.
+- Profiles show username, stars, followers, uploaded maps, an optional
+  aura count, and Summer / Cosmic / Snowy themes.
+- Guests can choose a driving name and join global rooms with a Guest
+  label. They cannot upload maps or have a profile. Social actions that
+  need an identity ask players to sign in.
+- Passwords are hashed, never displayed. Sessions use secure cookies.
+  Forgotten passwords use email codes; profile settings can change them.
 
-Names and paint are public to everyone in this global room. Names are display
-labels, not accounts or exclusive usernames. The strict profanity filter
-checks common English and some other-language terms anywhere in a name,
-including punctuation, repeated-letter, and common digit substitutions.
-It can reject innocent words containing a blocked substring. No word list
-can detect every language or creative spelling. Its list is in
-public/player-rules.js and is shared by browser and server.
+LOCAL VERSION
 
-Other player cars currently pass through yours. Traffic and destruction are
-shared. No player can rebuild the world while others are using it. The world
-refreshes after it has been empty for ten minutes, once reconnect reservations
-have expired. Brief server sleep preserves the room and damaged buildings.
+ISLA-Drive.html is also updated. Open it at the same location and in the
+same browser to retain your previous offline garage. Local Map Maker and
+test driving work without a server. Accounts and public Search require
+the online game. Local map drafts use this browser's IndexedDB storage.
+Clearing browser site data removes guest saves and local drafts.
 
-Aura, owned cars, and paint save in each browser. There is no account/cloud-save
-system. Your local downloaded game's save remains where it is; browsers do
-not automatically transfer that save to the new workers.dev website. A new
-browser or website address starts with a fresh garage. The room leaderboard
-tracks aura earned in the current session. This version is for playtesting,
-not a tamper-proof competitive economy.
+FULL PROJECT ALTERNATIVE
 
-FREE PLAN LIMITS
+ISLA-Cloudflare.zip contains the structured project for working with
+public/, src/, scripts/, and test/ folders directly. For your existing
+site, keep your existing wrangler.jsonc and run the included build so it
+adds V1.6 bindings without changing your Worker name. Do not replace your
+Worker configuration with the full project's example name, isla-drive.
+Use either the flat update workflow above or the structured project.
 
-The project uses features available on Workers Free. Cloudflare currently
-includes 100,000 Durable Object request units per day, with incoming WebSocket
-messages counted at a 20:1 ratio. That is roughly 55 total active-driver hours
-per day at this game's 10 updates/second, before other messages and requests.
-It is an estimate, not a guarantee. Other account usage also consumes quotas.
-There are separate compute/storage/build limits. Hibernation and slower parked
-updates reduce usage. On Free, operations over the relevant limit fail; daily
-limits reset at 00:00 UTC. Keep the Free plan selected and check usage during
-playtests. A full 32-driver room cannot be promised unlimited daily uptime.
+VALIDATION & PRACTICAL LIMITS
 
-Verified official setup and pricing references:
-https://developers.cloudflare.com/workers/ci-cd/builds/
-https://developers.cloudflare.com/workers/ci-cd/builds/configuration/
-https://developers.cloudflare.com/workers/ci-cd/builds/build-image/
+The package has automated checks for the existing driving game plus
+account verification/reset, authorization, map validation, publication
+snapshots, copied-map provenance, comments, cloud garage purchases,
+approved-map aura eligibility, and custom multiplayer rooms.
+The editor's save/play flow and community screens were also tested locally.
+Real email delivery must be tested after you configure your own sender.
+
+The community database is a single SQLite Durable Object, designed for
+this initial community release. It is not load-tested for a large public
+launch. Cloudflare and email-provider usage limits still apply:
 https://developers.cloudflare.com/durable-objects/platform/pricing/
 
-OPTIONAL LOCAL DEVELOPMENT
-
-Install Node.js 22 or later. From this folder:
-  npm ci
-  npm run dev
-
-Open the local address printed by Wrangler. To run the automated checks:
-  npm test
-
-To produce a standalone solo HTML file:
-  npm run build:offline
-
-Production assets live in public. Server code lives in src. The build command
-regenerates the server's island/traffic manifest from the same client world.
-The test suite covers the original driving features, saved paint, name rules,
-global joins, shared state, 32-driver capacity, reconnects, preset chat,
-chat cooldowns, joystick input, and real Durable Object hibernation. No keys or account
-tokens are included in this package.
-Three.js's license is included in public/THREE-LICENSE.txt.
+Aura awards have server checks, limits, and duplicate protection, but
+driving physics still run in the browser. This is not a fully authoritative
+anti-cheat system. The one-time legacy garage import intentionally trusts
+the device save. Approval and account ownership are checked on the server.
