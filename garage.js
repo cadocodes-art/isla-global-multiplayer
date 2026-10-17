@@ -1,6 +1,6 @@
 'use strict';
 (()=>{
- const W=Isla,validColor=v=>typeof v==='string'&&/^#[0-9a-f]{6}$/i.test(v);
+ const walletClaim='cado-online-wallet-1400000-v1',W=Isla,validColor=v=>typeof v==='string'&&/^#[0-9a-f]{6}$/i.test(v);
  W.carModels=Object.freeze([
   {id:'classic',name:'Bahía Classic',price:0,color:'#9a3227',style:'classic',engine:1,grip:1,offroad:1,boostMax:53,thrust:8,boostKph:187,tag:'THE ORIGINAL',description:'The red sedan that started it all. Balanced, familiar, and always yours.'},
   {id:'rally',name:'Ruiz Rally',price:30000,color:'#d7bf81',style:'rally',engine:1.16,grip:1.06,offroad:1.35,boostMax:59,thrust:9,boostKph:208,tag:'ISLAND EXPLORER',description:'Rally lamps, a roof rack, and better grip for hills and off-road ramp runs.'},
@@ -20,16 +20,25 @@
   try{saved=JSON.parse(storage?.getItem(key)||'null');}catch(e){}
   const number=v=>Number.isFinite(v)&&v>=0?Math.min(1e12,Math.floor(v)):0;
   const g={balance:number(saved?.balance),earned:number(saved?.earned),bestChain:number(saved?.bestChain),owned:[...new Set(['classic',...(Array.isArray(saved?.owned)?saved.owned.filter(id=>known.has(id)):[])])],selected:'classic',colors:{},persistent:!!storage};
+  g.playtestWallet=saved?.playtestWallet===walletClaim?walletClaim:'';
   if(g.owned.includes(saved?.selected))g.selected=saved.selected;g.earned=Math.max(g.earned,g.balance);
   for(const m of W.carModels)if(validColor(saved?.colors?.[m.id]))g.colors[m.id]=saved.colors[m.id].toLowerCase();
   g.getColor=(id=g.selected)=>g.colors[id]||W.carModels.find(m=>m.id===id)?.color||W.carModels[0].color;
   g.setColor=(value,id=g.selected)=>{if(!known.has(id)||!g.owned.includes(id)||!validColor(value))return false;g.colors[id]=value.toLowerCase();g.save();return true;};
-  g.save=()=>{try{if(!storage)throw Error();storage.setItem(key,JSON.stringify({balance:g.balance,earned:g.earned,bestChain:g.bestChain,owned:g.owned,selected:g.selected,colors:g.colors}));g.persistent=true;}catch(e){g.persistent=false;}};
+  g.save=()=>{try{if(!storage)throw Error();storage.setItem(key,JSON.stringify({balance:g.balance,earned:g.earned,bestChain:g.bestChain,owned:g.owned,selected:g.selected,colors:g.colors,...(g.playtestWallet?{playtestWallet:g.playtestWallet}:{})}));g.persistent=true;}catch(e){g.persistent=false;}};
   g.credit=(points,best=0)=>{if(!Number.isSafeInteger(points)||points<=0)return;g.balance+=points;g.earned+=points;g.bestChain=Math.max(g.bestChain,best);g.save();};
   g.choose=id=>{const m=W.carModels.find(x=>x.id===id);if(!m)return {ok:false,message:'Unknown car.'};if(!g.owned.includes(id)){if(g.balance<m.price)return {ok:false,message:'Earn more aura to unlock this car.'};g.balance-=m.price;g.owned.push(id);}g.selected=id;g.save();return {ok:true,model:m};};
   return g;
  };
  let storage;try{storage=window.localStorage;}catch(e){}W.garage=W.createGarage(storage);
+ // Explicit online playtest link: set the available wallet once in this browser.
+ // Store the claim and wallet together so purchases and reloads cannot repeat it.
+ if(window.location?.protocol==='https:'&&window.location.hash==='#isla-test-aura-1400000-cado-v1'){
+  const g=W.garage;
+  if(storage&&g.playtestWallet!==walletClaim){const previous={balance:g.balance,earned:g.earned,playtestWallet:g.playtestWallet};g.balance=1400000;g.earned=Math.max(g.earned,g.balance);g.playtestWallet=walletClaim;g.save();if(!g.persistent)Object.assign(g,previous);}
+  if(g.playtestWallet===walletClaim){try{window.history.replaceState(window.history.state,'',window.location.pathname+window.location.search);}catch(e){}}
+ }
+
  W.getCarSpec=()=>W.carModels.find(m=>m.id===W.garage.selected)||W.carModels[0];
  W.onAuraEarn=(points,best)=>W.garage.credit(points,best);
  W.carPreview=m=>{
