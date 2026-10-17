@@ -1,21 +1,65 @@
-ISLA / CLOUDFLARE GLOBAL ROOM
-Prepared October 16, 2026
+ISLA / STICKCAR, FIRE TRUCK & THE BEAST
 
-This package is ready for you to upload and deploy. It has not been published
-to your accounts. Use a new GitHub repository so this setup stays separate
-from your other game on Render.
+StickCar: 315,000 aura; 270 km/h with nitro. Green, goo-covered tires.
+Drive into a building while holding the gas to climb its wall. Grip lasts
+a random 2-4 seconds, then the car slides down. Releasing the gas or braking
+starts the slide early. Drive away from that wall before trying it again.
 
-WHAT IS INCLUDED
+Fire Truck: 135,000 aura; 202 km/h with nitro. Both side hoses spray
+automatically while driving. Water leaves wet patches and droplet textures
+on roads, buildings and traffic, darkens sprayed trees, and puts out burning
+traffic wrecks. Wet marks fade after about 18 seconds without more spray.
 
-- One shared global room, with a 32-driver playtest limit. No room codes.
-- Global Room buttons in the opening screen and the top bar.
-- A car-name prompt: 3-20 characters, A-Z/a-z, digits, underscores and periods.
-  Names are checked both in the browser and on the server.
-- Free garage paint: choose any color or enter a six-digit hex color.
-  Each owned car remembers its own paint, visible to other drivers.
-- Shared traffic, building damage, visible player names, and session aura.
-- All five garage vehicles, including the 100,000-aura Big Truck.
-- Solo driving remains available through Take the Wheel.
+The Beast: 320,000 aura; 240 km/h with nitro. Six wheels, thick armor,
+slightly bigger than the Big Truck. Ram buildings to demolish them in one
+hit. Traffic becomes crushed black wrecks with fire; trees topple when hit.
+Other player cars keep the game's existing non-collision behavior.
+
+The Big Truck now costs 70,000 aura. Existing ownership and paint are kept.
+All three new cars support custom paint and work on both maps. Multiplayer
+shares the new car models, wall poses, building destruction, trees, wrecks,
+and fire extinguishing; later arrivals see the same destroyed objects.
+
+LOCAL PLAY AND YOUR AURA
+
+Refresh ISLA-Drive.html in the same browser and file location you already
+use. Your local save receives an additional 700,000 aura once. Reloading
+does not repeat it, and your purchases and colors stay intact. The earlier
+825,000 test credit also keeps its original one-time marker. These personal
+credits are only in your offline HTML, not in the public multiplayer build.
+The three new cars total 770,000 aura; the requested extra credit is 700,000.
+
+UPDATE YOUR EXISTING LIVE GAME
+
+1. Extract ISLA-Utility-Cars-Update.zip. It contains 40 files.
+2. Open https://github.com/cadocodes-art/isla-global-multiplayer
+3. From the main file list, choose Add file > Upload files.
+4. Upload ALL 40 extracted files together. Upload the files, not the ZIP.
+   Keep both traffic.js and traffic (1).js; they serve different purposes.
+   This update preserves your existing wrangler.jsonc and Worker name.
+5. Commit changes and wait for Cloudflare's new deployment to succeed.
+6. Refresh the game in every player's browser. Press G or tap Garage.
+
+No Cloudflare settings changes are needed. This includes the preceding
+city, suburbs, new-car, and high-speed ramp fixes. ISLA-City-Update.zip is
+also updated to this same cumulative set of files.
+
+If your repository has public/src/scripts/test folders, use the matching
+folders from ISLA-Cloudflare.zip instead. Keep your existing Worker name
+in wrangler.jsonc. Mixing old folder files with new flat files will keep
+the old versions, because existing folder files take precedence.
+
+VERIFIED
+
+48 automated checks cover purchases, saved paint, all three speed limits,
+wall climbing and sliding, one-hit impacts, tree restoration, wet surfaces,
+shared wrecks and extinguishing, late joins, reconnects, mobile controls,
+and the existing cars. The city ramp checks cover all 11 cars at 205, 240,
+and 285 km/h with nitro on and off (132 launch cases). The Cloudflare
+Worker also passes a deployment dry run. No live deployment was performed.
+
+
+FULL PACKAGE AND OPTIONAL NEW-DEPLOYMENT GUIDE
 
 MANUAL SETUP: GITHUB
 
@@ -27,7 +71,8 @@ MANUAL SETUP: GITHUB
 4. Open the new repository's upload link, or Add file > Upload files.
 5. Drag the CONTENTS of the extracted folder into the upload area:
    public, src, scripts, test, package.json, package-lock.json,
-   wrangler.jsonc, README.txt, .node-version, and .gitignore.
+   wrangler.jsonc, prepare-cloudflare.cjs, README.txt, .node-version,
+   and .gitignore.
    Upload extracted files, not the ZIP itself or the outer enclosing folder.
 6. Click Commit changes. At the repository's top level, you should see
    package.json and wrangler.jsonc beside the four folders.
@@ -71,6 +116,14 @@ procedure makes no changes to your Render service or its repository.
 
 IF A STEP DOES NOT WORK
 
+- Cannot find scripts/build-world.cjs: if GitHub shows all the files in one
+  flat list, the upload lost its folders. The updated package includes
+  prepare-cloudflare.cjs and a package.json that runs it before the build.
+  Upload BOTH updated files together at the repository's main page. The
+  helper restores the expected folders automatically in Cloudflare's build.
+  It identifies the two different traffic.js files even if one was renamed
+  traffic (1).js by a download. Keep Build command as npm run build. Watch the
+  new build triggered by this commit, rather than retrying an old commit.
 - Repository missing: check that Cloudflare's GitHub app can access the new
   repository under cadocodes-art, then refresh the repository picker.
 - Missing package.json/wrangler configuration: the files may be nested one
@@ -145,6 +198,7 @@ To produce a standalone solo HTML file:
 Production assets live in public. Server code lives in src. The build command
 regenerates the server's island/traffic manifest from the same client world.
 The test suite covers the original driving features, saved paint, name rules,
-global joins, shared state, 32-driver capacity, reconnects, and real Durable
-Object hibernation. No keys or account tokens are included in this package.
+global joins, shared state, 32-driver capacity, reconnects, preset chat,
+chat cooldowns, joystick input, and real Durable Object hibernation. No keys or account
+tokens are included in this package.
 Three.js's license is included in public/THREE-LICENSE.txt.

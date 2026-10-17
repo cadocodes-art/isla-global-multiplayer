@@ -33,7 +33,7 @@ function restore(relative, {optional=false, matches=null}={}) {
 try {
   for (const name of ['index.html','style.css','THREE-LICENSE.txt','three.min.js',
     'world.js','islands.js','ramps.js','physics.js','aura.js','player-rules.js',
-    'garage.js','multiplayer.js','game.js']) restore('public/' + name);
+    'garage.js','maps.js','specials.js','utility-cars.js','multiplayer.js','game.js']) restore('public/' + name);
   restore('public/traffic.js', {matches:text => /\bW\.initTraffic\s*=/.test(text) && !/\bexport\s/.test(text)});
   restore('src/traffic.js', {matches:text => /\bexport\s+(?:const|function)\s+freshTraffic\b/.test(text)});
   restore('src/worker.js');
@@ -41,7 +41,7 @@ try {
   restore('src/world-data.json', {optional:true});
   for (const name of ['build-world.cjs','source-world.cjs']) restore('scripts/' + name);
   restore('scripts/build-offline.cjs', {optional:true});
-  for (const name of ['game.test.cjs','global.test.cjs','paint.test.cjs']) restore('test/' + name, {optional:true});
+  for (const name of ['game.test.cjs','global.test.cjs','paint.test.cjs','touch.test.cjs','city.test.cjs','special-cars.test.cjs','utility-cars.test.cjs']) restore('test/' + name, {optional:true});
   for (const name of ['aura','garage','island','nitro','physics','ramp','traffic','truck','water']) {
     restore('test/regression/' + name + '-check.cjs', {optional:true});
   }

@@ -2,8 +2,8 @@ const fs=require('fs'),vm=require('vm'),assert=require('assert');global.window=g
 for(const f of ['world.js','physics.js','garage.js','traffic.js'])vm.runInThisContext(fs.readFileSync(__dirname+'/../../public/'+f,'utf8'));
 const W=Isla,truck=W.carModels.find(m=>m.id==='truck'),idle={gas:false,brake:false,steer:0,handbrake:false,boost:false};
 const memory=new Map(),storage={getItem:k=>memory.get(k),setItem:(k,v)=>memory.set(k,v)};
-let g=W.createGarage(storage);g.credit(99999);assert(!g.choose('truck').ok);assert.equal(g.balance,99999);g.credit(1);assert(g.choose('truck').ok);assert.equal(g.balance,0);g.credit(1234);g=W.createGarage(storage);assert.equal(g.selected,'truck');assert.equal(g.balance,1234);assert(g.choose('truck').ok);assert.equal(g.balance,1234);assert(g.owned.includes('classic'));
-console.log('PASS: 100,000 aura purchase, no double charge, and truck ownership survive reloads.');
+let g=W.createGarage(storage);g.credit(69999);assert(!g.choose('truck').ok);assert.equal(g.balance,69999);g.credit(1);assert(g.choose('truck').ok);assert.equal(g.balance,0);g.credit(1234);g=W.createGarage(storage);assert.equal(g.selected,'truck');assert.equal(g.balance,1234);assert(g.choose('truck').ok);assert.equal(g.balance,1234);assert(g.owned.includes('classic'));
+console.log('PASS: 70,000 aura purchase, no double charge, and truck ownership survive reloads.');
 W.height=W.driveHeight=()=>0;W.slope=()=>({x:0,z:0});const road={samples:[{x:0,z:-1},{x:0,z:0},{x:0,z:1}]};W.nearestRoad=(x,z)=>({d:0,p:{x,z,width:12,index:1,road}});W.buildCollisionIndex();
 function reset(id,speed=0){W.garage.selected=id;W.resetVehicle(true);Object.assign(W.vehicle,{x:0,z:0,yaw:0,vx:0,vz:speed});}
 function step(seconds,input){for(let i=0;i<seconds*120;i++)W.stepVehicle(1/120,{...idle,...input},i/120);return W.vehicle.vz;}

@@ -5,8 +5,16 @@
  W.rampLocal=(r,x,z)=>{const dx=x-r.x,dz=z-r.z;return {across:dx*r.co-dz*r.si,along:dx*r.si+dz*r.co+r.d/2};};
  W.rampPoint=(r,across,along)=>({x:r.x+r.co*across+r.si*(along-r.d/2),z:r.z-r.si*across+r.co*(along-r.d/2)});
  W.rampAt=(x,z)=>W.ramps.find(r=>{const p=W.rampLocal(r,x,z);return Math.abs(p.across)<=r.w/2&&p.along>=0&&p.along<=r.d;})||null;
- W.rampHeight=(r,x,z)=>{const t=W.clamp(W.rampLocal(r,x,z).along/r.d,0,1);return W.height(x,z)+.04+r.rise*t*t;};
- W.rampGradient=(r,x,z)=>{const g=W.slope(x,z),t=W.clamp(W.rampLocal(r,x,z).along/r.d,0,1),grade=2*r.rise*t/r.d;return {x:g.x+r.si*grade,z:g.z+r.co*grade};};
+ W.rampHeight=(r,x,z)=>{const t=W.clamp(W.rampLocal(r,x,z).along/r.d,0,1);return (r.baseY??W.height(x,z))+.04+r.rise*(r.profile==='smooth'?t*t*(3-2*t):t*t);};
+ W.rampGradient=(r,x,z)=>{const g=r.baseY==null?W.slope(x,z):{x:0,z:0},t=W.clamp(W.rampLocal(r,x,z).along/r.d,0,1),grade=r.rise/r.d*(r.profile==='smooth'?6*t*(1-t):2*t);return {x:g.x+r.si*grade,z:g.z+r.co*grade};};
+ W.rampUnderside=(r,x,z)=>W.rampHeight(r,x,z)-(r.deckThickness??.5);
+ // Only the low part of an open ramp can block a car underneath it. This
+ // shortened footprint also gives the low-clearance edge a proper collision.
+ W.rampBlockingPart=(r,carY,carHeight)=>{
+  const target=carY+carHeight+.06;let lo=0,hi=r.d;
+  for(let i=0;i<18;i++){const mid=(lo+hi)/2,p=W.rampPoint(r,0,mid);if(W.rampUnderside(r,p.x,p.z)<target)lo=mid;else hi=mid;}
+  const p=W.rampPoint(r,0,hi/2);return {x:p.x,z:p.z,yaw:r.yaw,w:r.w,d:hi};
+ };
  // Reserve the deck, a 40 m run-up, and 65 m landing corridor for every ramp.
  W.inRampClearing=(x,z)=>W.ramps.some(r=>{const p=W.rampLocal(r,x,z);return Math.abs(p.across)<r.w/2+7&&p.along>-40&&p.along<r.d+65;});
  W.planRamps=()=>{
@@ -34,16 +42,28 @@
   const deck=W.mat('#475257',.78,.35),side=W.mat('#343c3c',.88,.2),orange=W.mat('#ef9c39',.7,.15),white=W.mat('#eee9d2'),pole=W.mat('#8b9692',.5,.65);
   function mesh(parent,positions,indices,material){const g=new T.BufferGeometry();g.setAttribute('position',new T.Float32BufferAttribute(positions,3));g.setIndex(indices);g.computeVertexNormals();const m=new T.Mesh(g,material);m.receiveShadow=m.castShadow=true;parent.add(m);return m;}
   for(const r of W.ramps){
-   const group=new T.Group();group.name='Off-road ramp '+r.id;scene.add(group);r.group=group;
+   const group=new T.Group();group.name=(r.openFrame?'Supported city ramp ':'Off-road ramp ')+r.id;scene.add(group);r.group=group;
    function v(u,s,lift=0){const p=W.rampPoint(r,u,s);return [p.x,W.rampHeight(r,p.x,p.z)+lift,p.z];}
    function ribbon(u0,u1,s0,s1,material,lift=.025){mesh(group,[...v(u0,s0,lift),...v(u1,s0,lift),...v(u0,s1,lift),...v(u1,s1,lift)],[0,2,1,1,2,3],material);}
    for(let j=0;j<26;j++){const s0=r.d*j/26,s1=r.d*(j+1)/26;ribbon(-r.w/2,r.w/2,s0,s1,deck,0);
-    for(const sign of [-1,1]){const u=sign*r.w/2,a=v(u,s0),b=v(u,s1),a0=[a[0],W.height(a[0],a[2])-.12,a[2]],b0=[b[0],W.height(b[0],b[2])-.12,b[2]];mesh(group,[...a,...b,...a0,...b0],sign===1?[0,1,2,1,3,2]:[0,2,1,1,2,3],side);ribbon(sign>0?r.w/2-.35:-r.w/2,sign>0?r.w/2:-r.w/2+.35,s0,s1,j%4<2?orange:side);}
+    if(r.openFrame){const a=v(-r.w/2,s0,-r.deckThickness),b=v(r.w/2,s0,-r.deckThickness),c=v(-r.w/2,s1,-r.deckThickness),d=v(r.w/2,s1,-r.deckThickness);mesh(group,[...a,...b,...c,...d],[0,1,2,1,3,2],side);}
+    for(const sign of [-1,1]){const u=sign*r.w/2,a=v(u,s0),b=v(u,s1),a0=[a[0],r.openFrame?a[1]-r.deckThickness:(r.baseY??W.height(a[0],a[2]))-.12,a[2]],b0=[b[0],r.openFrame?b[1]-r.deckThickness:(r.baseY??W.height(b[0],b[2]))-.12,b[2]];mesh(group,[...a,...b,...a0,...b0],sign===1?[0,1,2,1,3,2]:[0,2,1,1,2,3],side);ribbon(sign>0?r.w/2-.35:-r.w/2,sign>0?r.w/2:-r.w/2+.35,s0,s1,j%4<2?orange:side);}
    }
-   const a=v(-r.w/2,r.d),b=v(r.w/2,r.d);mesh(group,[...a,...b,a[0],W.height(a[0],a[2])-.12,a[2],b[0],W.height(b[0],b[2])-.12,b[2]],[0,1,2,1,3,2],side);
+   const a=v(-r.w/2,r.d),b=v(r.w/2,r.d);mesh(group,[...a,...b,a[0],r.openFrame?a[1]-r.deckThickness:(r.baseY??W.height(a[0],a[2]))-.12,a[2],b[0],r.openFrame?b[1]-r.deckThickness:(r.baseY??W.height(b[0],b[2]))-.12,b[2]],[0,1,2,1,3,2],side);
+   if(r.openFrame){r.supports=[];for(const s of r.supportAlong){
+    const p=W.rampPoint(r,0,s),top=W.rampUnderside(r,p.x,p.z),floor=r.supportGround?W.driveHeight(p.x,p.z,true):(r.baseY??W.driveHeight(p.x,p.z,true)),beamH=.3;
+    if(top-floor<.4)continue;
+    const beam=W.box(group,p.x,top-beamH/2,p.z,r.w,beamH,.5,pole);beam.rotation.y=r.yaw;
+    W.colliders.push({kind:'rampBeam',rampStructure:true,rampId:r.id,x:p.x,z:p.z,y:top-beamH,yaw:r.yaw,w:r.w,d:.5,h:beamH});
+    for(const sign of [-1,1]){const q=W.rampPoint(r,sign*(r.w/2-.6),s),base=r.supportGround?W.driveHeight(q.x,q.z,true):(r.baseY??W.driveHeight(q.x,q.z,true)),h=top-beamH-base;
+     const post=W.box(group,q.x,base+h/2,q.z,.55,h,.55,pole);post.rotation.y=r.yaw;
+     const support={kind:'rampSupport',rampStructure:true,rampId:r.id,x:q.x,z:q.z,y:base,yaw:r.yaw,w:.55,d:.55,h};W.colliders.push(support);r.supports.push(support);
+     const foot=W.box(group,q.x,base+.08,q.z,.9,.16,.9,side);foot.rotation.y=r.yaw;
+    }
+   }}
    // Broad white chevrons point toward the launch edge.
    for(let s of [5,10,15,20])if(s<r.d-2)for(const sign of [-1,1])mesh(group,[...v(0,s+1.8,.05),...v(sign*2,s,.05),...v(sign*2,s-.35,.05),...v(0,s+1.45,.05)],sign>0?[0,1,2,0,2,3]:[0,2,1,0,3,2],white);
-   for(const sign of [-1,1]){const p=W.rampPoint(r,sign*(r.w/2+1),1),y=W.height(p.x,p.z);W.box(group,p.x,y+2.3,p.z,.09,4.6,.09,pole);const flag=new T.Mesh(new T.PlaneGeometry(.8,1.8),new T.MeshStandardMaterial({color:0xf1a23f,roughness:.8,side:T.DoubleSide}));flag.position.set(p.x,y+3.65,p.z);flag.rotation.y=r.yaw;group.add(flag);}
+   for(const sign of [-1,1]){const p=W.rampPoint(r,sign*(r.w/2+1),1),y=r.supportGround?W.height(p.x,p.z):(r.baseY??W.height(p.x,p.z));W.box(group,p.x,y+2.3,p.z,.09,4.6,.09,pole);const flag=new T.Mesh(new T.PlaneGeometry(.8,1.8),new T.MeshStandardMaterial({color:0xf1a23f,roughness:.8,side:T.DoubleSide}));flag.position.set(p.x,y+3.65,p.z);flag.rotation.y=r.yaw;group.add(flag);}
    W.colliders.push(r);
   }
  };

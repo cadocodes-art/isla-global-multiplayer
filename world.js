@@ -15,7 +15,7 @@ window.Isla = (() => {
   let h=mix(beach,terrain,inland);if(r>coast)h=-2-(r-coast)*.10;
   return h;
  }
- W.luzHeight=luzHeight;const rawHeight=(x,z)=>Math.max(luzHeight(x,z),W.ruizHeight?.(x,z)??-Infinity);
+ W.luzHeight=luzHeight;const rawHeight=(x,z)=>W.mapRawHeight?W.mapRawHeight(x,z):Math.max(luzHeight(x,z),W.ruizHeight?.(x,z)??-Infinity);
  function addRoad(points,width,closed,name){let curve=new T.CatmullRomCurve3(points.map(p=>new T.Vector3(p[0],0,p[1])),closed,'catmullrom',.28),count=Math.ceil(curve.getLength()/4),samples=curve.getSpacedPoints(count).map(p=>({x:p.x,z:p.z,y:rawHeight(p.x,p.z)+.08,width}));
   for(let pass=0;pass<9;pass++){let copy=samples.map(p=>p.y);for(let i=1;i<samples.length-1;i++)samples[i].y=(copy[i-1]+copy[i]*2+copy[i+1])/4;}
   let road={samples,width,closed,name};W.roads.push(road);
@@ -24,10 +24,10 @@ window.Isla = (() => {
  function nearestRoad(x,z,range=1){let best=null,d2=Infinity,cx=Math.floor(x/cellSize),cz=Math.floor(z/cellSize);for(let a=-range;a<=range;a++)for(let b=-range;b<=range;b++){let list=roadCells.get((cx+a)+','+(cz+b));if(list)for(let p of list){let d=(p.x-x)**2+(p.z-z)**2;if(d<d2){d2=d;best=p}}}return {p:best,d:Math.sqrt(d2)}}
  W.nearestRoad=nearestRoad;W.addRoad=addRoad;
  W.initTerrain=()=>{W.roads.length=0;roadCells.clear();
-  addRoad([[0,700],[230,655],[450,520],[650,250],[680,0],[610,-250],[450,-500],[180,-630],[-120,-680],[-420,-530],[-650,-300],[-720,-40],[-640,270],[-420,520],[-180,660]],9.5,true,'Coast road');
+  if(W.makeMapRoads)W.makeMapRoads();else {addRoad([[0,700],[230,655],[450,520],[650,250],[680,0],[610,-250],[450,-500],[180,-630],[-120,-680],[-420,-530],[-650,-300],[-720,-40],[-640,270],[-420,520],[-180,660]],9.5,true,'Coast road');
   addRoad([[280,630],[160,460],[200,310],[85,225],[-60,115],[100,-30],[50,-190],[-100,-270],[-220,-420],[-210,-655]],7.5,false,'Summit pass');
   addRoad([[-640,270],[-430,240],[-300,340],[-100,370],[90,470],[160,460]],7,false,'Jungle cut');
-  W.extendRoads?.();W.heights=new Float32Array(W.N*W.NZ);let step=W.span/(W.N-1);W.step=step;
+  W.extendRoads?.();}W.heights=new Float32Array(W.N*W.NZ);let step=W.span/(W.N-1);W.step=step;
   for(let iz=0;iz<W.NZ;iz++)for(let ix=0;ix<W.N;ix++){let x=ix*step+W.minX,z=iz*step+W.minZ,h=rawHeight(x,z),near=nearestRoad(x,z);if(near.p&&!near.p.road.elevated){let t=1-smooth(near.p.width*.5+2,near.p.width*.5+17,near.d);h=mix(h,near.p.y-.06,t)}W.heights[iz*W.N+ix]=h;}
  };
  W.height=(x,z)=>{let fx=clamp((x-W.minX)/W.step,0,W.N-1.001),fz=clamp((z-W.minZ)/W.step,0,W.NZ-1.001),ix=Math.floor(fx),iz=Math.floor(fz),a=fx-ix,b=fz-iz,n=W.N,h=W.heights;return mix(mix(h[iz*n+ix],h[iz*n+ix+1],a),mix(h[(iz+1)*n+ix],h[(iz+1)*n+ix+1],a),b)};
@@ -62,10 +62,10 @@ void main(){vec3 d=normalize(vWorld);float h=max(d.y,0.);vec3 horizon=mix(vec3(.
   let hdata=new Uint8Array(W.N*W.NZ*4);for(let i=0;i<W.heights.length;i++){let v=clamp((W.heights[i]+80)/320,0,1)*255;hdata[i*4]=v;hdata[i*4+1]=v;hdata[i*4+2]=v;hdata[i*4+3]=255}let htex=new T.DataTexture(hdata,W.N,W.NZ,T.RGBAFormat);htex.minFilter=htex.magFilter=T.LinearFilter;htex.needsUpdate=true;
   let waterMat=new T.ShaderMaterial({uniforms:{time:{value:0},sunDirection:{value:W.sky.material.uniforms.sunDirection.value},heightMap:{value:htex},mapOrigin:{value:new T.Vector2(W.minX,W.minZ)},mapSize:{value:new T.Vector2(W.span,W.depth)},warm:{value:0}},vertexShader:'varying vec3 wp;void main(){wp=(modelMatrix*vec4(position,1.)).xyz;gl_Position=projectionMatrix*viewMatrix*vec4(wp,1.);}',fragmentShader:`varying vec3 wp;uniform float time;uniform vec3 sunDirection;uniform sampler2D heightMap;uniform vec2 mapOrigin;uniform vec2 mapSize;uniform float warm;
 void main(){float h=texture2D(heightMap,(wp.xz-mapOrigin)/mapSize).r*320.-80.;float dep=max(-h,0.);vec2 p=wp.xz;float a=sin(p.x*.16+p.y*.09+time*1.7),b=cos(p.x*.075-p.y*.18+time*1.2),c=sin(p.x*.6+p.y*.35-time*2.);vec3 normal=normalize(vec3((a+b)*.055+c*.012,1.,(b-a)*.06));vec3 viewDir=normalize(cameraPosition-wp);float fres=pow(1.-max(dot(viewDir,normal),0.),4.);vec3 base=mix(vec3(.08,.51,.49),vec3(.025,.20,.28),smoothstep(0.,36.,dep));vec3 col=mix(base,vec3(.58,.74,.77),fres*.65);float spec=pow(max(dot(reflect(-normalize(sunDirection),normal),viewDir),0.),180.);col+=mix(vec3(1.,.96,.79),vec3(1.,.61,.27),warm)*spec*1.8;float shore=(1.-smoothstep(0.,3.8,dep))*smoothstep(-.4,.4,-h);float foam=smoothstep(.3,.8,sin(dep*2.-time*1.25+sin(p.x*.3)*.5));col=mix(col,vec3(.84,.91,.85),shore*foam*.65);float haze=1.-exp(-length(cameraPosition-wp)*.00027);col=mix(col,vec3(.64,.77,.80),haze);gl_FragColor=vec4(col,1.);}`});let water=new T.Mesh(new T.PlaneGeometry(13000,13000),waterMat);water.rotation.x=-Math.PI/2;water.position.y=.0;scene.add(water);W.water=water;
-  W.roadMaterial=mat('#535858',.99);W.roadMaterial.map=textureCanvas(256,(ctx,s)=>{ctx.fillStyle='#858582';ctx.fillRect(0,0,s,s);let im=ctx.getImageData(0,0,s,s);for(let i=0;i<im.data.length;i+=4){let c=100+rand()*65;im.data[i]=c;im.data[i+1]=c;im.data[i+2]=c;im.data[i+3]=255}ctx.putImageData(im,0,0)},1);
+  W.roadMaterial=mat(W.roadColor||'#535858',.99);W.roadMaterial.map=textureCanvas(256,(ctx,s)=>{ctx.fillStyle='#858582';ctx.fillRect(0,0,s,s);let im=ctx.getImageData(0,0,s,s);for(let i=0;i<im.data.length;i+=4){let c=100+rand()*65;im.data[i]=c;im.data[i+1]=c;im.data[i+2]=c;im.data[i+3]=255}ctx.putImageData(im,0,0)},1);
   const white=mat('#d8d5bc'),lineWhite=mat('#d7d3b5'),shoulder=mat('#a89d7c');
   const strip=(...args)=>W.makeRoadStrip(scene,...args);
-  W.roads.forEach(road=>{strip(road.samples,.7,shoulder,road.width*.5+.35,.08);strip(road.samples,.7,shoulder,-road.width*.5-.35,.08);strip(road.samples,road.width,W.roadMaterial,0,.13);strip(road.samples,.13,lineWhite,road.width*.5-.4,.155);strip(road.samples,.13,lineWhite,-road.width*.5+.4,.155);for(let i=1;i<road.samples.length-2;i+=6)strip(road.samples.slice(i,i+3),.13,white,0,.16)});
+  W.roads.forEach(road=>{strip(road.samples,.7,shoulder,road.width*.5+.35,.08);strip(road.samples,.7,shoulder,-road.width*.5-.35,.08);strip(road.samples,road.width,W.roadMaterial,0,.13);if(W.customRoadMarkings)return;strip(road.samples,.13,lineWhite,road.width*.5-.4,.155);strip(road.samples,.13,lineWhite,-road.width*.5+.4,.155);for(let i=1;i<road.samples.length-2;i+=6)strip(road.samples.slice(i,i+3),.13,white,0,.16)});
   W.makeBridge?.(scene);W.makeBuildings(scene);W.makeRamps(scene);W.makeVegetation(scene);W.makeRuizDetails?.(scene);W.makeRoadDetails(scene);
  };
  W.makeBuildings=scene=>{
@@ -103,7 +103,7 @@ void main(){float h=texture2D(heightMap,(wp.xz-mapOrigin)/mapSize).r*320.-80.;fl
   let lp=[],li=[],lc=[];for(let j=0;j<=10;j++){let t=j/10,xx=t*4.1,yy=Math.sin(t*Math.PI*.9)*1.3-t*t*2.3,width=Math.sin(t*Math.PI)*.46;for(let k of [-1,0,1]){lp.push(xx,yy-(k!==0?.10:0),k*width);let c=new T.Color(k===0?'#617a37':'#3e602d');c.multiplyScalar(.8+t*.3);lc.push(c.r,c.g,c.b)}if(j<10){let q=j*3;li.push(q,q+3,q+1,q+1,q+3,q+4,q+1,q+4,q+2,q+2,q+4,q+5)}}let lg=new T.BufferGeometry();lg.setAttribute('position',new T.Float32BufferAttribute(lp,3));lg.setAttribute('color',new T.Float32BufferAttribute(lc,3));lg.setIndex(li);lg.computeVertexNormals();let leafMat=new T.MeshStandardMaterial({vertexColors:true,roughness:.9,side:T.DoubleSide});
   W.palmAssets={tg,trunkMat,lg,leafMat};let palms=[];for(let n=0;n<2300&&palms.length<760;n++){let x=(rand()-.5)*1950,z=(rand()-.5)*1850,y=W.height(x,z),near=nearestRoad(x,z);
    if(W.inRampClearing(x,z)||y<3||y>95||near.d<(near.p?near.p.width*.5+4:9))continue;if(W.buildings.some(b=>(b.x-x)**2+(b.z-z)**2<225))continue;palms.push({x,y,z,s:.75+rand()*.55,a:rand()*6.28});}
-  let trunks=new T.InstancedMesh(tg,trunkMat,palms.length),leaves=new T.InstancedMesh(lg,leafMat,palms.length*10),o=new T.Object3D();palms.forEach((p,i)=>{o.position.set(p.x,p.y,p.z);o.rotation.set(0,p.a,0);o.scale.setScalar(p.s);o.updateMatrix();trunks.setMatrixAt(i,o.matrix);let lean=new T.Vector3(.75,7.45,0).applyAxisAngle(new T.Vector3(0,1,0),p.a);for(let k=0;k<10;k++){o.position.set(p.x+lean.x*p.s,p.y+lean.y*p.s,p.z+lean.z*p.s);o.rotation.set((k%2)*.14,p.a+k*Math.PI*.2, .12+(k%3)*.12);o.scale.setScalar(p.s*(.8+rand()*.3));o.updateMatrix();leaves.setMatrixAt(i*10+k,o.matrix)}W.colliders.push({kind:'tree',x:p.x,z:p.z,y:p.y,r:.3});});trunks.castShadow=leaves.castShadow=true;trunks.receiveShadow=true;scene.add(trunks,leaves);W.palms=palms;
+  let trunks=new T.InstancedMesh(tg,trunkMat,palms.length),leaves=new T.InstancedMesh(lg,leafMat,palms.length*10),o=new T.Object3D();palms.forEach((p,i)=>{o.position.set(p.x,p.y,p.z);o.rotation.set(0,p.a,0);o.scale.setScalar(p.s);o.updateMatrix();trunks.setMatrixAt(i,o.matrix);let lean=new T.Vector3(.75,7.45,0).applyAxisAngle(new T.Vector3(0,1,0),p.a);for(let k=0;k<10;k++){o.position.set(p.x+lean.x*p.s,p.y+lean.y*p.s,p.z+lean.z*p.s);o.rotation.set((k%2)*.14,p.a+k*Math.PI*.2, .12+(k%3)*.12);o.scale.setScalar(p.s*(.8+rand()*.3));o.updateMatrix();leaves.setMatrixAt(i*10+k,o.matrix)}W.colliders.push(W.registerTree?W.registerTree({kind:'tree',x:p.x,z:p.z,y:p.y,r:.3,h:9},[{mesh:trunks,index:i},...Array.from({length:10},(_,k)=>({mesh:leaves,index:i*10+k}))]):{kind:'tree',x:p.x,z:p.z,y:p.y,r:.3});});trunks.castShadow=leaves.castShadow=true;trunks.receiveShadow=true;scene.add(trunks,leaves);W.palms=palms;
   const rockMat=mat('#7e8270');let rockGeo=new T.IcosahedronGeometry(1,1);let rocks=new T.InstancedMesh(rockGeo,rockMat,260),ri=0;
   for(let n=0;n<1500&&ri<260;n++){let x=(rand()-.5)*1870,z=(rand()-.5)*1770,y=W.height(x,z),near=nearestRoad(x,z);if(W.inRampClearing(x,z)||y<.1||near.d<22||W.buildings.some(b=>(b.x-x)**2+(b.z-z)**2<300))continue;let s=1+rand()*3.8;o.position.set(x,y+s*.17,z);o.rotation.set(rand()*.5,rand()*6.28,rand()*.5);o.scale.set(s,s*.65,s*.8);o.updateMatrix();rocks.setMatrixAt(ri++,o.matrix);W.colliders.push({kind:'rock',x,z,y,r:s*.8});}rocks.count=ri;rocks.castShadow=true;rocks.receiveShadow=true;scene.add(rocks);
   let foliageMat=mat('#3f5637'),foliage=new T.InstancedMesh(new T.IcosahedronGeometry(1,1),foliageMat,900),fi=0;
@@ -134,7 +134,17 @@ void main(){float h=texture2D(heightMap,(wp.xz-mapOrigin)/mapSize).r*320.-80.;fl
   for(let side of [-1,1]){W.box(body,side*.64,.78,2.28,.34,.11,.05,lights);W.box(body,side*.64,.84,-2.278,.40,.12,.035,tail);W.box(body,side*.56,.44,-2.30,.14,.09,.12,silver)}
   let plateTex=textureCanvas(256,(c,s)=>{c.fillStyle='#e4e2d4';c.fillRect(0,0,s,s);c.fillStyle='#293d3f';c.font='bold 52px Arial';c.textAlign='center';c.fillText('ISLA 01',128,145)});W.box(body,0,.68,-2.311,.46,.15,.01,new T.MeshStandardMaterial({map:plateTex}),false);
   if(model.style==='rally'){for(const x of [-.57,.57]){W.box(body,x,1.73,-.12,.06,.12,1.7,black);W.box(body,x,1.66,-.7,.06,.15,.06,black);W.box(body,x,1.66,.55,.06,.15,.06,black);}for(const z of [-.9,-.3,.3,.7])W.box(body,0,1.76,z,1.25,.05,.05,silver);for(const x of [-.48,-.16,.16,.48])W.box(body,x,1.03,2.25,.23,.22,.14,lights);W.box(body,0,.55,2.35,1.75,.09,.1,silver);}
+  }else if(model.style==='firetruck'){
+   W.box(body,0,.85,-.65,1.98,.95,3.2,paint);W.box(body,0,1.2,1.15,1.98,1.65,1.45,paint);
+   W.box(body,0,1.61,1.89,1.66,.53,.035,glass);W.box(body,0,2.05,1.1,2.05,.09,1.6,paint);
+   for(const side of [-1,1]){W.box(body,side*1.0,1.55,1.2,.025,.55,1.0,glass);W.box(body,side*1.01,.98,0,.03,.16,4.25,W.mat('#eee8d4'));for(const z of [-1.8,-.9,0]){W.box(body,side*1.01,.91,z,.035,.68,.75,silver);for(let y=.65;y<1.2;y+=.1)W.box(body,side*1.04,y,z,.025,.02,.7,black);}
+    const reel=new T.Mesh(new T.TorusGeometry(.24,.065,8,20),W.mat('#c2ad7e'));reel.rotation.y=Math.PI/2;reel.position.set(side*1.08,1.18,-.2);body.add(reel);const hose=new T.Mesh(new T.CylinderGeometry(.075,.1,.5,10),silver);hose.rotation.z=Math.PI/2;hose.position.set(side*1.22,1.45,-.35);body.add(hose);
+    W.box(body,side*.72,.73,1.91,.32,.18,.04,lights);W.box(body,side*.72,.73,-2.28,.2,.18,.04,tail);W.box(body,side*.72,2.14,1.15,.35,.12,.3,side<0?tail:lights);
+   }
+   for(const x of [-.52,.52])W.box(body,x,1.6,-.8,.06,.07,2.8,silver);for(let z=-2;z<.5;z+=.25)W.box(body,0,1.6,z,1.05,.06,.06,silver);
+   W.box(body,0,.45,2.0,2.12,.24,.19,silver);W.box(body,0,.5,-2.3,2.12,.2,.17,silver);W.box(body,0,1.02,1.92,.8,.26,.04,black);
   }else if(model.style==='truck'){
+
    // A separate pickup silhouette: tall forward cab, open lined bed and heavy bumpers.
    shell([[-2.25,.92,.40,.70],[-1.5,.98,.40,.74],[.4,.98,.40,.85],[1.7,.94,.40,.94],[2.24,.86,.44,.88]],paint);
    shell([[-.43,.82,.87,1.02],[-.29,.75,1.0,1.64],[.64,.75,1.0,1.64],[1.10,.83,.91,1.04]],glass);
@@ -180,9 +190,32 @@ void main(){float h=texture2D(heightMap,(wp.xz-mapOrigin)/mapSize).r*320.-80.;fl
    for(const side of [-1,1]){W.box(body,side*.16,.805,1.25,.19,.018,.8,hyper?black:W.mat('#eee9d9'));W.box(body,side*.16,.97,-1.6,.19,.018,.5,hyper?black:W.mat('#eee9d9'));}
    if(hyper)for(const side of [-1,1])W.box(body,side*.97,.7,-.85,.05,.24,.6,black);
   }
+  if(model.beast){
+   const armor=W.mat('#737e84',.45,.85),bolt=W.mat('#c2c7c6',.25,.9);
+   for(const side of [-1,1])for(const z of [-1.7,-.6,.55]){W.box(body,side*1.035,1.01,z,.17,.64,.95,armor);for(const y of [.77,1.24])for(const dz of [-.36,.36])W.box(body,side*1.135,y,z+dz,.055,.055,.055,bolt);}
+   W.box(body,0,1.7,.15,1.7,.18,1.2,armor);W.box(body,0,.64,2.4,2.3,.5,.42,armor);for(const x of [-.8,-.4,0,.4,.8])W.box(body,x,.64,2.64,.12,.48,.08,black);W.box(body,0,.8,-1.2,1.7,.28,1.7,armor);
+  }
+  if(model.weapon){
+   const warning=mat('#e0b33e',.5),tube=new T.Mesh(new T.CylinderGeometry(.28,.28,1.55,16),black);tube.rotation.x=Math.PI/2;tube.position.set(0,1.46,-1.7);tube.castShadow=true;body.add(tube);
+   for(const x of [-.38,.38])W.box(body,x,1.12,-1.6,.13,.6,.9,paint);
+   for(const z of [-1.25,-1.65,-2.05]){const band=new T.Mesh(new T.TorusGeometry(.29,.035,6,16),warning);band.position.set(0,1.46,z);body.add(band);}
+   W.box(body,0,1.46,-2.49,.39,.39,.025,black);
+  }
+  if(model.glider){
+   // Fixed, swept wings: the chassis stays the same size as the Solstice.
+   for(const side of [-1,1]){
+    const geo=new T.BufferGeometry(),points=[.8,.78,.65,3.65,.87,-.65,3.65,.87,-1.25,.8,.78,-.55];
+    for(let i=0;i<points.length;i+=3)points[i]*=side;geo.setAttribute('position',new T.Float32BufferAttribute(points,3));geo.setIndex(side>0?[0,2,1,0,3,2]:[0,1,2,0,2,3]);geo.computeVertexNormals();
+    const wingPaint=paint;wingPaint.side=T.DoubleSide;const wing=new T.Mesh(geo,wingPaint);wing.castShadow=true;body.add(wing);
+    W.box(body,side*3.6,1.01,-.94,.07,.34,.55,paint);W.box(body,side*3.65,.89,-.88,.09,.07,.12,side<0?tail:lights);
+   }
+   W.box(body,0,1.55,-1.78,.08,.62,.6,paint);
+  }
   // Wheel barrels, five-spoke alloys and individual steerable suspension points.
   const wheelGeo=new T.CylinderGeometry(.36,.36,.25,24);wheelGeo.rotateZ(Math.PI/2);let wheels=[];
-  for(let z of [1.42,-1.43])for(let side of [-1,1]){let pivot=new T.Group();pivot.position.set(side*.94,.39,z);root.add(pivot);let spin=new T.Group();pivot.add(spin);let tire=new T.Mesh(wheelGeo,rubber);tire.castShadow=true;spin.add(tire);let rim=new T.Mesh(new T.CylinderGeometry(.245,.245,.265,20),black);rim.rotation.z=Math.PI/2;spin.add(rim);for(let k=0;k<5;k++){let spoke=W.box(spin,side*.139,0,0,.028,.46,.05,silver);spoke.rotation.x=k*Math.PI*2/5;}let hub=new T.Mesh(new T.CylinderGeometry(.072,.072,.29,12),silver);hub.rotation.z=Math.PI/2;spin.add(hub);wheels.push({pivot,spin,side,z});}
+  for(let z of model.beast?[1.42,-.25,-1.65]:[1.42,-1.43])for(let side of [-1,1]){let pivot=new T.Group();pivot.position.set(side*.94,.39,z);root.add(pivot);let spin=new T.Group();pivot.add(spin);let tire=new T.Mesh(wheelGeo,rubber);tire.castShadow=true;spin.add(tire);
+   if(model.sticky){const goop=new T.MeshPhysicalMaterial({color:0x68dd19,roughness:.18,metalness:.05,clearcoat:1,emissive:0x245b05,emissiveIntensity:.25});const coat=new T.Mesh(new T.CylinderGeometry(.39,.39,.27,20),goop);coat.rotation.z=Math.PI/2;spin.add(coat);for(let k=0;k<9;k++){const blob=new T.Mesh(new T.SphereGeometry(.085,6,5),goop);blob.position.set(side*.145,Math.cos(k*7)*.34,Math.sin(k*7)*.34);blob.scale.set(.7,1.3,.8);spin.add(blob);}}
+let rim=new T.Mesh(new T.CylinderGeometry(.245,.245,.265,20),black);rim.rotation.z=Math.PI/2;spin.add(rim);for(let k=0;k<5;k++){let spoke=W.box(spin,side*.139,0,0,.028,.46,.05,silver);spoke.rotation.x=k*Math.PI*2/5;}let hub=new T.Mesh(new T.CylinderGeometry(.072,.072,.29,12),silver);hub.rotation.z=Math.PI/2;spin.add(hub);wheels.push({pivot,spin,side,z});}
   // Subtle under-car contact shadow.
   let shadowTex=textureCanvas(128,(c,s)=>{let grad=c.createRadialGradient(64,64,5,64,64,64);grad.addColorStop(0,'#000000a0');grad.addColorStop(1,'#00000000');c.fillStyle=grad;c.fillRect(0,0,s,s)});let contact=new T.Mesh(new T.PlaneGeometry(3.6,5.8),new T.MeshBasicMaterial({map:shadowTex,transparent:true,depthWrite:false}));contact.rotation.x=-Math.PI/2;contact.position.y=.02;root.add(contact);
   // Two animated flame volumes point out of the real exhaust tips, along local -Z.

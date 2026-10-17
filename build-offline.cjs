@@ -4,7 +4,7 @@ const root=path.resolve(__dirname,'..'),dir=path.join(root,'public'),out=path.jo
 fs.mkdirSync(out,{recursive:true});
 let html=fs.readFileSync(path.join(dir,'index.html'),'utf8');
 html=html.replace('<link rel="stylesheet" href="style.css">',()=>'<style>\n'+fs.readFileSync(path.join(dir,'style.css'),'utf8')+'\n</style>');
-for(const name of ['three.min.js','world.js','islands.js','ramps.js','physics.js','aura.js','player-rules.js','garage.js','traffic.js','multiplayer.js','game.js']){
+for(const name of ['three.min.js','world.js','islands.js','ramps.js','physics.js','aura.js','player-rules.js','garage.js','traffic.js','maps.js','specials.js','utility-cars.js','multiplayer.js','game.js']){
  const js=fs.readFileSync(path.join(dir,name),'utf8');
  html=html.replace('<script src="'+name+'"></script>',()=>'<script>\n'+js.replace(/<\/script/gi,'<\\/script')+'\n</script>');
 }
