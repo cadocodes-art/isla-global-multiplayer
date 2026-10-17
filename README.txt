@@ -2,11 +2,22 @@ ISLA V1.6 — MAP MAKER, SEARCH & ACCOUNTS
 
 START HERE
 
-Use ISLA-V1.6-Update.zip to update your existing GitHub repository.
+OCTOBER 17 BUG-FIX UPDATE
+
+This package includes the terrain, test-drive exit, and signup-button fixes.
+Lowered ground now shows the real basin; horizon scenery cannot cover it.
+Water recovery returns to stable dry land instead of a submerged road.
+Save and play has a Back to editor button in the top-left corner, plus a
+large return button in the pause menu. Account screens have Sign in and
+Create account tabs at the top; the guest profile menu has separate buttons.
+Previously saved maps use the corrected terrain automatically.
+Email setup below is still required to complete account registration.
+
+Use ISLA-V1.6-Fixes.zip (or the refreshed ISLA-V1.6-Update.zip) to update your existing GitHub repository.
 The live game will change only after you upload these files and Cloudflare
 finishes deploying. Your other multiplayer game is not involved.
 
-1. Extract ISLA-V1.6-Update.zip into a folder on your computer.
+1. Extract the update ZIP into a folder on your computer.
 2. Open https://github.com/cadocodes-art/isla-global-multiplayer
 3. Stay in the main file list — the page where package.json and your
    existing wrangler.jsonc appear. Do not open a subfolder.
@@ -118,6 +129,7 @@ MAP MAKER
 - Undo/Redo retain the last 40 edits during an editing session. Ctrl+Z
   undoes, Ctrl+Y redoes. Delete selected or all of the same kind.
 - The corner menu has Save and play map, Save and exit map, and Save map.
+  During a test drive, use Back to editor at the top left to return.
   Changes also autosave every 30 seconds. Save before closing the tab.
 - First Save and exit asks for a name (30 characters) and description
   (150 characters). Each save updates the thumbnail from your editor view.

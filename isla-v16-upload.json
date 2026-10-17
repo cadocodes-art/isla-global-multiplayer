@@ -24,7 +24,7 @@
     {
       "name": "physics.js",
       "destination": "public/physics.js",
-      "sha256": "e03da1d310a3db9bf3c80b3a0adba30eda53ac11e8ccf73457e0a763ed55779a"
+      "sha256": "17b465a841ab3d95efc3c92996bda230a72c532d01328b15d7c02b2ad4078add"
     },
     {
       "name": "aura.js",
@@ -79,7 +79,7 @@
     {
       "name": "maker-assets.js",
       "destination": "public/maker-assets.js",
-      "sha256": "c05d3e54d17be6020fad3ead1f737a699c7d077bfdb72bd3fd4214ce89c3b3ab"
+      "sha256": "42e7b64f9d5142f8b3dafd1997596b5e715c66d35ec7ef898ded2e7436a0bee0"
     },
     {
       "name": "community-api.js",
@@ -94,12 +94,12 @@
     {
       "name": "community-ui.js",
       "destination": "public/community-ui.js",
-      "sha256": "05ec8a8c63655729da92990d0bbab0cbf2182da916b37f3eed1f6e92c78d9e4b"
+      "sha256": "c4f90eda716f3a7924cccfbe00b9dafbdbfaddbd35fb5a610734accad759ea07"
     },
     {
       "name": "custom-map.js",
       "destination": "public/custom-map.js",
-      "sha256": "c0c9223d25e9b43654ef675552f6c704a6332edea4c15baef83f5fe9a502d1c3"
+      "sha256": "58207d5b7b0030614555ec0dafb28caac407c761be6f6c6a5f53157cde4cfa2a"
     },
     {
       "name": "game.js",
@@ -114,7 +114,7 @@
     {
       "name": "community.css",
       "destination": "public/community.css",
-      "sha256": "6c907753e3e3653c66c9a0f8bbae356bc604a7de631be14dd3da68ff25f79d83"
+      "sha256": "b0c3df15ef8de651fddece7f8ee1bd7b3b15aa7fe83cb759b18b1e9211db666a"
     },
     {
       "name": "index.html",
@@ -219,7 +219,7 @@
     {
       "name": "v16-integration.test.cjs",
       "destination": "test/v16-integration.test.cjs",
-      "sha256": "ef2ef38a358d6dd0afd6f8383bce87f9ac1f1ab81bb9dcb333e3abb3ae7f65c0"
+      "sha256": "ccd51bd49d0ed3a3cced8bf1747b974132d5f066531a6308d5a8e813ab6ce6df"
     },
     {
       "name": "aura-check.cjs",
@@ -284,7 +284,7 @@
     {
       "name": "README.txt",
       "destination": "README.txt",
-      "sha256": "f1582025dcd4f52eef6abf5ec605cd17500281485e3d1b538745b73397b2812b"
+      "sha256": "519c7f41829928187d6010a50e1720746cecd2492579423875c90693861c6297"
     }
   ]
 }

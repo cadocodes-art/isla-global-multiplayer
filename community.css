@@ -10,3 +10,11 @@ body.community-mode{overflow:auto;background:var(--c-paper);color:var(--c-ink)}b
 body:not(.playing) #header .top-right{visibility:hidden}
 
 @media(max-width:650px){.c-slot-actions button{min-height:36px}#community #cAccount{max-width:115px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}}
+
+/* V1.6 fixes: visible account choices and a permanent exit from draft test drives. */
+.c-auth-tabs{display:flex;gap:8px;margin-bottom:5px}.c-auth-tabs button{flex:1;min-height:44px;font-weight:600!important}.c-auth-layout:has(.c-auth-tabs) .c-auth-card{align-self:start}
+#communityBackBtn{width:100%;min-height:44px;margin:0 0 12px;border:1px solid #c2f5cd88;background:#24423c;color:#d9ffce;border-radius:4px;font-size:13px;font-weight:600}
+#backToEditorBtn{pointer-events:auto;min-height:44px;padding:10px 16px;border:1px solid #c2f5cd99;border-radius:5px;background:#163b35ed;color:#e4ffdc;font-size:13px;font-weight:600;white-space:nowrap}
+body.test-driving #header .wordmark,body.test-driving #header #roomBtn,body.test-driving #header #chatBtn,body.test-driving #header #place,body.test-driving #header .live-dot{display:none}
+body.test-driving #header .top-right{visibility:visible;flex-shrink:0}body.test-driving #pauseBtn{margin-left:0}
+@media(max-width:650px){.c-auth-layout:has(.c-auth-tabs){display:flex;flex-direction:column;gap:20px}.c-auth-layout:has(.c-auth-tabs) .c-auth-card{order:-1;width:100%}.c-auth-tabs button{padding:10px 6px!important;font-size:13px!important}body.test-driving #header{left:12px;right:12px;top:12px;gap:8px}#backToEditorBtn{font-size:11px;padding:10px}body.test-driving #header .top-right{gap:6px}}
