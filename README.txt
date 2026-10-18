@@ -1,4 +1,17 @@
-ISLA V1.71 — METRIC / US CUSTOMARY
+ISLA V1.71 — TILTED ROAD FIX
+
+Open road ends now release the car into a jump instead of trapping it
+against an invisible edge. Reversing downhill transfers the car back
+onto solid terrain before a tilted road continues underground.
+Connected road pieces, elevated bridges, and vertical loops are retained.
+
+Use ISLA-V1.71-Road-Fix.zip for this update. Upload all 61 extracted files
+to the existing GitHub repository and commit. Keep both Cloudflare Workers,
+their settings, and your existing wrangler.jsonc. No new Worker is needed.
+Your current game is https://isla-global-multiplayer.cadocodes.workers.dev/
+This update does not reissue the already-applied Cado_Codes aura credit.
+
+V1.71 MEASUREMENT SETTING
 
 On the main menu, use the measurement selector near the top-right.
 Choose Metric (km/h, meters, kilometers) or US customary (mph, feet, miles).
@@ -13,7 +26,7 @@ In US mode, object height can be entered in feet and movement steps are
 maps, move objects, change vehicle performance, or change aura rewards.
 
 TO UPDATE ONLINE
-1. Extract ISLA-V1.71-Update.zip.
+1. Extract ISLA-V1.71-Road-Fix.zip.
 2. Open https://github.com/cadocodes-art/isla-global-multiplayer
 3. In the main file list, choose Add file > Upload files. Upload ALL
    extracted files together, then commit. Upload the files, not the ZIP.

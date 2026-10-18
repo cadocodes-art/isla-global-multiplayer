@@ -99,7 +99,7 @@
     {
       "name": "maker-driving.js",
       "destination": "public/maker-driving.js",
-      "sha256": "759712c1016bd8ead141fcf9161530367f9a77fc52727c5bc47cfec172d00fcc"
+      "sha256": "3a0537cdcffa29d55de7fb3234a8997216b5f532dfbda17c015ee86697c3abe2"
     },
     {
       "name": "custom-map.js",
@@ -234,7 +234,7 @@
     {
       "name": "v17.test.cjs",
       "destination": "test/v17.test.cjs",
-      "sha256": "e8f3b418cce2304a8f03a9768a5235014ef6df9fa97e46d0dca9739ab473d216"
+      "sha256": "75ddd35789c1581c90d2519567a8590bf4dd7467f657d4cbcab41a5952b548af"
     },
     {
       "name": "aura-check.cjs",
@@ -299,7 +299,7 @@
     {
       "name": "README.txt",
       "destination": "README.txt",
-      "sha256": "30824e055e6989852b400402d967ca356e33ded86ce5402012d4e5fff57de677"
+      "sha256": "9b72ed181dd720ff0fb8462a86be71eabc891669f26aefb489424b42e9e4933c"
     }
   ]
 }

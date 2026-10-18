@@ -4,8 +4,20 @@
  W.installMakerDriving=(roads,height)=>{
   const bins=new Map(),cell=24,triangles=[],v=p=>new T.Vector3(p.x,p.y,p.z);
   for(const road of roads){const corners=M.roadCorners(road,height);for(let i=1;i<corners.length;i++){const pts=[...corners[i-1],...corners[i]].map(v);for(const ix of [[0,2,1],[1,2,3]]){const triangle=new T.Triangle(...ix.map(j=>pts[j])),normal=triangle.getNormal(new T.Vector3());if(normal.lengthSq()<.5)continue;const data={triangle,normal,road},box=new T.Box3().setFromPoints(ix.map(j=>pts[j])).expandByScalar(1);triangles.push(data);for(let x=Math.floor(box.min.x/cell);x<=Math.floor(box.max.x/cell);x++)for(let y=Math.floor(box.min.y/cell);y<=Math.floor(box.max.y/cell);y++)for(let z=Math.floor(box.min.z/cell);z<=Math.floor(box.max.z/cell);z++){const key=x+','+y+','+z;if(!bins.has(key))bins.set(key,[]);bins.get(key).push(data);}}}}
-  function contact(position,range=.7,previous=null){const list=bins.get(Math.floor(position.x/cell)+','+Math.floor(position.y/cell)+','+Math.floor(position.z/cell))||[],q=new T.Vector3();let best=null,score=range;
-   for(const data of list){data.triangle.closestPointToPoint(position,q);const delta=position.clone().sub(q),gap=delta.dot(data.normal),d=delta.length();if(gap<-.35||gap>range||previous&&previous.dot(data.normal)<.5)continue;if(d<score){score=d;best={...data,point:q.clone(),gap};}}
+  function contact(position,range=.7,previous=null){const list=bins.get(Math.floor(position.x/cell)+','+Math.floor(position.y/cell)+','+Math.floor(position.z/cell))||[],q=new T.Vector3(),bary=new T.Vector3(),feet=new T.Vector3();let best=null,score=range;
+   for(const data of list){
+    const gap=position.clone().sub(data.triangle.a).dot(data.normal);
+    if(gap<-.35||gap>range||previous&&previous.dot(data.normal)<.5)continue;
+    // Contact must be above the actual road face. Clamping to a triangle's
+    // closest edge repeatedly pulls an exiting car back, forming an invisible wall.
+    q.copy(position).addScaledVector(data.normal,-gap);data.triangle.getBarycoord(q,bary);
+    if(Math.min(bary.x,bary.y,bary.z)<-1e-7)continue;
+    // A tilted piece may extend underground. Its hidden face cannot replace
+    // the terrain underneath the car, including when reversing down the piece.
+    feet.copy(q).addScaledVector(data.normal,.12);
+    if(feet.y<height(feet.x,feet.z)+.10-1e-6)continue;
+    const d=Math.abs(gap);if(d<score){score=d;best={...data,point:q.clone(),gap};}
+   }
    return best;
   }
   W.makerRoadContact=(p,range)=>contact(v(p),range);W.makerRoadTriangles=triangles;
@@ -24,8 +36,12 @@
    const max=boost?(spec.boostLimit||spec.boostMax||53):Math.max(66,spec.boostMax||66);if(velocity.length()>max)velocity.setLength(max);
    pos.copy(hit.point).addScaledVector(up,.12).addScaledVector(velocity,dt);const next=contact(pos,1,up);
    if(next){const q=new T.Quaternion().setFromUnitVectors(up,next.normal);forward.applyQuaternion(q).normalize();velocity.applyQuaternion(q);up.copy(next.normal);pos.copy(next.point).addScaledVector(up,.12);hit=next;}
+   // Hand back to terrain physics at ground level, without spending a frame
+   // below the surface when a road descends into it.
+   const terrain=height(pos.x,pos.z),terrainLanding=!next&&terrain>=-.5&&pos.y<terrain+.12;
+   if(terrainLanding){pos.y=terrain+.12;velocity.y=Math.max(0,velocity.y);}
    const lateralAxis=new T.Vector3().crossVectors(up,forward).normalize(),orientation=new T.Quaternion().setFromRotationMatrix(new T.Matrix4().makeBasis(lateralAxis,up,forward)),euler=new T.Euler().setFromQuaternion(orientation,'YXZ');
-   Object.assign(c,{x:pos.x,y:pos.y,z:pos.z,vx:velocity.x,vy:velocity.y,vz:velocity.z,yaw:euler.y,pitch:-euler.x,roll:euler.z,yawRate:turn,speed:velocity.dot(forward),grounded:!!next,roadMode:!!next,roadFrame:next?{up,forward}:null,ramp:null,contact:next?1:0,surface:hit.road.surface==='stone'?'STONE ROAD':'ASPHALT',waterMode:'dry',skimTime:0,waterTime:0,airtime:next?0:dt,throttle:gas,brake,slip:Math.abs(lateral)});
+   Object.assign(c,{x:pos.x,y:pos.y,z:pos.z,vx:velocity.x,vy:velocity.y,vz:velocity.z,yaw:euler.y,pitch:-euler.x,roll:euler.z,yawRate:turn,speed:velocity.dot(forward),grounded:!!next||terrainLanding,roadMode:!!next,roadFrame:next?{up,forward}:null,ramp:null,contact:next||terrainLanding?1:0,surface:terrainLanding?'OFF ROAD':hit.road.surface==='stone'?'STONE ROAD':'ASPHALT',waterMode:'dry',skimTime:0,waterTime:0,airtime:next||terrainLanding?0:dt,throttle:gas,brake,slip:Math.abs(lateral)});
    c.distance+=velocity.length()*dt;c.gear=c.speed<-.7?-1:Math.abs(c.speed)<.3?0:Math.min(5,1+Math.floor(Math.abs(c.speed)/13));c.rpm=W.mix(c.rpm,Math.min(7200,1000+Math.abs(c.speed)*90+gas*500),1-Math.exp(-dt*10));
    if(boost){c.nitroTime=Math.max(0,c.nitroTime-dt);c.nitroCharge=Math.max(0,c.nitroCharge-dt/c.nitroDuration);}else{c.nitroCharge=Math.min(1,c.nitroCharge+dt/W.nitro.rechargeDuration);if(c.nitroCharge>1-1e-9)c.nitroCharge=1;}
    if(previousAir>.27)W.onLanding?.(previousAir,velocity.dot(up));W.collideVehicle?.(c,time);return true;

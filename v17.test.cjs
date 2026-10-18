@@ -3,6 +3,32 @@ const files=['world.js','islands.js','ramps.js','physics.js','garage.js','traffi
 function object(type,id,x=0,z=0,extra={}){return {type,id,x,z,y:0,rotation:0,scale:1,...extra};}
 async function world(map){const paint=new Proxy({measureText:s=>({width:s.length*38})},{get:(o,k)=>o[k]??(()=>{}),set:(o,k,v)=>(o[k]=v,true)}),ctx=vm.createContext({THREE,console,document:{createElement:()=>({getContext:()=>paint})},URLSearchParams,Map,Set});ctx.window=ctx;ctx.IslaCommunity={query:new URLSearchParams('?map=custom&draft=fixture'),init:async()=>{},draft:async()=>({id:'fixture',name:'V1.7 test',document:map}),installGarage:()=>{}};for(const f of files)vm.runInContext(fs.readFileSync(path.join(__dirname,'../public',f),'utf8'),ctx,{filename:f});const W=ctx.Isla;await W.prepareCommunity();W.initTerrain();const scene=new THREE.Scene();W.makeBuildings(scene);W.makeVegetation(scene);W.makeRamps(scene);W.makeTraffic(scene);W.buildCollisionIndex();W.resetVehicle(true);return {ctx,W,scene};}
 const idle={gas:0,brake:0,steer:0,handbrake:false,boost:false};
+function onRoad(W,road,localZ,speed){
+ const h=M.field(W.customMap),up=new THREE.Vector3(...Object.values(M.rotate(road,{x:0,y:1,z:0}))),forward=new THREE.Vector3(...Object.values(M.rotate(road,{x:0,y:0,z:1}))),p=M.point(road,{x:0,y:0,z:localZ},h);
+ Object.assign(W.vehicle,{x:p.x+up.x*.28,y:p.y+up.y*.28,z:p.z+up.z*.28,vx:forward.x*speed,vy:forward.y*speed,vz:forward.z*speed,yaw:road.rotation,roadMode:false,roadFrame:null,grounded:true,waterMode:'dry'});
+ return {up,forward};
+}
+
+test('open raised road ends release the car forwards and backwards instead of pinning it to an edge',async()=>{
+ for(const [speed,pitch,yaw] of [[8,-.35,0],[60,-.35,.8],[-12,-.35,.8],[12,0,0]]){
+  const map=M.fresh(),road=object('straight','open-road',0,0,{y:12,pitch,rotation:yaw});map.objects.push(road);const {W}=await world(map),direction=Math.sign(speed);onRoad(W,road,direction*8,speed);
+  let airborne=false,travel=0;for(let i=0;i<240;i++){W.stepVehicle(1/120,{...idle,gas:speed>0?1:0,brake:speed<0?1:0},i/120);airborne||=!W.vehicle.grounded;travel=Math.max(travel,direction*(W.vehicle.x*Math.sin(yaw)+W.vehicle.z*Math.cos(yaw)));}
+  assert(airborne,'Car must leave the open end at speed '+speed);assert(travel>10*Math.cos(pitch)+3,'Car must clear the road end; travel='+travel+' at speed '+speed);
+ }
+});
+
+test('reversing down a tilted road transfers onto solid terrain before reaching its buried half',async()=>{
+ for(const yaw of [0,.8]){const map=M.fresh(),road=object('straight','tilted',0,0,{pitch:-.5,rotation:yaw});map.objects.push(road);const {W}=await world(map);onRoad(W,road,5,-14);let lowest=Infinity;
+  for(let i=0;i<240;i++){W.stepVehicle(1/120,{...idle,brake:1},i/120);const c=W.vehicle;lowest=Math.min(lowest,c.y-W.height(c.x,c.z));assert.equal(c.waterMode,'dry');}
+  assert(lowest>=.03,'Car must stay above terrain, clearance='+lowest);assert(!W.vehicle.roadMode);assert(W.vehicle.grounded);
+ }
+});
+
+test('connected tilted road pieces keep contact across their shared edge',async()=>{
+ const map=M.fresh(),road=object('straight','first',0,0,{y:12,pitch:-.35,rotation:.8}),offset=M.rotate(road,{x:0,y:0,z:20});map.objects.push(road,object('straight','second',offset.x,offset.z,{y:12+offset.y,pitch:road.pitch,rotation:road.rotation}));const {W}=await world(map);onRoad(W,road,8,14);
+ for(let i=0;i<100;i++){W.stepVehicle(1/120,{...idle,gas:1},i/120);assert(W.vehicle.roadMode,'Connected seam must not launch the car at step '+i);}
+ assert(W.vehicle.x*Math.sin(road.rotation)+W.vehicle.z*Math.cos(road.rotation)>12);
+});
 test('V1.7 transforms, signs and colors round-trip while old maps still load',()=>{const m=M.fresh();m.objects.push(object('signOverpass','sign',10,20,{y:1.524,pitch:.4,roll:-.6,rotation:1.7,text:'<b>Literal text</b>\nEnjoy the loop!',color:'#fa2244',customColor:true}));const saved=M.validate(JSON.parse(JSON.stringify(m))),o=saved.objects[1];assert.equal(o.y,1.524);assert.equal(o.pitch,.4);assert.equal(o.roll,-.6);assert.equal(o.text,m.objects[1].text);assert.equal(o.color,'#fa2244');assert(saved.objects[1].customColor);assert.equal(saved.objects[0].pitch,0);for(const change of [{text:'x'.repeat(76)},{pitch:NaN},{y:651},{roll:Infinity}])assert.throws(()=>M.validate({...m,objects:[m.objects[0],{...m.objects[1],...change}]}));assert.doesNotThrow(()=>M.validate({...m,objects:[m.objects[0],{...m.objects[1],text:'x'.repeat(75)}]}));});
 test('road geometry and automatic iron supports match elevation and all three axes',async()=>{const m=M.fresh();m.objects.push(object('straight','road',0,0,{y:20,pitch:.35,roll:.2,rotation:.7}));const {ctx,W}=await world(m),road=M.roads(M.validate(m))[0],corners=M.roadCorners(road,M.field(m)),supports=M.roadSupports(road,M.field(m));assert(supports.length>=2);assert(supports.every(p=>p.h>1));assert(corners[0][0].y!==corners[0][1].y);const mesh=ctx.IslaMakerAssets.roadMesh(road,M.field(m));let positions;mesh.traverse(o=>{if(o.geometry?.attributes.color)positions=o.geometry.attributes.position;});assert.equal(positions.getX(0),Math.fround(corners[0][0].x));assert.equal(positions.getY(0),Math.fround(corners[0][0].y));assert(W.makerRoadTriangles.length>0);});
 test('cars can drive below an elevated road without snapping up, then drive on its deck',async()=>{const m=M.fresh();m.objects.push(object('straight','bridge',0,0,{y:20,scale:4}));const {W}=await world(m);Object.assign(W.vehicle,{x:0,z:0,y:4.12,vz:10});for(let i=0;i<30;i++)W.stepVehicle(1/120,idle,i/120);assert(W.vehicle.y<5);Object.assign(W.vehicle,{x:0,z:0,y:24.28,vx:0,vy:0,vz:10});for(let i=0;i<60;i++)W.stepVehicle(1/120,{...idle,gas:1},i/120);assert(W.vehicle.roadMode);assert(Math.abs(W.vehicle.y-24.28)<.01);assert(W.vehicle.z>4);});
