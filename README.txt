@@ -1,28 +1,33 @@
-ISLA V1.7 — 3D MAP MAKER AND MOBILE CONTROLS
+ISLA V1.71 — METRIC / US CUSTOMARY
 
-UPDATE YOUR EXISTING ONLINE GAME
+On the main menu, use the measurement selector near the top-right.
+Choose Metric (km/h, meters, kilometers) or US customary (mph, feet, miles).
+Your choice is remembered in this browser, including when playing as a guest.
+Choose it separately on another device. Metric remains the default.
 
-1. Extract ISLA-V1.7-Update.zip.
+The setting covers the speedometer, explored distance, map scale, garage
+speed stats, stunt and impact distances/speeds, and Map Maker measurements.
+In US mode, object height can be entered in feet and movement steps are
+1/4, 1/2, 1, or 5 feet. The grid keeps its physical size: one square is
+3.28 by 3.28 feet (1 by 1 meter). Changing units does not resize existing
+maps, move objects, change vehicle performance, or change aura rewards.
+
+TO UPDATE ONLINE
+1. Extract ISLA-V1.71-Update.zip.
 2. Open https://github.com/cadocodes-art/isla-global-multiplayer
-   Stay on the main file list, where package.json and wrangler.jsonc are.
-3. Choose Add file > Upload files. Drag ALL the extracted FILES into it,
-   then commit the changes. Upload the files, not the ZIP or its folder.
-   Keep both traffic.js and traffic (1).js; they have different purposes.
-4. Let your existing Cloudflare deployment finish. The commands stay:
-   Build command:  npm run build
-   Deploy command: npx wrangler deploy
-   Preview command, if shown: npx wrangler versions upload
-5. Refresh https://isla-globe-multiplayer.cadocodes.workers.dev/
-   The main menu should say V1.7. On PC, Ctrl+Shift+R refreshes cached files.
+3. In the main file list, choose Add file > Upload files. Upload ALL
+   extracted files together, then commit. Upload the files, not the ZIP.
+4. Keep your existing wrangler.jsonc and Cloudflare secrets.
+5. Wait for Cloudflare to deploy, then refresh ISLA. The menu says V1.71.
+   Build: npm run build
+   Deploy: npx wrangler deploy
 
-Keep your existing wrangler.jsonc and Cloudflare secrets. This ZIP leaves
-that configuration file out deliberately. The old isla-v16-upload.json
-filename is retained so this upload replaces the previous manifest; its
-contents now describe V1.7. Do not rename it or upgrade-v16-config.cjs.
-No new Cloudflare service, email provider, or database setup is required.
-Existing accounts, owner permissions, maps, cars, and balances are retained.
-Your other game is not changed.
+The V1.7 features and earlier fixes are included. Existing accounts,
+owner settings, saved maps, cars and aura balances are preserved.
+The filename isla-v16-upload.json is intentionally retained to replace
+older upload manifests. Do not rename it or upgrade-v16-config.cjs.
 
+V1.7 FEATURE GUIDE (ALSO INCLUDED)
 WHAT CHANGED
 
 1. Aura: the large number in the driving HUD is the aura you can spend.
@@ -47,8 +52,8 @@ WHAT CHANGED
    traffic cars do not drive loops or tilted road sections.
 
 4. Vertical movement: select an object in Edit, then use Up + / Down -,
-   or enter Height above ground in meters. A feet readout is shown below.
-   Movement steps are 0.25 m, 0.5 m, 1 m, and 5 m. Height is relative to
+   or enter Height above ground in your selected unit system.
+   Movement steps are 0.25, 0.5, 1, and 5 in your selected units. Height is relative to
    the terrain under the object, from -200 m to +650 m.
 
 5. Signs: Small sign, Large sign, and Overpass sign are in Build.

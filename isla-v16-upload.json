@@ -1,5 +1,5 @@
 {
-  "version": "1.7",
+  "version": "1.71",
   "files": [
     {
       "name": "three.min.js",
@@ -9,7 +9,7 @@
     {
       "name": "world.js",
       "destination": "public/world.js",
-      "sha256": "5cf261833e4f5836d01e421f48d74078e9a69ec1e0040993f23ecf2ca03af343"
+      "sha256": "f37f57bd16b74eb5935f69e80e90c403ca433aaf68d44385448e6f4c7efce86e"
     },
     {
       "name": "islands.js",
@@ -39,7 +39,7 @@
     {
       "name": "garage.js",
       "destination": "public/garage.js",
-      "sha256": "6fa79ed020b4cb5fd5d2e0d42057724266ff5467503a3964319dd107c8dbc544"
+      "sha256": "0755d8cfb89b128850caeffb5f3480d7c3ed59c93892c4cb9f7fae50a86c44ac"
     },
     {
       "name": "traffic.js",
@@ -49,7 +49,7 @@
     {
       "name": "maps.js",
       "destination": "public/maps.js",
-      "sha256": "7e2c34cf70a17db6649ba38ba1e3b407fae8dbe05a82fe8152b832ee07af8aa1"
+      "sha256": "8af1920f5011502f52f2081e8cad2b60a39652438d6e853c299ba6769ab2a87f"
     },
     {
       "name": "peaks.js",
@@ -89,12 +89,12 @@
     {
       "name": "map-editor.js",
       "destination": "public/map-editor.js",
-      "sha256": "c774494e54f80a405c8028961914604f0bb7c6ca96cce35df26acc4dac96a788"
+      "sha256": "1fe623638aa425f53399f1c8442c0954e108d215292e6f18f4fe752e821b0504"
     },
     {
       "name": "community-ui.js",
       "destination": "public/community-ui.js",
-      "sha256": "9d7b514ab24b4e2ed21ca5764845f8b19cc0c606ad9efd79505318fa85659b4c"
+      "sha256": "2592880f28b5ff3b5ff0ee97ccd644a900dcfc5b54ed8589e392dbc5e714d142"
     },
     {
       "name": "maker-driving.js",
@@ -104,17 +104,17 @@
     {
       "name": "custom-map.js",
       "destination": "public/custom-map.js",
-      "sha256": "0889c14cab83c5b6b0fe660ed92ceb7ed3b2271c9e5f5380cbe3089a676b8795"
+      "sha256": "e7d8bfbd2d916f9765505a569788e24c9e2945b8c2f1d8d3e9b65675c1f9c6a5"
     },
     {
       "name": "game.js",
       "destination": "public/game.js",
-      "sha256": "7a009402ef029749422d68824c67a20379071fd11f0fd2b4b77d256642476d5f"
+      "sha256": "a4a47f04446910e481df3211a27c861740949b1f54942400afea1cc0f0095a6d"
     },
     {
       "name": "style.css",
       "destination": "public/style.css",
-      "sha256": "31fd68b729554e3221c064635a96b9aebbfb7220a6e297c5804a10a55ff603fe"
+      "sha256": "198d174c3ad17b741e32f77c794c2d8c32522dffcf7665dc5c2ecd77c27fac4c"
     },
     {
       "name": "community.css",
@@ -124,7 +124,7 @@
     {
       "name": "index.html",
       "destination": "public/index.html",
-      "sha256": "abe4ae945972f2916ea641cd1621a2ae9248126554843513d5951b8ae41041e9"
+      "sha256": "2b149cf614a0c05cbdccedbf79a4c10a5db0b48ab1bad6ebe3b91dd126892db1"
     },
     {
       "name": "THREE-LICENSE.txt",
@@ -134,7 +134,7 @@
     {
       "name": "worker.js",
       "destination": "src/worker.js",
-      "sha256": "fd483b9628acb00e88d7cc8a8c043cedfcb84e6954f3ec6349a60297bfb9f422"
+      "sha256": "06bed654d0cbe90b31501ea2f97f540367d33c5b6a254560d1f6d6dc73885609"
     },
     {
       "name": "community.js",
@@ -217,6 +217,11 @@
       "sha256": "80a0f693d97301123b730fc6e92eb3c704fd377aaf773ba5a8e6e0f6953ff7da"
     },
     {
+      "name": "units.test.cjs",
+      "destination": "test/units.test.cjs",
+      "sha256": "8b879ad36e420fb7ac71039200beaebd53da4a00743779b8d84371e0bdc9ead5"
+    },
+    {
       "name": "utility-cars.test.cjs",
       "destination": "test/utility-cars.test.cjs",
       "sha256": "15eddd5ba2b57435433cd896f9aa86e0c727adaaff2c30bce7b4bd4cf48a15a8"
@@ -279,22 +284,22 @@
     {
       "name": "package.json",
       "destination": "package.json",
-      "sha256": "189d516469249bb607bc48124cd6e7669757f5a8b7038f15ad7ee95b31e87b0d"
+      "sha256": "ae8ef62a30c51ab853a44cdb1d00d3ed81feeb313df60bedc1f5cc890c740f35"
     },
     {
       "name": "package-lock.json",
       "destination": "package-lock.json",
-      "sha256": "5661b4ff9425789a528fb59b99cf85c003e7f3b4b3b9cf84e2fc0fe6c200f158"
+      "sha256": "91ce8e61c67248d05c0efcc021d0bb8a33917a060174ee58a0cd9449e094aad6"
     },
     {
       "name": "prepare-cloudflare.cjs",
       "destination": "prepare-cloudflare.cjs",
-      "sha256": "7d2d2331942410eca8aa0decfeadaf857b5bb414779c4705544daa9c40d3a1c7"
+      "sha256": "66893590f259446542e5e8e4d26bbb1f9ae110ebb304ce28ff51cce12c349c86"
     },
     {
       "name": "README.txt",
       "destination": "README.txt",
-      "sha256": "f9d57fb87b735bc3ca412e9211f87b0e333b411df9167abcceef221030ebff4e"
+      "sha256": "30824e055e6989852b400402d967ca356e33ded86ce5402012d4e5fff57de677"
     }
   ]
 }

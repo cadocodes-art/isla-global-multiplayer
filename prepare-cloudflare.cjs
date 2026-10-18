@@ -1,16 +1,16 @@
 'use strict';
 // Recover folder structure when a manual upload placed every file at the root.
-// A checked V1.7 manifest takes precedence over older structured files.
+// A checked V1.71 manifest takes precedence over older structured files.
 const fs = require('node:fs');
 const path = require('node:path');
 const root = __dirname;
-// A complete V1.7 flat upload replaces its matching structured files atomically
+// A complete V1.71 flat upload replaces its matching structured files atomically
 // after every checksum passes. This prevents old folders shadowing new uploads.
 const manifestPath=path.join(root,'isla-v16-upload.json');
 if(fs.existsSync(manifestPath)){
   const crypto=require('node:crypto'),manifest=JSON.parse(fs.readFileSync(manifestPath,'utf8'));
-  if(!['1.6','1.7'].includes(manifest.version)||!Array.isArray(manifest.files))throw Error('Invalid V1.7 upload manifest.');
-  for(const f of manifest.files){if(!/^[\w .()-]+$/.test(f.name)||!/^((public|src|scripts|test)(\/regression)?\/)?[\w .()-]+$/.test(f.destination))throw Error('Invalid upload path.');const source=path.join(root,f.name);if(!fs.existsSync(source)||crypto.createHash('sha256').update(fs.readFileSync(source)).digest('hex')!==f.sha256)throw Error('Incomplete V1.7 upload: upload '+f.name+' again from the ZIP.');}
+  if(!['1.6','1.7','1.71'].includes(manifest.version)||!Array.isArray(manifest.files))throw Error('Invalid V1.71 upload manifest.');
+  for(const f of manifest.files){if(!/^[\w .()-]+$/.test(f.name)||!/^((public|src|scripts|test)(\/regression)?\/)?[\w .()-]+$/.test(f.destination))throw Error('Invalid upload path.');const source=path.join(root,f.name);if(!fs.existsSync(source)||crypto.createHash('sha256').update(fs.readFileSync(source)).digest('hex')!==f.sha256)throw Error('Incomplete V1.71 upload: upload '+f.name+' again from the ZIP.');}
   for(const f of manifest.files){if(f.name===f.destination)continue;const destination=path.join(root,f.destination);fs.mkdirSync(path.dirname(destination),{recursive:true});fs.copyFileSync(path.join(root,f.name),destination);}
 }
 const looseFiles = fs.readdirSync(root, {withFileTypes:true})
@@ -52,7 +52,7 @@ try {
   restore('src/world-data.json', {optional:true});
   for (const name of ['build-world.cjs','source-world.cjs','upgrade-v16-config.cjs']) restore('scripts/' + name);
   restore('scripts/build-offline.cjs', {optional:true});
-  for (const name of ['game.test.cjs','global.test.cjs','paint.test.cjs','touch.test.cjs','city.test.cjs','special-cars.test.cjs','utility-cars.test.cjs','peaks.test.cjs','peaks-network.test.cjs','maker.test.cjs','community.test.cjs','v16-integration.test.cjs','v17.test.cjs']) restore('test/' + name, {optional:true});
+  for (const name of ['game.test.cjs','global.test.cjs','paint.test.cjs','touch.test.cjs','city.test.cjs','special-cars.test.cjs','utility-cars.test.cjs','peaks.test.cjs','peaks-network.test.cjs','maker.test.cjs','community.test.cjs','v16-integration.test.cjs','v17.test.cjs','units.test.cjs']) restore('test/' + name, {optional:true});
   for (const name of ['aura','garage','island','nitro','physics','ramp','traffic','truck','water']) {
     restore('test/regression/' + name + '-check.cjs', {optional:true});
   }

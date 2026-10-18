@@ -155,7 +155,7 @@ export default {
  async fetch(request,env){
   const url=new URL(request.url);
   if(url.pathname.startsWith('/api/')){if(!env.COMMUNITY)return Response.json({error:'Complete the V1.6 CommunityHub setup.'},{status:503});return env.COMMUNITY.getByName('isla-community-v16').fetch(request);}
-  if(url.pathname==='/healthz')return Response.json({ok:true,release:'1.7',room:'GLOBAL',capacity:rules.capacity,version:rules.protocol,maps:['islands','city','peaks']});
+  if(url.pathname==='/healthz')return Response.json({ok:true,release:'1.71',room:'GLOBAL',capacity:rules.capacity,version:rules.protocol,maps:['islands','city','peaks']});
   if(url.pathname==='/ws'){
    if(url.searchParams.get('map')==='obstacle')return new Response('Void Run has been replaced by Islayan Peaks. Refresh your game.',{status:410});
    if(request.method!=='GET'||request.headers.get('Upgrade')?.toLowerCase()!=='websocket')return new Response('WebSocket required',{status:426});

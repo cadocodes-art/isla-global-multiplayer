@@ -79,3 +79,19 @@ body.touch-mode .chat-grid button{min-height:44px}body.touch-mode .profile-menu 
 body.paused #touchControls,body:not(.playing) #touchControls{display:none!important}
 @media(max-width:360px){body.touch-mode.playing #header .wordmark{display:none}body.touch-mode #header .top-right{width:100%;justify-content:space-between}}
 @media(max-height:500px) and (orientation:landscape){.touch-shortcuts{bottom:0;display:flex}#touchControls .touch-shortcuts button{width:60px}body.touch-mode #auraWallet{font-size:6px!important}}
+
+/* V1.71: remembered measurement system, accessible from the main menu. */
+.menu-units{position:absolute;right:max(20px,env(safe-area-inset-right));top:90px;display:flex;align-items:center;gap:9px;padding:6px 9px;border:1px solid #c5dfd44d;border-radius:5px;background:#102b30eb;color:#edf6ef;z-index:3;font:10px Arial;letter-spacing:1px}
+.menu-units select{min-height:44px;max-width:230px;background:#183c3c;color:#f3faed;border:1px solid #78928b;border-radius:3px;padding:8px;font-size:14px;letter-spacing:0;touch-action:manipulation}
+@media(max-width:700px){.menu-units{top:66px;right:16px;padding:2px 7px}.menu-units select{font-size:16px;max-width:230px}.menu-units>span{display:none}}
+@media(max-height:540px) and (orientation:landscape){.menu-units{top:78px;right:20px}.menu-units select{max-width:190px}}
+/* Keep the unit picker and menu content in separate rows on portrait phones. */
+@media(max-width:700px) and (orientation:portrait){
+ #intro{display:block;overflow:auto;padding:76px 7vw 30px;scroll-padding-top:16px}
+ #intro .menu-units{position:relative;top:auto;right:auto;bottom:auto;width:max-content;max-width:100%;margin:0 0 20px auto}
+ #intro .intro-card{margin:0;max-width:none;width:100%}#intro h1{font-size:clamp(36px,10vw,48px);line-height:1.05;margin:18px 0}
+ #intro .intro-text{font-size:13px;margin:16px 0 22px}#intro .intro-specs{margin-top:18px}
+ #intro .map-picker{position:relative;inset:auto;transform:none;margin-top:24px;width:100%;text-align:left;justify-content:space-between}
+ #intro .intro-footer{position:relative;inset:auto;margin-top:25px;font-size:6px}#intro .menu-version{position:fixed}
+}
+@media(max-width:700px) and (orientation:portrait){#intro .menu-version{position:absolute;top:28px;left:100px;right:auto;bottom:auto}}

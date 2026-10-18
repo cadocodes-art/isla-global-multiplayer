@@ -7,6 +7,22 @@ window.Isla = (() => {
  function noise(x,z){let a=Math.floor(x),b=Math.floor(z),u=smooth(0,1,x-a),v=smooth(0,1,z-b);return mix(mix(hash(a,b),hash(a+1,b),u),mix(hash(a,b+1),hash(a+1,b+1),u),v)}
  function fbm(x,z){return noise(x,z)*.55+noise(x*2,z*2)*.27+noise(x*4,z*4)*.12+noise(x*8,z*8)*.06}
  const W={T,clamp,mix,smooth,rand,noise,fbm,roads:[],buildings:[],colliders:[],debris:[],particles:[],span:2400,depth:2400,N:321,NZ:321,minX:-1200,minZ:-1200};
+ // Display units are a device preference. Physics and saved maps remain SI.
+ W.units=(()=>{let system='metric';try{if(localStorage.getItem('isla-units')==='us')system='us';}catch{}
+  const U={get system(){return system;},get us(){return system==='us';},get speedUnit(){return U.us?'MPH':'KM/H';},get lengthUnit(){return U.us?'ft':'m';},get distanceUnit(){return U.us?'mi':'km';},
+   set(value){system=value==='us'?'us':'metric';try{localStorage.setItem('isla-units',system);}catch{}return system;},
+   speed(mps){return mps*(U.us?2.2369362920544:3.6);},speedKph(kph){return Math.round(U.speed(kph/3.6));},
+   toLength(meters){return U.us?meters/.3048:meters;},fromLength(value){return U.us?value*.3048:value;},
+   editLength(meters){return Number(U.toLength(meters).toFixed(2));},
+   number(value,digits=0){return value.toLocaleString('en-US',{maximumFractionDigits:digits});},
+   length(meters,digits=0){return U.number(U.toLength(meters),digits)+' '+U.lengthUnit;},
+   distanceValue(meters,digits=1){return (meters/(U.us?1609.344:1000)).toFixed(digits);},
+   distance(meters,digits=1){return U.distanceValue(meters,digits)+' '+U.distanceUnit;},
+   grid(){return U.us?'1 grid square = 3.28 × 3.28 ft':'1 grid square = 1 × 1 m';},
+   text(value){if(!U.us)return String(value);return String(value).replace(/(\d[\d,]*(?:\.\d+)?)\s*(km\/h|KM\/H|kph|km|m)\b/g,(_,n,unit)=>{const value=Number(n.replaceAll(',',''));return /km\/h|kph/i.test(unit)?U.speedKph(value)+' mph':unit==='km'?U.distance(value*1000):U.length(value);});}
+  };return U;
+ })();
+
  const roadCells=new Map(), cellSize=32;
  function luzHeight(x,z){let r=Math.hypot(x,z*1.07),coast=890+(fbm(x*.003,z*.003)-.5)*190;let inland=1-smooth(coast-150,coast,r);
   let beach=3.3+(coast-r)*.042;
