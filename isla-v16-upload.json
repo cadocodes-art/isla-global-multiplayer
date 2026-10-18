@@ -79,7 +79,7 @@
     {
       "name": "maker-assets.js",
       "destination": "public/maker-assets.js",
-      "sha256": "42e7b64f9d5142f8b3dafd1997596b5e715c66d35ec7ef898ded2e7436a0bee0"
+      "sha256": "a2b8cd3ddeab7f2c7222ceac6b655bb8b8562e185fae9e18f46fd230eacfae73"
     },
     {
       "name": "community-api.js",
@@ -89,7 +89,7 @@
     {
       "name": "map-editor.js",
       "destination": "public/map-editor.js",
-      "sha256": "5b157ecc437542996427383146a43ce7d35fe04a4866268082c0c0fa99ae29b0"
+      "sha256": "5b7947b068b8915eb08a0d731ef9f9ed8b2f77697e729df3b49f829b58e41783"
     },
     {
       "name": "community-ui.js",
@@ -99,7 +99,7 @@
     {
       "name": "custom-map.js",
       "destination": "public/custom-map.js",
-      "sha256": "58207d5b7b0030614555ec0dafb28caac407c761be6f6c6a5f53157cde4cfa2a"
+      "sha256": "527a2c9e66c5302fb5ff78b0b9adb08eda702149641678c6f089a921122d6d0c"
     },
     {
       "name": "game.js",
@@ -219,7 +219,7 @@
     {
       "name": "v16-integration.test.cjs",
       "destination": "test/v16-integration.test.cjs",
-      "sha256": "ccd51bd49d0ed3a3cced8bf1747b974132d5f066531a6308d5a8e813ab6ce6df"
+      "sha256": "e35cc705d4c240eba173bf6b245e4edd5de8a982556f9ebe43dcaf37f670292a"
     },
     {
       "name": "aura-check.cjs",
@@ -284,7 +284,7 @@
     {
       "name": "README.txt",
       "destination": "README.txt",
-      "sha256": "6f7ea372a59b3793308ea85ba12020fa894ddfd4433562da2bd0970fc1f2f01b"
+      "sha256": "f19e7d01a820492dc20737eee8f80250ad567e90e8cde16b5272ffc0361b6357"
     }
   ]
 }

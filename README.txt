@@ -2,6 +2,16 @@ ISLA V1.6 — MAP MAKER, SEARCH & ACCOUNTS
 
 START HERE
 
+OCTOBER 18 — EDITOR WATER AND PAN FIXES
+
+Raising an ocean square reveals sandy shore and grassy land; the water
+surface stays at sea level. The slider is labeled Land elevation because
+it changes the ground, including the seabed. Existing ocean maps receive
+the corrected land colors when opened, including during a test drive.
+Pan now moves the map left when you drag right and down when you drag up.
+Camera height stays steady during panning, avoiding jumps over hills.
+This includes mouse dragging, touch swipes, Shift-drag and middle-drag.
+
 OCTOBER 18 — USERNAME ACCOUNTS AND OWNER DASHBOARD
 
 No email address, paid domain, or email service is needed for accounts.
@@ -20,7 +30,7 @@ Create account tabs at the top; the guest profile menu has separate buttons.
 Previously saved maps use the corrected terrain automatically.
 Account registration works immediately after this update deploys.
 
-Use ISLA-V1.6-Accounts.zip (or the refreshed ISLA-V1.6-Update.zip) to update your existing GitHub repository.
+Use ISLA-V1.6-Editor-Fixes.zip (or the refreshed ISLA-V1.6-Update.zip) to update your existing GitHub repository.
 The live game will change only after you upload these files and Cloudflare
 finishes deploying. Your other multiplayer game is not involved.
 

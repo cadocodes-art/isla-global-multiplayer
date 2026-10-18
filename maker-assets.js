@@ -1,6 +1,6 @@
 (function(){
  'use strict';const T=THREE,M=IslaMaker;
- const color={grass:'#6c8b55',sand:'#c7b58b',snow:'#dfe8ec',ocean:'#385e65',roads:'#6c8b55'};
+ const color={grass:'#6c8b55',sand:'#c7b58b',snow:'#dfe8ec',ocean:'#c7b58b',roads:'#6c8b55'};
  function mat(c,roughness=.85){return new T.MeshStandardMaterial({color:new T.Color(c).convertSRGBToLinear(),roughness});}
  function box(g,w,h,d,x,y,z,m){const mesh=new T.Mesh(new T.BoxGeometry(w,h,d),m);mesh.position.set(x,y,z);mesh.castShadow=mesh.receiveShadow=true;g.add(mesh);return mesh;}
  function object(o,height,editor=false){const g=new T.Group(),spec=M.types[o.type];g.userData.objectId=o.id;g.position.set(o.x,height(o.x,o.z)+o.y,o.z);g.rotation.y=o.rotation;g.scale.setScalar(o.scale);const wall=mat(o.color||'#c5bfae'),wood=mat('#806749'),leaf=mat('#426941'),glass=mat('#42616c',.3),roof=mat('#675e54');g.userData.wall=wall;
@@ -14,8 +14,11 @@
  }
  function roadMesh(road,height){const positions=[],colors=[],asphalt=road.surface==='stone'?'#a4a395':'#555e64',base=new T.Color(asphalt).convertSRGBToLinear(),line=new T.Color('#e9e2bf').convertSRGBToLinear();for(let i=1;i<road.samples.length;i++){const a=road.samples[i-1],b=road.samples[i],dx=b.x-a.x,dz=b.z-a.z,len=Math.hypot(dx,dz)||1,nx=dz/len,nz=-dx/len;function strip(width,offset,c,lift){const corners=[[-1,a],[1,a],[-1,b],[1,b]].map(([s,p])=>{const x=p.x+nx*(s*width/2+offset),z=p.z+nz*(s*width/2+offset);return [x,height(x,z)+lift,z];});for(const j of [0,2,1,1,2,3]){positions.push(...corners[j]);colors.push(c.r,c.g,c.b);}}strip(road.width,0,base,.16);if(i%3!==0)strip(.15,0,line,.18);}
   const geo=new T.BufferGeometry();geo.setAttribute('position',new T.Float32BufferAttribute(positions,3));geo.setAttribute('color',new T.Float32BufferAttribute(colors,3));geo.computeVertexNormals();const mesh=new T.Mesh(geo,new T.MeshStandardMaterial({vertexColors:true,roughness:1,side:T.DoubleSide}));mesh.receiveShadow=true;return mesh;}
- function terrain(map,height){const p=[],c=[],col=new T.Color(color[map.template]).convertSRGBToLinear();const min=-map.size/2,max=map.size/2;
-  function quad(x,z,size,depth){const affected=map.terrain.filter(s=>s.x+s.radius>x&&s.x-s.radius<x+size&&s.z+s.radius>z&&s.z-s.radius<z+size),target=affected.length?Math.max(.25,Math.min(map.size/1024,...affected.map(s=>s.radius/16))):map.size/64;if(size>target&&depth<14){const h=size/2;quad(x,z,h,depth+1);quad(x+h,z,h,depth+1);quad(x,z+h,h,depth+1);quad(x+h,z+h,h,depth+1);return;}const points=[[x,z],[x,z+size],[x+size,z],[x+size,z+size]],heights=points.map(([a,b])=>height(a,b));for(const i of [0,1,2,2,1,3]){const [a,b]=points[i];p.push(a,heights[i],b);const n=.91+.08*Math.sin(a*.13)*Math.cos(b*.12);c.push(col.r*n,col.g*n,col.b*n);}}
+ // Ocean is a template for the seabed, not a blue coating on raised land.
+ const shoreColor=new T.Color(color.sand),islandColor=new T.Color(color.grass);
+ function groundColor(map,elevation,result=new T.Color()){return map.template==='ocean'?result.copy(shoreColor).lerp(islandColor,M.clamp((elevation-2)/6,0,1)):result.set(color[map.template]);}
+ function terrain(map,height){const p=[],c=[],col=new T.Color();const min=-map.size/2,max=map.size/2;
+  function quad(x,z,size,depth){const affected=map.terrain.filter(s=>s.x+s.radius>x&&s.x-s.radius<x+size&&s.z+s.radius>z&&s.z-s.radius<z+size),target=affected.length?Math.max(.25,Math.min(map.size/1024,...affected.map(s=>s.radius/16))):map.size/64;if(size>target&&depth<14){const h=size/2;quad(x,z,h,depth+1);quad(x+h,z,h,depth+1);quad(x,z+h,h,depth+1);quad(x+h,z+h,h,depth+1);return;}const points=[[x,z],[x,z+size],[x+size,z],[x+size,z+size]],heights=points.map(([a,b])=>height(a,b));for(const i of [0,1,2,2,1,3]){const [a,b]=points[i];p.push(a,heights[i],b);groundColor(map,heights[i],col).convertSRGBToLinear();const n=.91+.08*Math.sin(a*.13)*Math.cos(b*.12);c.push(col.r*n,col.g*n,col.b*n);}}
   quad(min,min,map.size,0);const geo=new T.BufferGeometry();geo.setAttribute('position',new T.Float32BufferAttribute(p,3));geo.setAttribute('color',new T.Float32BufferAttribute(c,3));geo.computeVertexNormals();const mesh=new T.Mesh(geo,new T.MeshStandardMaterial({vertexColors:true,roughness:1,side:T.DoubleSide}));mesh.receiveShadow=true;mesh.userData.ground=true;return mesh;
  }
  function paint(map,height){const group=new T.Group(),p=[],c=[];for(const [key,surface]of Object.entries(map.paint)){const [x,z]=key.split(',').map(Number),col=new T.Color(color[surface]).convertSRGBToLinear();for(const [a,b]of [[0,0],[0,1],[1,0],[1,0],[0,1],[1,1]]){p.push(x+a,height(x+a,z+b)+.035,z+b);c.push(col.r,col.g,col.b);}}if(p.length){const geo=new T.BufferGeometry();geo.setAttribute('position',new T.Float32BufferAttribute(p,3));geo.setAttribute('color',new T.Float32BufferAttribute(c,3));geo.computeVertexNormals();group.add(new T.Mesh(geo,new T.MeshStandardMaterial({vertexColors:true,roughness:1,side:T.DoubleSide})));}return group;}
@@ -26,5 +29,5 @@
    const corners=[[x0,z0],[x0,z1],[x1,z0],[x1,z1]];for(const i of [0,1,2,2,1,3]){const [x,z]=corners[i];positions.push(x,y,z);uv.push(x/20000+.5,.5-z/20000);}
   }
   const geometry=new T.BufferGeometry();geometry.setAttribute('position',new T.Float32BufferAttribute(positions,3));geometry.setAttribute('uv',new T.Float32BufferAttribute(uv,2));geometry.computeVertexNormals();return new T.Mesh(geometry,material);}
- window.IslaMakerAssets={object,terrain,paint,roadMesh,dispose,color,horizon};
+ window.IslaMakerAssets={object,terrain,paint,roadMesh,dispose,color,groundColor,horizon};
 })();
