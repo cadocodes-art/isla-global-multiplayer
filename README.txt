@@ -2,13 +2,22 @@ ISLA V1.6 — MAP MAKER, SEARCH & ACCOUNTS
 
 START HERE
 
-OCTOBER 18 — TEMPORARY SIGN-IN LOCKOUT REMOVAL
+OCTOBER 18 — IMPROVED LOGIN PROTECTION AND MOMSTER AURA CREDIT
 
-The 12-attempt, ten-minute sign-in lockout is temporarily disabled.
-Existing sign-in lockouts are ignored as soon as this update deploys.
-Passwords are still checked normally. Account recovery, signup, and the
-general high-volume request limit retain their existing protections.
-This does not change an account's password or resolve incorrect details.
+Login protection is back on. Only failed sign-ins count: 12 per username
+in a ten-minute window, plus 60 failures per network in that window.
+Successful sign-ins clear that username's failure count. Old lockouts
+that counted successful logins are ignored. A blocked sign-in now shows
+a countdown; the button unlocks automatically when the wait ends.
+Username and password fields request no mobile autocorrect/capitalization.
+
+This update adds 500,000 aura ONCE to the existing Momster account, ID
+b2d58971-f977-47c6-8c22-1b9e4debbd04. It adds to the existing balance and
+lifetime aura, preserving cars, colors, maps and other stats. The credit
+is stored on the server and becomes available on both PC and iPad.
+It applies when the updated server next opens the account database after
+deployment. Re-deploying or restarting cannot award it a second time.
+Refresh ISLA after deployment to load the updated account balance.
 
 OCTOBER 18 — EDITOR WATER AND PAN FIXES
 
@@ -38,7 +47,7 @@ Create account tabs at the top; the guest profile menu has separate buttons.
 Previously saved maps use the corrected terrain automatically.
 Account registration works immediately after this update deploys.
 
-Use ISLA-V1.6-Login-Unlock.zip (or the refreshed ISLA-V1.6-Update.zip) to update your existing GitHub repository.
+Use ISLA-V1.6-Login-and-Momster.zip (or the refreshed ISLA-V1.6-Update.zip) to update your existing GitHub repository.
 The live game will change only after you upload these files and Cloudflare
 finishes deploying. Your other multiplayer game is not involved.
 

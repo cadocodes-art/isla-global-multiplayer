@@ -84,7 +84,7 @@
     {
       "name": "community-api.js",
       "destination": "public/community-api.js",
-      "sha256": "e20dbb562169ce202119296a66b86022835be39164534b1707b2ffb47278c7ab"
+      "sha256": "f5a18a50fa53e1b584e00cdda3f08ea6de33497fc1a77daa8edf0613efeaec17"
     },
     {
       "name": "map-editor.js",
@@ -94,7 +94,7 @@
     {
       "name": "community-ui.js",
       "destination": "public/community-ui.js",
-      "sha256": "c86bc5a27575860c9432056c0bc8f110cc387317ec8bf5e44105b262ed326b80"
+      "sha256": "7e184db94fc20f2becfe5d023680b6b21cd05a2d2103ef5c2a2109f735f0540a"
     },
     {
       "name": "custom-map.js",
@@ -134,7 +134,7 @@
     {
       "name": "community.js",
       "destination": "src/community.js",
-      "sha256": "a0092a6111242532b230658619bf1453c1f2af9184d2161ea35e65734b87c826"
+      "sha256": "5a474c54468dc8a8c74e0c099b553fe21f73d4b4bd7638cd21bb62a936682db2"
     },
     {
       "name": "traffic (1).js",
@@ -169,7 +169,7 @@
     {
       "name": "community.test.cjs",
       "destination": "test/community.test.cjs",
-      "sha256": "08fc86d559af2dadd50dac5f777c0a4cc37bc857f2b27ee50639df05a5e2d835"
+      "sha256": "e0fd6a68f100cfaab82df2c4f9804c77b37c8f04d1f08ff0ba7a6050f9f170f1"
     },
     {
       "name": "game.test.cjs",
@@ -284,7 +284,7 @@
     {
       "name": "README.txt",
       "destination": "README.txt",
-      "sha256": "0bddf230caddde41b5af3846892cf16d1fdf1c168c1eafe868960fc51a1756a1"
+      "sha256": "b6e81f1ffd50e680e46a49930520ef179a79618b9917f600d0c5a42210619470"
     }
   ]
 }

@@ -6,6 +6,7 @@ const M=globalThis.IslaMaker,DAY=86400000,COOKIE='__Host-isla_session';
 const prices={classic:0,rally:30000,gt:80000,truck:70000,solstice:180000,moonlight:250000,nuker:275000,plane:300000,firetruck:135000,stick:315000,beast:320000};
 const json=(v,status=200,headers={})=>Response.json(v,{status,headers:{'Cache-Control':'no-store','X-Content-Type-Options':'nosniff',...headers}});
 const fail=(message,status=400)=>{throw Object.assign(Error(message),{status});};
+const retryLater=seconds=>{const retryAfter=Math.max(1,Math.ceil(seconds));throw Object.assign(Error('Too many attempts. Try again in '+Math.floor(retryAfter/60)+':'+String(retryAfter%60).padStart(2,'0')+'.'),{status:429,retryAfter});};
 const clean=(v,max)=>{if(typeof v!=='string'||v.trim().length<1||v.length>max)fail('Use between 1 and '+max+' characters.');return v.trim();};
 const uid=()=>crypto.randomUUID(),hex=b=>Array.from(new Uint8Array(b),n=>n.toString(16).padStart(2,'0')).join('');
 const digest=async s=>hex(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(s)));
@@ -21,6 +22,7 @@ CREATE TABLE IF NOT EXISTS sessions(token TEXT PRIMARY KEY,account TEXT,expires 
 CREATE TABLE IF NOT EXISTS recovery_keys(account TEXT PRIMARY KEY,hash TEXT NOT NULL);
 CREATE TABLE IF NOT EXISTS codes(email TEXT,purpose TEXT,hash TEXT,expires INTEGER,tries INTEGER DEFAULT 0,PRIMARY KEY(email,purpose));
 CREATE TABLE IF NOT EXISTS limits(key TEXT PRIMARY KEY,at INTEGER,count INTEGER);
+CREATE TABLE IF NOT EXISTS account_grants(id TEXT PRIMARY KEY,account TEXT NOT NULL,amount INTEGER NOT NULL,applied INTEGER NOT NULL);
 CREATE TABLE IF NOT EXISTS maps(id TEXT PRIMARY KEY,owner TEXT,slot INTEGER,kind TEXT,name TEXT,description TEXT,draft TEXT,preview TEXT,published TEXT,published_preview TEXT,revision INTEGER DEFAULT 0,approved INTEGER DEFAULT 0,approved_at INTEGER DEFAULT 0,published_at INTEGER DEFAULT 0,updated INTEGER,deleted INTEGER DEFAULT 0,hidden INTEGER DEFAULT 0,source TEXT,source_name TEXT,fingerprint TEXT);
 CREATE TABLE IF NOT EXISTS likes(account TEXT,map TEXT,at INTEGER,PRIMARY KEY(account,map));
 CREATE TABLE IF NOT EXISTS follows(account TEXT,creator TEXT,at INTEGER,PRIMARY KEY(account,creator));
@@ -30,21 +32,34 @@ CREATE TABLE IF NOT EXISTS reports(id TEXT PRIMARY KEY,account TEXT,map TEXT,rea
 CREATE TABLE IF NOT EXISTS rewards(id TEXT PRIMARY KEY,account TEXT,map TEXT,revision INTEGER,at INTEGER,last INTEGER,total INTEGER DEFAULT 0);
 CREATE TABLE IF NOT EXISTS reward_events(id TEXT PRIMARY KEY,run TEXT,at INTEGER);
 CREATE INDEX IF NOT EXISTS maps_owner ON maps(owner,deleted);CREATE INDEX IF NOT EXISTS plays_recent ON plays(at);CREATE INDEX IF NOT EXISTS comments_map ON comments(map,at);`);
+  this.applyAccountGrants();
   if(!await ctx.storage.getAlarm())await ctx.storage.setAlarm(Date.now()+DAY);
  });}
  rows(q,...a){return [...this.db.exec(q,...a)];}one(q,...a){return this.rows(q,...a)[0];}
  count(q,...a){return Number(this.one(q,...a)?.n||0);}
+ applyAccountGrants(){
+  // Owner-requested credit, pinned to the existing account ID. No public claim route.
+  const grant={id:'momster-500k-2026-10-18',account:'b2d58971-f977-47c6-8c22-1b9e4debbd04',amount:500000};
+  this.ctx.storage.transactionSync(()=>{
+   if(this.one('SELECT 1 FROM account_grants WHERE id=?',grant.id))return;
+   const a=this.one('SELECT garage FROM accounts WHERE id=? AND verified=1',grant.account);if(!a)return;
+   const g=JSON.parse(a.garage);g.balance=Math.min(1e12,g.balance+grant.amount);g.earned=Math.min(1e12,g.earned+grant.amount);
+   this.db.exec('UPDATE accounts SET garage=? WHERE id=?',JSON.stringify(g),grant.account);
+   this.db.exec('INSERT INTO account_grants VALUES(?,?,?,?)',grant.id,grant.account,grant.amount,Date.now());
+  });
+ }
  // Ownership is granted only by the deployment operator, never by public signup.
  owner(a){return !!a?.verified&&!!this.env.OWNER_ACCOUNT_ID&&a.id===this.env.OWNER_ACCOUNT_ID.trim();}
  async newRecovery(a){const raw=hex(crypto.getRandomValues(new Uint8Array(16))).toUpperCase();this.db.exec('INSERT OR REPLACE INTO recovery_keys VALUES(?,?)',a.id,await digest(a.id+':'+raw));return raw.match(/.{4}/g).join('-');}
  async loginWithRecovery(a,remember=true,rotate=false){const recoveryCode=rotate||!this.one('SELECT 1 FROM recovery_keys WHERE account=?',a.id)?await this.newRecovery(a):null;const response=await this.login(a,remember);return json({...await response.json(),...(recoveryCode?{recoveryCode}:{})},200,{'Set-Cookie':response.headers.get('Set-Cookie')});}
- limit(key,max,period){const now=Date.now(),row=this.one('SELECT * FROM limits WHERE key=?',key);if(!row||now-row.at>period)this.db.exec('INSERT OR REPLACE INTO limits VALUES(?,?,1)',key,now);else{if(row.count>=max)fail('Too many attempts. Please try again later.',429);this.db.exec('UPDATE limits SET count=count+1 WHERE key=?',key);}}
+ limitWait(key,max,period){const row=this.one('SELECT * FROM limits WHERE key=?',key);return row&&row.count>=max?Math.max(0,Math.ceil((row.at+period-Date.now())/1000)):0;}
+ limit(key,max,period){const now=Date.now(),row=this.one('SELECT * FROM limits WHERE key=?',key);if(!row||now-row.at>=period)this.db.exec('INSERT OR REPLACE INTO limits VALUES(?,?,1)',key,now);else{if(row.count>=max)retryLater((row.at+period-now)/1000);this.db.exec('UPDATE limits SET count=count+1 WHERE key=?',key);}}
  async session(request){const token=request.headers.get('Cookie')?.match(/(?:^|;\s*)__Host-isla_session=([^;]+)/)?.[1];if(!token||token.length>200)return null;const hash=await digest(token);return this.one('SELECT a.* FROM accounts a JOIN sessions s ON s.account=a.id WHERE s.token=? AND s.expires>? AND a.verified=1',hash,Date.now())||null;}
  async login(a,remember=true){const token=uid()+uid();await this.db.exec('INSERT INTO sessions VALUES(?,?,?)',await digest(token),a.id,Date.now()+(remember?30:1)*DAY);return json({account:this.profile(a,a),garage:JSON.parse(a.garage)},200,{'Set-Cookie':`${COOKIE}=${token}; Path=/; HttpOnly; Secure; SameSite=Lax${remember?'; Max-Age=2592000':''}`});}
  profile(a,viewer){if(!a)return null;const own=viewer?.id===a.id,stars=this.count('SELECT COUNT(*) n FROM maps WHERE owner=? AND approved=1 AND published IS NOT NULL AND deleted=0 AND hidden=0',a.id),g=JSON.parse(a.garage);return {id:a.id,username:a.username,stars,mood:a.mood,showAura:!!a.show_aura,aura:a.show_aura||own?g.balance:null,followers:this.count('SELECT COUNT(*) n FROM follows WHERE creator=?',a.id),following:!!viewer&&!!this.one('SELECT 1 FROM follows WHERE account=? AND creator=?',viewer.id,a.id),...(own?{owner:this.owner(a),imported:!!a.imported,recoveryReady:!!this.one('SELECT 1 FROM recovery_keys WHERE account=?',a.id)}:{})};}
  mapInfo(m,viewer){const creator=this.one('SELECT * FROM accounts WHERE id=?',m.owner);return {id:m.id,name:m.name,description:m.description,preview:m.published_preview||m.preview,creator:this.profile(creator,viewer),approved:!!m.approved,revision:m.revision,likes:this.count('SELECT COUNT(*) n FROM likes WHERE map=?',m.id),comments:this.count('SELECT COUNT(*) n FROM comments WHERE map=?',m.id),plays:this.count('SELECT COUNT(DISTINCT visitor) n FROM plays WHERE map=?',m.id),liked:!!viewer&&!!this.one('SELECT 1 FROM likes WHERE map=? AND account=?',m.id,viewer.id),source:m.source?{id:m.source,name:m.source_name}:null,at:m.published_at,updated:m.updated};}
  draftInfo(m){return {id:m.id,slot:m.slot,kind:m.kind,name:m.name,description:m.description,document:JSON.parse(m.draft),preview:m.preview,deleted:m.deleted,expires:m.deleted?m.deleted+5*DAY:null,published:!!m.published,approved:!!m.approved,revision:m.revision,updated:m.updated,source:m.source?{id:m.source,name:m.source_name}:null};}
- async fetch(request){const run=()=>this.handle(request).catch(e=>json({error:e.status?e.message:'Something went wrong. Please try again.'},e.status||500));const response=this.queue.then(run,run);this.queue=response.then(()=>{});return response;}
+ async fetch(request){const run=()=>this.handle(request).catch(e=>json({error:e.status?e.message:'Something went wrong. Please try again.',...(e.retryAfter?{retryAfter:e.retryAfter}:{})},e.status||500,e.retryAfter?{'Retry-After':String(e.retryAfter)}:{}));const response=this.queue.then(run,run);this.queue=response.then(()=>{});return response;}
  async handle(request){
   const url=new URL(request.url),path=url.pathname.replace(/^\/api\//,''),method=request.method,now=Date.now(),ip=request.headers.get('CF-Connecting-IP')||'local';
   if(!['GET','POST'].includes(method))fail('Method not allowed.',405);
@@ -61,11 +76,13 @@ CREATE INDEX IF NOT EXISTS maps_owner ON maps(owner,deleted);CREATE INDEX IF NOT
   }
   if(['auth/verify','auth/resend','auth/forgot'].includes(path)&&method==='POST')fail('ISLA now uses usernames, passwords and recovery codes. Refresh the game to continue.',410);
   if(path==='auth/login'&&method==='POST'){
-   // Temporarily disable the ten-minute sign-in lockout while cross-device login is tested.
-   // Existing login buckets are ignored; the shared API request limit still applies.
    const key=clean(body.username,254).toLowerCase();
+   // Only failed sign-ins count. New keys discard the old successful-attempt lockouts.
+   const nameBucket='login-failed-name:v2:'+key,ipBucket='login-failed-ip:v2:'+ip,period=600000;
+   const wait=Math.max(this.limitWait(nameBucket,12,period),this.limitWait(ipBucket,60,period));if(wait)retryLater(wait);
    const user=this.one('SELECT * FROM accounts WHERE username_key=? OR email=?',key,key),hash=user?.password||'00000000000000000000000000000000:0000000000000000000000000000000000000000000000000000000000000000';
-   if(!await passwordMatches(body.password,hash)||!user)fail('Incorrect username or password.',401);
+   if(!await passwordMatches(body.password,hash)||!user){this.limit(nameBucket,12,period);this.limit(ipBucket,60,period);fail('Incorrect username or password.',401);}
+   this.db.exec('DELETE FROM limits WHERE key=?',nameBucket);
    // Legacy pending accounts can activate with their original password. Email no longer grants privileges.
    if(!user.verified){this.db.exec('UPDATE accounts SET verified=1 WHERE id=?',user.id);user.verified=1;}
    return this.loginWithRecovery(user,body.remember!==false);
