@@ -3,11 +3,11 @@ const {test}=require('node:test'),assert=require('node:assert/strict'),fs=requir
 const source=fs.readFileSync(path.join(__dirname,'../public/game.js'),'utf8');
 function setup(){
  const elements=new Map();function element(id,key){const classes=new Set(),captures=new Set();const el={style:{},dataset:{key},attributes:{},classList:{add:x=>classes.add(x),remove:x=>classes.delete(x),contains:x=>classes.has(x),toggle:(x,on)=>on?classes.add(x):classes.delete(x)},setAttribute:(k,v)=>el.attributes[k]=v,getBoundingClientRect:()=>({left:0,top:0,width:146,height:146}),setPointerCapture:id=>captures.add(id),hasPointerCapture:id=>captures.has(id),releasePointerCapture:id=>{captures.delete(id);el.onlostpointercapture?.({pointerId:id});}};elements.set(id,el);return el;}
- for(const id of ['driveStick','stickKnob','touchControls'])element(id);const nitro=element('touchNitro','ShiftLeft'),hb=element('touchHB','Space');
- const context=vm.createContext({started:true,paused:false,stickPointer:null,touchDrive:{gas:0,brake:0,steer:0},touchButtons:new Map(),keys:new Set(),$:id=>elements.get(id),clamp:(x,a,b)=>Math.max(a,Math.min(b,x)),matchMedia:()=>({matches:false}),navigator:{maxTouchPoints:0},document:{body:element('body'),addEventListener(){},querySelectorAll:()=>[nitro,hb]}});
+ for(const id of ['driveStick','stickKnob','touchControls','touchMode','touchCamera','touchRecover','cameraSelect'])element(id);const nitro=element('touchNitro','ShiftLeft'),hb=element('touchHB','Space');
+ const context=vm.createContext({started:true,paused:false,camMode:0,W:{resetVehicle(){this.recovered=true;}},toast(){},localStorage:{getItem(){return null;},setItem(){}},stickPointer:null,touchDrive:{gas:0,brake:0,steer:0},touchButtons:new Map(),keys:new Set(),$:id=>elements.get(id),clamp:(x,a,b)=>Math.max(a,Math.min(b,x)),matchMedia:()=>({matches:false}),navigator:{maxTouchPoints:0},document:{body:element('body'),addEventListener(){},querySelectorAll:()=>[nitro,hb]}});
  vm.runInContext(source.slice(source.indexOf('function input()'),source.indexOf(' function frame(')),context);context.bindTouchControls();
  function event(id,x=73,y=73){return {pointerId:id,button:0,clientX:x,clientY:y,preventDefault(){}};}
- return {c:context,stick:elements.get('driveStick'),knob:elements.get('stickKnob'),nitro,hb,event};
+ return {c:context,elements,stick:elements.get('driveStick'),knob:elements.get('stickKnob'),nitro,hb,event};
 }
 test('joystick gives proportional gas, brake/reverse and correctly signed steering with a neutral dead zone',()=>{
  const {c,stick,event}=setup();stick.onpointerdown(event(1,73,69));assert.equal(c.input().gas,0);
@@ -43,3 +43,5 @@ test('partial joystick pedals produce gentler acceleration and braking while ful
  assert(run({brake:.35},20)>run({brake:1},20));assert(run({brake:1},0,2)<-1);
  assert.equal(run({brake:true},20),run({brake:1},20));
 });
+
+test('touch camera, recovery and input preference work without a keyboard',()=>{const {c,elements,stick,event}=setup();elements.get('touchCamera').onclick();assert.equal(c.camMode,1);assert.equal(elements.get('cameraSelect').value,1);elements.get('touchRecover').onclick();assert(c.W.recovered);stick.onpointerdown(event(1,73,0));assert(c.input().gas>0);const mode=elements.get('touchMode');mode.value='on';mode.onchange();assert(c.document.body.classList.contains('touch-mode'));assert.equal(c.input().gas,0);mode.value='off';mode.onchange();assert(!c.document.body.classList.contains('touch-mode'));c.paused=true;elements.get('touchCamera').onclick();assert.equal(c.camMode,1);});

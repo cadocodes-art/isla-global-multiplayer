@@ -60,7 +60,7 @@
  };
  function status(message,error=false){$('roomStatus').textContent=message;$('roomStatus').classList.toggle('error',error);}
  function saveIdentity(){safeWrite(session,sessionKey,identity?JSON.stringify(identity):null);}
- function pose(){const c=W.vehicle,parked=ui.paused()||document.hidden;return {x:c.x,y:c.y,z:c.z,yaw:c.yaw,vx:parked?0:c.vx,vy:parked?0:c.vy,vz:parked?0:c.vz,pitch:c.pitch,roll:c.roll,steer:c.steer,speed:parked?0:c.speed,car:W.garage.selected,color:W.garage.getColor(),nitro:!parked&&c.nitroTime>0,wallMode:c.wallMode||'',grounded:c.grounded,water:c.waterMode,brake:!!c.brake,parked};}
+ function pose(){const c=W.vehicle,parked=ui.paused()||document.hidden;return {x:c.x,y:c.y,z:c.z,yaw:c.yaw,vx:parked?0:c.vx,vy:parked?0:c.vy,vz:parked?0:c.vz,pitch:c.pitch,roll:c.roll,steer:c.steer,speed:parked?0:c.speed,car:W.garage.selected,color:W.garage.getColor(),nitro:!parked&&c.nitroTime>0,wallMode:c.wallMode||'',roadMode:!!c.roadMode,grounded:c.grounded,water:c.waterMode,brake:!!c.brake,parked};}
  function applySpawn(state){W.resetVehicle(true);Object.assign(W.vehicle,{x:state.x,y:state.y,z:state.z,yaw:state.yaw,lastSafe:{x:state.x,z:state.z,yaw:state.yaw}});}
  function drawRoster(){
   $('chatBtn').disabled=!net.connected;if(!net.connected)closeChat(false);lastChatHint='';
@@ -156,7 +156,7 @@
    const snap=Math.hypot(s.x-c.x,s.y-c.y,s.z-c.z)>40;
    for(const k of ['x','y','z'])c[k]=snap?s[k]:W.mix(c[k],s[k]+(s.parked?0:(s[k==='x'?'vx':k==='y'?'vy':'vz']||0)*lag),alpha);
    c.yaw+=Math.atan2(Math.sin(s.yaw-c.yaw),Math.cos(s.yaw-c.yaw))*(snap?1:alpha);
-   car.root.position.set(c.x,c.y,c.z);car.root.rotation.set(s.wallMode?-s.pitch:0,c.yaw,0,'YXZ');car.body.rotation.set(s.wallMode?0:-s.pitch,0,s.roll);car.contact.visible=s.grounded&&!s.wallMode;
+   car.root.position.set(c.x,c.y,c.z);car.root.rotation.set(s.wallMode||s.roadMode?-s.pitch:0,c.yaw,s.roadMode?s.roll:0,'YXZ');car.body.rotation.set(s.wallMode||s.roadMode?0:-s.pitch,0,s.roadMode?0:s.roll);car.contact.visible=s.grounded&&!s.wallMode;
    car.nitro.group.visible=!!s.nitro&&r.connected&&s.water!=='sinking';car.nitro.light.intensity=car.nitro.group.visible?1.8:0;
    for(const jet of car.nitro.jets){jet.jet.scale.z=1.8+Math.sin(time*43)*.2;jet.material.uniforms.time.value=time;jet.material.uniforms.strength.value=1;jet.glow.material.opacity=.8;}
    for(const wheel of car.wheels){wheel.pivot.rotation.y=wheel.z>0?s.steer:0;wheel.spin.rotation.x+=s.speed*dt/(.36*car.size);}

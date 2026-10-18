@@ -1,5 +1,5 @@
 {
-  "version": "1.6",
+  "version": "1.7",
   "files": [
     {
       "name": "three.min.js",
@@ -19,12 +19,12 @@
     {
       "name": "ramps.js",
       "destination": "public/ramps.js",
-      "sha256": "1e4918bbafc0e3f874d7386fe2c50dc65617553b0c39eaed82eacb16131717b5"
+      "sha256": "589099b4802ef90a060ba234c13d4d3bc84bc3415b29db59a8ee0404f794e37e"
     },
     {
       "name": "physics.js",
       "destination": "public/physics.js",
-      "sha256": "17b465a841ab3d95efc3c92996bda230a72c532d01328b15d7c02b2ad4078add"
+      "sha256": "ecc99b9b970b8f73fdd7490de209496b8f13897be2d8b647ad8944866401c4e7"
     },
     {
       "name": "aura.js",
@@ -44,7 +44,7 @@
     {
       "name": "traffic.js",
       "destination": "public/traffic.js",
-      "sha256": "4dae78cb8df44748341ceff726ad297c98b5b22980897c8a0a2419f59ef2f6cb"
+      "sha256": "0203a3e47abcf96c8fef1d0c7c2550d60684236f06f2a6967718ae083f25f683"
     },
     {
       "name": "maps.js",
@@ -69,17 +69,17 @@
     {
       "name": "multiplayer.js",
       "destination": "public/multiplayer.js",
-      "sha256": "fe407d43b3506e959ef4d3d5954b88166f7d5dc550b7aa665a6c6a08463619ac"
+      "sha256": "df17febfa0dcecb4056b5b003aeaab67e9179f5aa42d5f35dac8bf503fe5c09f"
     },
     {
       "name": "maker-core.js",
       "destination": "public/maker-core.js",
-      "sha256": "b1b9801d2ba2db61d2198c57cad4d484f3c2a7f5b8fd01fd4129e31617d1cd86"
+      "sha256": "d7a7b743437faf9deec5d3869d86c8f06fd2f8c95f1ad83a7a35ab8d2a8b639a"
     },
     {
       "name": "maker-assets.js",
       "destination": "public/maker-assets.js",
-      "sha256": "a2b8cd3ddeab7f2c7222ceac6b655bb8b8562e185fae9e18f46fd230eacfae73"
+      "sha256": "e7f92c4a756b5b1a043a7b86c80a9a1626bf5564ababf9230613d675be7bb2d4"
     },
     {
       "name": "community-api.js",
@@ -89,37 +89,42 @@
     {
       "name": "map-editor.js",
       "destination": "public/map-editor.js",
-      "sha256": "5b7947b068b8915eb08a0d731ef9f9ed8b2f77697e729df3b49f829b58e41783"
+      "sha256": "c774494e54f80a405c8028961914604f0bb7c6ca96cce35df26acc4dac96a788"
     },
     {
       "name": "community-ui.js",
       "destination": "public/community-ui.js",
-      "sha256": "7e184db94fc20f2becfe5d023680b6b21cd05a2d2103ef5c2a2109f735f0540a"
+      "sha256": "9d7b514ab24b4e2ed21ca5764845f8b19cc0c606ad9efd79505318fa85659b4c"
+    },
+    {
+      "name": "maker-driving.js",
+      "destination": "public/maker-driving.js",
+      "sha256": "759712c1016bd8ead141fcf9161530367f9a77fc52727c5bc47cfec172d00fcc"
     },
     {
       "name": "custom-map.js",
       "destination": "public/custom-map.js",
-      "sha256": "527a2c9e66c5302fb5ff78b0b9adb08eda702149641678c6f089a921122d6d0c"
+      "sha256": "0889c14cab83c5b6b0fe660ed92ceb7ed3b2271c9e5f5380cbe3089a676b8795"
     },
     {
       "name": "game.js",
       "destination": "public/game.js",
-      "sha256": "e1926478d0611afde2297491da2b6b33af7fa680df6cbd53fb162a681ec4c18a"
+      "sha256": "7a009402ef029749422d68824c67a20379071fd11f0fd2b4b77d256642476d5f"
     },
     {
       "name": "style.css",
       "destination": "public/style.css",
-      "sha256": "d46f34434d213ddfb809846d66f19d61a2c03a9242ffcf16907a50ebc83338f8"
+      "sha256": "31fd68b729554e3221c064635a96b9aebbfb7220a6e297c5804a10a55ff603fe"
     },
     {
       "name": "community.css",
       "destination": "public/community.css",
-      "sha256": "c04b87716068a4625913953a3cc1057b4a44a9eecc6141ac0232c29c69061ea5"
+      "sha256": "1b7ac28c9299daacab21aba811e9c5ea609af542928e98f26ad5b0374dc226dd"
     },
     {
       "name": "index.html",
       "destination": "public/index.html",
-      "sha256": "1c306583b2a9760e391fea53a4d6beff2d8bade7793baac3d6958931e257019d"
+      "sha256": "abe4ae945972f2916ea641cd1621a2ae9248126554843513d5951b8ae41041e9"
     },
     {
       "name": "THREE-LICENSE.txt",
@@ -129,12 +134,12 @@
     {
       "name": "worker.js",
       "destination": "src/worker.js",
-      "sha256": "f022042706855f3db466a0133c10d84df36dd4565c26bbe17a78847255b713e8"
+      "sha256": "fd483b9628acb00e88d7cc8a8c043cedfcb84e6954f3ec6349a60297bfb9f422"
     },
     {
       "name": "community.js",
       "destination": "src/community.js",
-      "sha256": "5a474c54468dc8a8c74e0c099b553fe21f73d4b4bd7638cd21bb62a936682db2"
+      "sha256": "9eb4425936419964b6c73dc6ea36486e903c2729de97801b1ba942b26fba0213"
     },
     {
       "name": "traffic (1).js",
@@ -169,7 +174,7 @@
     {
       "name": "community.test.cjs",
       "destination": "test/community.test.cjs",
-      "sha256": "e0fd6a68f100cfaab82df2c4f9804c77b37c8f04d1f08ff0ba7a6050f9f170f1"
+      "sha256": "0a54172633b3528400ebb86c5f876b71115d1c4be5fecca4f41175cda86333b0"
     },
     {
       "name": "game.test.cjs",
@@ -209,7 +214,7 @@
     {
       "name": "touch.test.cjs",
       "destination": "test/touch.test.cjs",
-      "sha256": "0f88a48f789d23c84887e80945688662574453dd3ccd864eeefbb2646f399217"
+      "sha256": "80a0f693d97301123b730fc6e92eb3c704fd377aaf773ba5a8e6e0f6953ff7da"
     },
     {
       "name": "utility-cars.test.cjs",
@@ -220,6 +225,11 @@
       "name": "v16-integration.test.cjs",
       "destination": "test/v16-integration.test.cjs",
       "sha256": "e35cc705d4c240eba173bf6b245e4edd5de8a982556f9ebe43dcaf37f670292a"
+    },
+    {
+      "name": "v17.test.cjs",
+      "destination": "test/v17.test.cjs",
+      "sha256": "e8f3b418cce2304a8f03a9768a5235014ef6df9fa97e46d0dca9739ab473d216"
     },
     {
       "name": "aura-check.cjs",
@@ -269,22 +279,22 @@
     {
       "name": "package.json",
       "destination": "package.json",
-      "sha256": "2d910f0c05f7fefb287b45c0637f37f2508fb34b2c8f7577f4f6dcfb1ec3e222"
+      "sha256": "189d516469249bb607bc48124cd6e7669757f5a8b7038f15ad7ee95b31e87b0d"
     },
     {
       "name": "package-lock.json",
       "destination": "package-lock.json",
-      "sha256": "8eb11d2710b06576d8b133ca51cebff6f43caad2f623ef32c5edc544ee014e77"
+      "sha256": "5661b4ff9425789a528fb59b99cf85c003e7f3b4b3b9cf84e2fc0fe6c200f158"
     },
     {
       "name": "prepare-cloudflare.cjs",
       "destination": "prepare-cloudflare.cjs",
-      "sha256": "ae5e0d9ddb4e93b4b9cdb55ff4ba0985d6d38efdfd4c6efa52d5ef8806dd8d10"
+      "sha256": "7d2d2331942410eca8aa0decfeadaf857b5bb414779c4705544daa9c40d3a1c7"
     },
     {
       "name": "README.txt",
       "destination": "README.txt",
-      "sha256": "b6e81f1ffd50e680e46a49930520ef179a79618b9917f600d0c5a42210619470"
+      "sha256": "f9d57fb87b735bc3ca412e9211f87b0e333b411df9167abcceef221030ebff4e"
     }
   ]
 }

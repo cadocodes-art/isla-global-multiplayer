@@ -66,3 +66,16 @@ body.touch-mode:has(#auraNotice:not(.hidden)) #toast,body.touch-mode:has(#auraNo
 
 /* Main-menu version stays clear of the footer and mobile safe areas. */
 .menu-version{position:absolute;right:max(20px,env(safe-area-inset-right));bottom:max(10px,env(safe-area-inset-bottom));padding:4px 7px;border:1px solid #ffffff24;border-radius:3px;background:#10272a99;color:#edf6ef;font:600 11px/1.2 Arial,Helvetica,sans-serif;letter-spacing:1px;pointer-events:none}
+
+/* V1.7: every driving action has a touch target. */
+.touch-shortcuts{position:absolute;left:50%;bottom:4px;transform:translateX(-50%);display:grid;gap:6px;pointer-events:auto}
+#touchControls .touch-shortcuts button{min-width:44px;width:44px;min-height:44px;height:44px;border-radius:10px;font-size:10px;background:#16383ee8}
+#touchControls #touchRecover{font-size:25px}#auraWallet{font-size:8px!important;color:#ffffff8c;letter-spacing:.3px}
+body.touch-mode #auraWallet{display:block!important;font-size:7px!important;margin-top:5px}
+body.touch-mode #header button{min-height:44px!important;min-width:44px;touch-action:manipulation}
+body.touch-mode .menu-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}
+body.touch-mode button,body.touch-mode select{min-height:44px;touch-action:manipulation}body.touch-mode input:not([type=range]):not([type=color]),body.touch-mode select{font-size:16px!important}
+body.touch-mode .chat-grid button{min-height:44px}body.touch-mode .profile-menu summary{min-height:44px;display:flex;align-items:center}
+body.paused #touchControls,body:not(.playing) #touchControls{display:none!important}
+@media(max-width:360px){body.touch-mode.playing #header .wordmark{display:none}body.touch-mode #header .top-right{width:100%;justify-content:space-between}}
+@media(max-height:500px) and (orientation:landscape){.touch-shortcuts{bottom:0;display:flex}#touchControls .touch-shortcuts button{width:60px}body.touch-mode #auraWallet{font-size:6px!important}}

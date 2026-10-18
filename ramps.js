@@ -42,10 +42,11 @@
   const deck=W.mat('#475257',.78,.35),side=W.mat('#343c3c',.88,.2),orange=W.mat('#ef9c39',.7,.15),white=W.mat('#eee9d2'),pole=W.mat('#8b9692',.5,.65);
   function mesh(parent,positions,indices,material){const g=new T.BufferGeometry();g.setAttribute('position',new T.Float32BufferAttribute(positions,3));g.setIndex(indices);g.computeVertexNormals();const m=new T.Mesh(g,material);m.receiveShadow=m.castShadow=true;parent.add(m);return m;}
   for(const r of W.ramps){
+   const rampDeck=r.color?W.mat(r.color,.78,.35):deck;
    const group=new T.Group();group.name=(r.openFrame?'Supported city ramp ':'Off-road ramp ')+r.id;scene.add(group);r.group=group;
    function v(u,s,lift=0){const p=W.rampPoint(r,u,s);return [p.x,W.rampHeight(r,p.x,p.z)+lift,p.z];}
    function ribbon(u0,u1,s0,s1,material,lift=.025){mesh(group,[...v(u0,s0,lift),...v(u1,s0,lift),...v(u0,s1,lift),...v(u1,s1,lift)],[0,2,1,1,2,3],material);}
-   for(let j=0;j<26;j++){const s0=r.d*j/26,s1=r.d*(j+1)/26;ribbon(-r.w/2,r.w/2,s0,s1,deck,0);
+   for(let j=0;j<26;j++){const s0=r.d*j/26,s1=r.d*(j+1)/26;ribbon(-r.w/2,r.w/2,s0,s1,rampDeck,0);
     if(r.openFrame){const a=v(-r.w/2,s0,-r.deckThickness),b=v(r.w/2,s0,-r.deckThickness),c=v(-r.w/2,s1,-r.deckThickness),d=v(r.w/2,s1,-r.deckThickness);mesh(group,[...a,...b,...c,...d],[0,1,2,1,3,2],side);}
     for(const sign of [-1,1]){const u=sign*r.w/2,a=v(u,s0),b=v(u,s1),a0=[a[0],r.openFrame?a[1]-r.deckThickness:(r.baseY??W.height(a[0],a[2]))-.12,a[2]],b0=[b[0],r.openFrame?b[1]-r.deckThickness:(r.baseY??W.height(b[0],b[2]))-.12,b[2]];mesh(group,[...a,...b,...a0,...b0],sign===1?[0,1,2,1,3,2]:[0,2,1,1,2,3],side);ribbon(sign>0?r.w/2-.35:-r.w/2,sign>0?r.w/2:-r.w/2+.35,s0,s1,j%4<2?orange:side);}
    }

@@ -1,8 +1,8 @@
 'use strict';
 (()=>{
  const W=Isla,T=THREE;W.traffic=[];
- function route(points){const p=[];for(const q of points)if(!p.length||Math.hypot(q.x-p.at(-1).x,q.z-p.at(-1).z)>.05)p.push({x:q.x,z:q.z});if(Math.hypot(p[0].x-p.at(-1).x,p[0].z-p.at(-1).z)<.05)p.pop();const lengths=[0];for(let i=1;i<=p.length;i++)lengths.push(lengths.at(-1)+Math.hypot(p[i%p.length].x-p[i-1].x,p[i%p.length].z-p[i-1].z));return {p,lengths,length:lengths.at(-1)};}
- function sample(r,s){s=(s%r.length+r.length)%r.length;let lo=0,hi=r.p.length-1;while(lo<hi){const mid=Math.ceil((lo+hi)/2);if(r.lengths[mid]<=s)lo=mid;else hi=mid-1;}const p=r.p[lo],q=r.p[(lo+1)%r.p.length],f=(s-r.lengths[lo])/(r.lengths[lo+1]-r.lengths[lo]);return {x:W.mix(p.x,q.x,f),z:W.mix(p.z,q.z,f),yaw:Math.atan2(q.x-p.x,q.z-p.z)};}
+ function route(points){const p=[];for(const q of points)if(!p.length||Math.hypot(q.x-p.at(-1).x,q.z-p.at(-1).z)>.05)p.push({x:q.x,z:q.z,y:W.customMap?q.y:undefined});if(Math.hypot(p[0].x-p.at(-1).x,p[0].z-p.at(-1).z)<.05)p.pop();const lengths=[0];for(let i=1;i<=p.length;i++)lengths.push(lengths.at(-1)+Math.hypot(p[i%p.length].x-p[i-1].x,p[i%p.length].z-p[i-1].z));return {p,lengths,length:lengths.at(-1)};}
+ function sample(r,s){s=(s%r.length+r.length)%r.length;let lo=0,hi=r.p.length-1;while(lo<hi){const mid=Math.ceil((lo+hi)/2);if(r.lengths[mid]<=s)lo=mid;else hi=mid-1;}const p=r.p[lo],q=r.p[(lo+1)%r.p.length],f=(s-r.lengths[lo])/(r.lengths[lo+1]-r.lengths[lo]);return {x:W.mix(p.x,q.x,f),z:W.mix(p.z,q.z,f),y:Number.isFinite(p.y)&&Number.isFinite(q.y)?W.mix(p.y,q.y,f):undefined,yaw:Math.atan2(q.x-p.x,q.z-p.z)};}
  W.initTraffic=()=>{
   if(W.initCityTraffic)return W.initCityTraffic(route,place);
   const luz=W.roads[0].samples.slice(0,-1),ruiz=W.ruizRoad.samples.slice(0,-1);let start=0;for(let i=1;i<luz.length;i++)if(Math.hypot(luz[i].x-680,luz[i].z)<Math.hypot(luz[start].x-680,luz[start].z))start=i;
@@ -11,7 +11,7 @@
   const colors=['#d7d7c9','#245e76','#6d3544','#b2986c','#47776d','#3b4349'];
   [8,6,4].forEach((count,ri)=>{const r=W.trafficRoutes[ri];for(let i=0;i<count;i++){let distance=(i+.5)*r.length/count;if(ri===2){let index=r.p.findIndex(p=>p.x>W.bridge.start+50&&p.x<W.bridge.end&&Math.abs(p.z)<1);distance=r.lengths[index]+i*85;}const t={id:W.traffic.length,route:r,distance,direction:i%2?1:-1,cruise:ri===2?15:11+(i%4)*2,speed:0,lane:2.35,offsetX:0,offsetZ:0,driftX:0,driftZ:0,stun:0,w:1.9,d:4.4,color:colors[(i+ri)%colors.length],x:0,y:0,z:0,yaw:0,vx:0,vz:0};t.speed=t.cruise;W.traffic.push(t);place(t);}});
  };
- function place(t){const p=sample(t.route,t.distance);t.yaw=p.yaw+(t.direction<0?Math.PI:0);t.x=p.x+Math.cos(t.yaw)*t.lane+t.offsetX;t.z=p.z-Math.sin(t.yaw)*t.lane+t.offsetZ;t.y=(W.trafficHeight||W.driveHeight)(t.x,t.z)+.12;t.vx=Math.sin(t.yaw)*t.speed+t.driftX;t.vz=Math.cos(t.yaw)*t.speed+t.driftZ;}
+ function place(t){const p=sample(t.route,t.distance);t.yaw=p.yaw+(t.direction<0?Math.PI:0);t.x=p.x+Math.cos(t.yaw)*t.lane+t.offsetX;t.z=p.z-Math.sin(t.yaw)*t.lane+t.offsetZ;t.y=Number.isFinite(p.y)?p.y+.28:(W.trafficHeight||W.driveHeight)(t.x,t.z)+.12;t.vx=Math.sin(t.yaw)*t.speed+t.driftX;t.vz=Math.cos(t.yaw)*t.speed+t.driftZ;}
  W.stepTraffic=dt=>{
   for(const t of W.traffic){let target=t.wrecked?0:t.cruise;const sx=Math.sin(t.yaw),sz=Math.cos(t.yaw);
    for(const other of [...W.traffic,...(W.trafficObstacles||[W.vehicle])]){if(other===t||Math.abs(other.y-t.y)>2.4)continue;const dx=other.x-t.x,dz=other.z-t.z,ahead=dx*sx+dz*sz,cross=dx*sz-dz*sx;if(ahead>0&&ahead<55&&Math.abs(cross)<2.1)target=Math.min(target,Math.max(0,(ahead-7)*.55));}
