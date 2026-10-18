@@ -134,7 +134,7 @@
     {
       "name": "community.js",
       "destination": "src/community.js",
-      "sha256": "c3cabceab68b446c76a8e0fbeb3efceaeb0098ca42c83d7e061423c264bed674"
+      "sha256": "a0092a6111242532b230658619bf1453c1f2af9184d2161ea35e65734b87c826"
     },
     {
       "name": "traffic (1).js",
@@ -169,7 +169,7 @@
     {
       "name": "community.test.cjs",
       "destination": "test/community.test.cjs",
-      "sha256": "a9b166cea86409d5898fa858e85193995bce1944825bd6f982e247240e5fa008"
+      "sha256": "08fc86d559af2dadd50dac5f777c0a4cc37bc857f2b27ee50639df05a5e2d835"
     },
     {
       "name": "game.test.cjs",
@@ -284,7 +284,7 @@
     {
       "name": "README.txt",
       "destination": "README.txt",
-      "sha256": "f19e7d01a820492dc20737eee8f80250ad567e90e8cde16b5272ffc0361b6357"
+      "sha256": "0bddf230caddde41b5af3846892cf16d1fdf1c168c1eafe868960fc51a1756a1"
     }
   ]
 }

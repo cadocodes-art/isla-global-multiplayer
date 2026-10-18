@@ -2,6 +2,14 @@ ISLA V1.6 — MAP MAKER, SEARCH & ACCOUNTS
 
 START HERE
 
+OCTOBER 18 — TEMPORARY SIGN-IN LOCKOUT REMOVAL
+
+The 12-attempt, ten-minute sign-in lockout is temporarily disabled.
+Existing sign-in lockouts are ignored as soon as this update deploys.
+Passwords are still checked normally. Account recovery, signup, and the
+general high-volume request limit retain their existing protections.
+This does not change an account's password or resolve incorrect details.
+
 OCTOBER 18 — EDITOR WATER AND PAN FIXES
 
 Raising an ocean square reveals sandy shore and grassy land; the water
@@ -30,7 +38,7 @@ Create account tabs at the top; the guest profile menu has separate buttons.
 Previously saved maps use the corrected terrain automatically.
 Account registration works immediately after this update deploys.
 
-Use ISLA-V1.6-Editor-Fixes.zip (or the refreshed ISLA-V1.6-Update.zip) to update your existing GitHub repository.
+Use ISLA-V1.6-Login-Unlock.zip (or the refreshed ISLA-V1.6-Update.zip) to update your existing GitHub repository.
 The live game will change only after you upload these files and Cloudflare
 finishes deploying. Your other multiplayer game is not involved.
 

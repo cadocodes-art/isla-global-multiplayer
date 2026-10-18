@@ -61,7 +61,9 @@ CREATE INDEX IF NOT EXISTS maps_owner ON maps(owner,deleted);CREATE INDEX IF NOT
   }
   if(['auth/verify','auth/resend','auth/forgot'].includes(path)&&method==='POST')fail('ISLA now uses usernames, passwords and recovery codes. Refresh the game to continue.',410);
   if(path==='auth/login'&&method==='POST'){
-   this.limit('login:'+ip,12,600000);const key=clean(body.username,254).toLowerCase();this.limit('login-name:'+key,12,600000);
+   // Temporarily disable the ten-minute sign-in lockout while cross-device login is tested.
+   // Existing login buckets are ignored; the shared API request limit still applies.
+   const key=clean(body.username,254).toLowerCase();
    const user=this.one('SELECT * FROM accounts WHERE username_key=? OR email=?',key,key),hash=user?.password||'00000000000000000000000000000000:0000000000000000000000000000000000000000000000000000000000000000';
    if(!await passwordMatches(body.password,hash)||!user)fail('Incorrect username or password.',401);
    // Legacy pending accounts can activate with their original password. Email no longer grants privileges.
