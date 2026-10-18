@@ -1,8 +1,8 @@
 {
   "name": "isla-drive-cloudflare",
-  "version": "1.7.2",
+  "version": "1.8.0",
   "private": true,
-  "description": "ISLA V1.72 — 3D Map Maker, signs, touch controls, and global multiplayer",
+  "description": "ISLA V1.8 — friends, profile updates, private messages, Map Maker and global multiplayer",
   "engines": {
     "node": ">=22.0.0"
   },
