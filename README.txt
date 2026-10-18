@@ -2,7 +2,14 @@ ISLA V1.6 — MAP MAKER, SEARCH & ACCOUNTS
 
 START HERE
 
-OCTOBER 17 BUG-FIX UPDATE
+OCTOBER 18 — USERNAME ACCOUNTS AND OWNER DASHBOARD
+
+No email address, paid domain, or email service is needed for accounts.
+Players sign up with a username and password and save a private recovery
+code. Your owner controls unlock only for the account ID you set in your
+Cloudflare Worker. No signup or secret link can assign ownership.
+
+OCTOBER 17 BUG FIXES — ALSO INCLUDED
 
 This package includes the terrain, test-drive exit, and signup-button fixes.
 Lowered ground now shows the real basin; horizon scenery cannot cover it.
@@ -11,9 +18,9 @@ Save and play has a Back to editor button in the top-left corner, plus a
 large return button in the pause menu. Account screens have Sign in and
 Create account tabs at the top; the guest profile menu has separate buttons.
 Previously saved maps use the corrected terrain automatically.
-Email setup below is still required to complete account registration.
+Account registration works immediately after this update deploys.
 
-Use ISLA-V1.6-Fixes.zip (or the refreshed ISLA-V1.6-Update.zip) to update your existing GitHub repository.
+Use ISLA-V1.6-Accounts.zip (or the refreshed ISLA-V1.6-Update.zip) to update your existing GitHub repository.
 The live game will change only after you upload these files and Cloudflare
 finishes deploying. Your other multiplayer game is not involved.
 
@@ -40,54 +47,54 @@ structure. If it names a missing or changed file, upload that exact file
 again from this ZIP. It also prevents older files in folders from silently
 overriding a complete new flat upload.
 
-IMPORTANT: ONE-TIME EMAIL SETUP
+ONE-TIME OWNER SETUP — AFTER UPLOADING THE UPDATE
 
-Accounts use email verification and emailed password-reset codes, as
-planned. The game cannot send those emails until you configure a sender.
-Map Maker, guest driving, and existing global rooms work before this step.
-Account creation clearly explains when email setup is missing.
+1. Open the live ISLA game. Choose the profile icon > Create account.
+   Pick your username and a password of at least 12 characters. You do not
+   need to give the game, or ChatGPT, an email address.
+2. Save the private recovery code shown after signup. You can download
+   it as a text file or save it in your password manager. Keep it private;
+   do not upload it to GitHub or send it in chat. Tick the saved checkbox
+   and continue to your account.
+3. On your profile, click Copy account ID. This ID is not a password.
+4. Open Cloudflare > Workers & Pages > isla-globe-multiplayer > Settings
+   > Variables and Secrets > Add. Choose Secret if a type is requested.
+   In the name/key field enter exactly: OWNER_ACCOUNT_ID
+   In the value field paste the account ID you copied.
+   Save/deploy the change using Cloudflare's button. Storing it as a
+   Secret also keeps it separate from settings in the GitHub files.
+5. Refresh ISLA while signed into that account. Your profile now has
+   Owner dashboard. Published map pages show your approval buttons.
 
-This release uses Resend for outgoing account emails.
+You can bookmark the owner dashboard:
+https://isla-globe-multiplayer.cadocodes.workers.dev/?view=owner
 
-1. Open https://resend.com and create/sign into your own account.
-2. Add a domain you own under Domains and follow Resend's verification
-   instructions. Add the DNS records it gives you where that domain's DNS
-   is managed. Wait for the domain to be verified.
-   The shared cadocodes.workers.dev address cannot be used as a domain
-   you own for this verification. Public email delivery requires your own
-   verified sender domain; a domain may have a separate cost if you do not
-   already own one. Resend's test sender is not a public-player solution.
-3. Create an API key with permission to send email for that domain.
-4. In Cloudflare, open Workers & Pages, then your existing ISLA Worker,
-   isla-globe-multiplayer. Open Settings > Variables and Secrets.
-5. Add these three values as Secrets, with the names spelled exactly:
+Anyone can know that address. Only your signed-in owner account can read
+reports, approve maps, hide maps, or remove comments. The server checks
+every action. Another player using your display name or editing the page
+cannot acquire these permissions. The first person to sign up is NOT
+automatically made the owner.
 
-   EMAIL_API_KEY
-   The Resend API key you just created.
+Existing ISLA accounts: use your current username and password. Previously
+pending email accounts can also sign in with their original password.
+Your garage and maps stay attached to the same account. First login will
+provide a recovery code if you have not saved one yet. If already signed
+in, open Password & recovery > Get a new recovery code.
 
-   EMAIL_FROM
-   A sender on your verified domain, for example:
-   ISLA <noreply@your-own-domain.com>
-   Replace the example with your real verified domain.
+This update replaces OWNER_EMAIL with OWNER_ACCOUNT_ID. The previous
+EMAIL_API_KEY, EMAIL_FROM, and OWNER_EMAIL settings are unused; they do
+not need to be deleted for this update to work. No emails are sent.
 
-   OWNER_EMAIL
-   The email address YOU will use to create your ISLA owner account.
-   Only the verified account with this email can approve maps, revoke
-   approval, remove comments, hide maps, and review reports.
+PASSWORDS AND RECOVERY
 
-6. Save/deploy the secret changes using Cloudflare's button. Keep API keys
-   and passwords in the provider dashboards, never in GitHub files.
-7. Open ISLA, choose the profile icon, and Create an account. Use the email
-   you entered as OWNER_EMAIL. Enter the six-digit code from your inbox.
-8. Open your profile. You should see Owner reports. Published map pages
-   will show your approval controls. Other accounts will not have them.
-9. Try Forgot password once with a test account you control to confirm
-   that reset email delivery works too.
-
-Useful provider instructions:
-https://resend.com/docs/dashboard/domains/introduction
-https://resend.com/docs/api-reference/emails/send-email
-https://developers.cloudflare.com/workers/configuration/secrets/
+Forgot password? Enter your username, saved recovery code, and a new
+password. Save the replacement recovery code shown afterward: the old
+one stops working, and other signed-in sessions are signed out.
+Password & recovery on your profile lets you change your password or
+replace a recovery code using your current password. The game stores
+hashes of passwords and recovery codes, never the readable originals.
+Losing both your password and recovery code means losing account access.
+There is no email reset. Account IDs cannot reset passwords or sign in.
 
 YOUR EXISTING GARAGE
 
@@ -167,7 +174,7 @@ SEARCH, ACCOUNTS & APPROVAL
   label. They cannot upload maps or have a profile. Social actions that
   need an identity ask players to sign in.
 - Passwords are hashed, never displayed. Sessions use secure cookies.
-  Forgotten passwords use email codes; profile settings can change them.
+  Forgotten passwords use saved recovery codes; profile settings can change them.
 
 LOCAL VERSION
 
@@ -189,15 +196,15 @@ Use either the flat update workflow above or the structured project.
 VALIDATION & PRACTICAL LIMITS
 
 The package has automated checks for the existing driving game plus
-account verification/reset, authorization, map validation, publication
+account signup/recovery, authorization, map validation, publication
 snapshots, copied-map provenance, comments, cloud garage purchases,
 approved-map aura eligibility, and custom multiplayer rooms.
 The editor's save/play flow and community screens were also tested locally.
-Real email delivery must be tested after you configure your own sender.
+Accounts and recovery need no outgoing email setup.
 
 The community database is a single SQLite Durable Object, designed for
 this initial community release. It is not load-tested for a large public
-launch. Cloudflare and email-provider usage limits still apply:
+launch. Cloudflare usage limits still apply:
 https://developers.cloudflare.com/durable-objects/platform/pricing/
 
 Aura awards have server checks, limits, and duplicate protection, but

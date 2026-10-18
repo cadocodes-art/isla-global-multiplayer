@@ -69,7 +69,7 @@
     {
       "name": "multiplayer.js",
       "destination": "public/multiplayer.js",
-      "sha256": "6ca510ede618c08c2232ae03845aab5bf8c6eff929a02bd35bb8fbe931d83e14"
+      "sha256": "fe407d43b3506e959ef4d3d5954b88166f7d5dc550b7aa665a6c6a08463619ac"
     },
     {
       "name": "maker-core.js",
@@ -84,7 +84,7 @@
     {
       "name": "community-api.js",
       "destination": "public/community-api.js",
-      "sha256": "8592500476c0a3f7137cae8d344384452e18d19808da09ed465c97a24e13eb29"
+      "sha256": "e20dbb562169ce202119296a66b86022835be39164534b1707b2ffb47278c7ab"
     },
     {
       "name": "map-editor.js",
@@ -94,7 +94,7 @@
     {
       "name": "community-ui.js",
       "destination": "public/community-ui.js",
-      "sha256": "c4f90eda716f3a7924cccfbe00b9dafbdbfaddbd35fb5a610734accad759ea07"
+      "sha256": "c86bc5a27575860c9432056c0bc8f110cc387317ec8bf5e44105b262ed326b80"
     },
     {
       "name": "custom-map.js",
@@ -114,7 +114,7 @@
     {
       "name": "community.css",
       "destination": "public/community.css",
-      "sha256": "b0c3df15ef8de651fddece7f8ee1bd7b3b15aa7fe83cb759b18b1e9211db666a"
+      "sha256": "c04b87716068a4625913953a3cc1057b4a44a9eecc6141ac0232c29c69061ea5"
     },
     {
       "name": "index.html",
@@ -134,7 +134,7 @@
     {
       "name": "community.js",
       "destination": "src/community.js",
-      "sha256": "04db4a16d4f6bfbcd7b021b707619a3d721d26a711c79c6609865524cf85f2ad"
+      "sha256": "c3cabceab68b446c76a8e0fbeb3efceaeb0098ca42c83d7e061423c264bed674"
     },
     {
       "name": "traffic (1).js",
@@ -169,7 +169,7 @@
     {
       "name": "community.test.cjs",
       "destination": "test/community.test.cjs",
-      "sha256": "79e5b0027acb27fa48de3bd9a1a97f2c44c133deb74a9f421d16246020bd76c2"
+      "sha256": "a9b166cea86409d5898fa858e85193995bce1944825bd6f982e247240e5fa008"
     },
     {
       "name": "game.test.cjs",
@@ -284,7 +284,7 @@
     {
       "name": "README.txt",
       "destination": "README.txt",
-      "sha256": "519c7f41829928187d6010a50e1720746cecd2492579423875c90693861c6297"
+      "sha256": "6f7ea372a59b3793308ea85ba12020fa894ddfd4433562da2bd0970fc1f2f01b"
     }
   ]
 }

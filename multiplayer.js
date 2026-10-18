@@ -169,7 +169,7 @@
   ui=hooks;sessionKey='isla-global-v16-'+W.mapId+'-'+(window.IslaCommunity?.account?.id||'guest');
   $('chatBtn').onclick=net.toggleChat;$('chatClose').onclick=()=>closeChat();drawChat();
   const previousEarn=W.onAuraEarn;W.onAuraEarn=(points,best)=>{previousEarn?.(points,best);if(net.connected&&!W.auraDisabled)pendingAura+=points;};
-  $('driverName').value=window.IslaCommunity?.account?.username||safeRead(local,'isla-car-name-v2')||'';$('driverName').readOnly=!!window.IslaCommunity?.account;if(window.IslaCommunity?.account)$('nameRules').textContent='Playing as your verified account. Guests are labeled Guest.';
+  $('driverName').value=window.IslaCommunity?.account?.username||safeRead(local,'isla-car-name-v2')||'';$('driverName').readOnly=!!window.IslaCommunity?.account;if(window.IslaCommunity?.account)$('nameRules').textContent='Playing as your signed-in account. Guests are labeled Guest.';
   $('roomBtn').onclick=$('friendsBtn').onclick=openRoom;$('roomClose').onclick=closeRoom;
   $('roomJoin').onclick=requestRoom;$('roomLeave').onclick=net.leave;
   $('roomCopy').onclick=async()=>{const url=new URL(location.href);url.pathname='/';url.search=W.customMap?'?map=custom&level='+encodeURIComponent(IslaCommunity.custom.info.id):W.mapId==='islands'?'':'?map='+W.mapId;url.hash='';try{await navigator.clipboard.writeText(url.href);status('Game link copied. Everyone joins the same global room.');}catch{status('Share the game address shown in your browser.');}};
