@@ -7,7 +7,7 @@
   function contact(position,range=.7,previous=null){const list=bins.get(Math.floor(position.x/cell)+','+Math.floor(position.y/cell)+','+Math.floor(position.z/cell))||[],q=new T.Vector3(),bary=new T.Vector3(),feet=new T.Vector3();let best=null,score=range;
    for(const data of list){
     const gap=position.clone().sub(data.triangle.a).dot(data.normal);
-    if(gap<-.35||gap>range||previous&&previous.dot(data.normal)<.5)continue;
+    if(gap<-.025||gap>range||previous&&previous.dot(data.normal)<.5)continue;
     // Contact must be above the actual road face. Clamping to a triangle's
     // closest edge repeatedly pulls an exiting car back, forming an invisible wall.
     q.copy(position).addScaledVector(data.normal,-gap);data.triangle.getBarycoord(q,bary);
@@ -21,9 +21,28 @@
    return best;
   }
   W.makerRoadContact=(p,range)=>contact(v(p),range);W.makerRoadTriangles=triangles;
+  // Sweep free-flight movement against both sides of the deck. Losing grip
+  // changes how the car moves, never whether the road is solid.
+  W.sweepMakerRoad=(from)=>{
+   const c=W.vehicle;let start=v(from),end=v(c),velocity=new T.Vector3(c.vx,c.vy,c.vz);
+   for(let pass=0;pass<4;pass++){
+    const box=new T.Box3().setFromPoints([start,end]).expandByScalar(.15),candidates=new Set();
+    for(let x=Math.floor(box.min.x/cell);x<=Math.floor(box.max.x/cell);x++)for(let y=Math.floor(box.min.y/cell);y<=Math.floor(box.max.y/cell);y++)for(let z=Math.floor(box.min.z/cell);z<=Math.floor(box.max.z/cell);z++)for(const t of bins.get(x+','+y+','+z)||[])candidates.add(t);
+    let best=null;
+    for(const data of candidates){const n=data.normal.clone(),a=start.clone().sub(data.triangle.a).dot(n),b=end.clone().sub(data.triangle.a).dot(n),side=a>=0?1:-1,da=a*side,db=b*side;if(db>=.12||db>=da-1e-9||da<.10-1e-6)continue;
+     const t=W.clamp((da-.12)/(da-db),0,1),p=start.clone().lerp(end,t),q=p.clone().addScaledVector(n,-side*.12),bary=data.triangle.getBarycoord(q,new T.Vector3());if(Math.min(bary.x,bary.y,bary.z)<-1e-6||p.y<height(p.x,p.z)+.09)continue;
+     if(!best||t<best.t)best={t,p,n:n.multiplyScalar(side)};
+    }
+    if(!best)break;
+    const remainder=end.clone().sub(best.p),into=remainder.dot(best.n);if(into<0)remainder.addScaledVector(best.n,-into);
+    start.copy(best.p).addScaledVector(best.n,.001);end.copy(start).add(remainder);const impact=velocity.dot(best.n);if(impact<0)velocity.addScaledVector(best.n,-impact);
+   }
+   Object.assign(c,{x:end.x,y:end.y,z:end.z,vx:velocity.x,vy:velocity.y,vz:velocity.z});
+  };
   W.stepMakerRoad=(dt,input,time)=>{
    const c=W.vehicle;if(c.wall)return false;let pos=v(c),velocity=new T.Vector3(c.vx,c.vy,c.vz),speed=velocity.length(),hit=contact(pos,.7,c.roadFrame?.up);
-   if(!hit||!c.roadFrame&&velocity.dot(hit.normal)>4||hit.normal.y<.25&&speed<15){c.roadFrame=null;c.roadMode=false;return false;}
+   const supported=hit&&(hit.road.object?.type==='loop'?(speed*speed-velocity.dot(hit.normal)**2)/(24*hit.road.object.scale)+9.81*hit.normal.y>=0:hit.normal.y>=0||speed>=15);
+   if(!hit||!c.roadFrame&&velocity.dot(hit.normal)>.5||!supported){c.roadFrame=null;c.roadMode=false;return false;}
    const previousAir=c.airtime,spec=W.getCarSpec(),size=spec.size||1,mass=spec.mass||1,up=hit.normal.clone();let forward=c.roadFrame?.forward.clone()||new T.Vector3(Math.sin(c.yaw),0,Math.cos(c.yaw));forward.addScaledVector(up,-forward.dot(up));if(forward.lengthSq()<.01)forward=velocity.clone().addScaledVector(up,-velocity.dot(up));if(forward.lengthSq()<.01){c.roadMode=false;return false;}forward.normalize();
    let along=velocity.dot(forward);if(!input.boost)c.nitroTime=0;if(input.boost&&!c.nitroHeld&&c.nitroTime<=0&&c.nitroCharge===1&&along>=-.6){c.nitroDuration=5+Math.random()*2;c.nitroTime=c.nitroDuration;W.onNitroStart?.(c.nitroDuration);}c.nitroHeld=!!input.boost;const boost=c.nitroTime>0,gas=boost?1:W.clamp(Number(input.gas)||0,0,1),brake=W.clamp(Number(input.brake)||0,0,1),scale=spec.speedScale||1,engine=spec.engine||1;
    c.steer=W.mix(c.steer,(input.steer||0)*.56/(1+Math.abs(along)*.027),1-Math.exp(-dt*5.5/Math.sqrt(mass)));const turn=W.clamp(along/(2.85*size)*Math.tan(c.steer),-10/Math.max(4,Math.abs(along)),10/Math.max(4,Math.abs(along)));forward.applyAxisAngle(up,turn*dt);const right=new T.Vector3().crossVectors(up,forward).normalize();

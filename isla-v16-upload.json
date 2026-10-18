@@ -1,5 +1,5 @@
 {
-  "version": "1.71",
+  "version": "1.72",
   "files": [
     {
       "name": "three.min.js",
@@ -79,7 +79,7 @@
     {
       "name": "maker-assets.js",
       "destination": "public/maker-assets.js",
-      "sha256": "e7f92c4a756b5b1a043a7b86c80a9a1626bf5564ababf9230613d675be7bb2d4"
+      "sha256": "062e14f88b58700445923c8e9123a976e1b74e01cdfc9a94d2561103bca8d7d9"
     },
     {
       "name": "community-api.js",
@@ -87,24 +87,29 @@
       "sha256": "f5a18a50fa53e1b584e00cdda3f08ea6de33497fc1a77daa8edf0613efeaec17"
     },
     {
+      "name": "editor-test.js",
+      "destination": "public/editor-test.js",
+      "sha256": "d02c29b38c9d4a3c34f2152105d65656165eecaa5b29ee3c6bd6b7e7cee94853"
+    },
+    {
       "name": "map-editor.js",
       "destination": "public/map-editor.js",
-      "sha256": "1fe623638aa425f53399f1c8442c0954e108d215292e6f18f4fe752e821b0504"
+      "sha256": "c501c7f1504535222e86580c0c44e9f64379afac202be765ae0f7abe91844ea4"
     },
     {
       "name": "community-ui.js",
       "destination": "public/community-ui.js",
-      "sha256": "2592880f28b5ff3b5ff0ee97ccd644a900dcfc5b54ed8589e392dbc5e714d142"
+      "sha256": "1208a951619c7c21c8d99ae398c0764a9bf4a8990afea0f485a6d78fadc92f0b"
     },
     {
       "name": "maker-driving.js",
       "destination": "public/maker-driving.js",
-      "sha256": "3a0537cdcffa29d55de7fb3234a8997216b5f532dfbda17c015ee86697c3abe2"
+      "sha256": "05f678e29a421bdeb70d985a95528a4b0c27d7447552cd0be8f68a861f5621b1"
     },
     {
       "name": "custom-map.js",
       "destination": "public/custom-map.js",
-      "sha256": "e7d8bfbd2d916f9765505a569788e24c9e2945b8c2f1d8d3e9b65675c1f9c6a5"
+      "sha256": "30acbaef47f3923ade3bc7223ebb7411b710b1705e4bb3b3bdd85df47c102413"
     },
     {
       "name": "game.js",
@@ -119,12 +124,12 @@
     {
       "name": "community.css",
       "destination": "public/community.css",
-      "sha256": "1b7ac28c9299daacab21aba811e9c5ea609af542928e98f26ad5b0374dc226dd"
+      "sha256": "2536f5c064f9bff3b8a266d0faebbfbb66c6d7a5736c540c82a59ea582d27601"
     },
     {
       "name": "index.html",
       "destination": "public/index.html",
-      "sha256": "2b149cf614a0c05cbdccedbf79a4c10a5db0b48ab1bad6ebe3b91dd126892db1"
+      "sha256": "d2313f64f7438f89fea58703381764647e9365de930ec4c9c3fd52100f594a56"
     },
     {
       "name": "THREE-LICENSE.txt",
@@ -175,6 +180,11 @@
       "name": "community.test.cjs",
       "destination": "test/community.test.cjs",
       "sha256": "0a54172633b3528400ebb86c5f876b71115d1c4be5fecca4f41175cda86333b0"
+    },
+    {
+      "name": "editor-test.test.cjs",
+      "destination": "test/editor-test.test.cjs",
+      "sha256": "430f2889d97b355b3f88fbb2ed2638735f736df67d226873fab1d636a0c7c37b"
     },
     {
       "name": "game.test.cjs",
@@ -234,7 +244,7 @@
     {
       "name": "v17.test.cjs",
       "destination": "test/v17.test.cjs",
-      "sha256": "75ddd35789c1581c90d2519567a8590bf4dd7467f657d4cbcab41a5952b548af"
+      "sha256": "5bc4e2af2fbc0d0a37aabad2b32899509b3c738830afb649f5a727971d5ff8fc"
     },
     {
       "name": "aura-check.cjs",
@@ -284,22 +294,22 @@
     {
       "name": "package.json",
       "destination": "package.json",
-      "sha256": "ae8ef62a30c51ab853a44cdb1d00d3ed81feeb313df60bedc1f5cc890c740f35"
+      "sha256": "243e3c2ad8b571271fbb8fcc49391804eae2ca25975cc4770cb01cdc1b67208b"
     },
     {
       "name": "package-lock.json",
       "destination": "package-lock.json",
-      "sha256": "91ce8e61c67248d05c0efcc021d0bb8a33917a060174ee58a0cd9449e094aad6"
+      "sha256": "821d0a1c0e1cc30af5a8c2781d6b9f1237658b92518fc080e0f99014cf4af33f"
     },
     {
       "name": "prepare-cloudflare.cjs",
       "destination": "prepare-cloudflare.cjs",
-      "sha256": "66893590f259446542e5e8e4d26bbb1f9ae110ebb304ce28ff51cce12c349c86"
+      "sha256": "95a94187120bdbcc1e1fa2dabb7cf5d95d028c242fcf4944b807fea4832c8c9a"
     },
     {
       "name": "README.txt",
       "destination": "README.txt",
-      "sha256": "9b72ed181dd720ff0fb8462a86be71eabc891669f26aefb489424b42e9e4933c"
+      "sha256": "c88c0bffe0b1f0ea5b8256755365f260eaabedd204cf9321ca20355f8c98fa72"
     }
   ]
 }

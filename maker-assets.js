@@ -16,7 +16,7 @@
   }
   else if(o.type==='car'){box(g,1.9,.7,4.4,0,.65,0,wall);box(g,1.6,.7,2,0,1.3,-.15,glass);for(const s of [-1,1])for(const z of [-1.4,1.4]){const tire=new T.Mesh(new T.CylinderGeometry(.4,.4,.25,12),mat('#202829'));tire.rotation.z=Math.PI/2;tire.position.set(s,.4,z);g.add(tire);}}
   else if(o.type==='spawn'&&editor){const gem=new T.Mesh(new T.OctahedronGeometry(2),mat(tint,.25));gem.position.y=3;g.add(gem);const arrow=new T.ArrowHelper(new T.Vector3(0,0,1),new T.Vector3(0,.3,0),6,0xc9fc8a,2,1);g.add(arrow);}
-  else if(o.type==='ramp'){const p=[],idx=[];for(let i=0;i<=24;i++){const z=-12+i,h=6*(i/24)**2;for(const x of [-4.5,4.5])p.push(x,h,z);if(i){let k=i*2;idx.push(k-2,k,k-1,k-1,k,k+1);}}const geo=new T.BufferGeometry();geo.setAttribute('position',new T.Float32BufferAttribute(p,3));geo.setIndex(idx);geo.computeVertexNormals();const ramp=new T.Mesh(geo,new T.MeshStandardMaterial({color:tint,side:T.DoubleSide}));g.add(ramp);for(const z of [0,10])for(const x of [-4,4]){const h=6*((z+12)/24)**2;box(g,.35,h,.35,x,h/2,z,roof);}}
+  else if(o.type==='ramp'){const p=[],idx=[];for(let i=0;i<=24;i++){const z=-12+i,h=6*(i/24)**2;for(const x of [-4.5,4.5])p.push(x,h,z);if(i){let k=i*2;idx.push(k-2,k,k-1,k-1,k,k+1);}}const geo=new T.BufferGeometry();geo.setAttribute('position',new T.Float32BufferAttribute(p,3));geo.setIndex(idx);geo.computeVertexNormals();const ramp=new T.Mesh(geo,new T.MeshStandardMaterial({color:tint,side:T.DoubleSide}));ramp.userData.testSurface=true;g.add(ramp);for(const z of [0,10])for(const x of [-4,4]){const h=6*((z+12)/24)**2;box(g,.35,h,.35,x,h/2,z,roof);}}
   g.traverse(m=>{if(m.isMesh){m.castShadow=true;m.receiveShadow=true;}});return g;
  }
 
@@ -25,7 +25,7 @@
    const a=corners[i-1],b=corners[i];for(const j of [0,2,1,1,2,3]){const p=[...a,...b][j];positions.push(p.x,p.y,p.z);colors.push(base.r,base.g,base.b);}
    if(i%3!==0){const thin=[a,b].flatMap(pair=>[.5-.075/road.width,.5+.075/road.width].map(t=>{const p=pair[0],q=pair[1],up=road.samples[i].up||{x:0,y:1,z:0};return {x:p.x+(q.x-p.x)*t+up.x*.025,y:p.y+(q.y-p.y)*t+up.y*.025,z:p.z+(q.z-p.z)*t+up.z*.025};}));for(const j of [0,2,1,1,2,3]){const p=thin[j];positions.push(p.x,p.y,p.z);colors.push(line.r,line.g,line.b);}}
   }
-  const geo=new T.BufferGeometry();geo.setAttribute('position',new T.Float32BufferAttribute(positions,3));geo.setAttribute('color',new T.Float32BufferAttribute(colors,3));geo.computeVertexNormals();const mesh=new T.Mesh(geo,new T.MeshStandardMaterial({vertexColors:true,roughness:.92,side:T.DoubleSide}));mesh.receiveShadow=mesh.castShadow=true;group.add(mesh);
+  const geo=new T.BufferGeometry();geo.setAttribute('position',new T.Float32BufferAttribute(positions,3));geo.setAttribute('color',new T.Float32BufferAttribute(colors,3));geo.computeVertexNormals();const mesh=new T.Mesh(geo,new T.MeshStandardMaterial({vertexColors:true,roughness:.92,side:T.DoubleSide}));mesh.userData.testSurface=true;mesh.receiveShadow=mesh.castShadow=true;group.add(mesh);
   const iron=mat('#646d74',.48);for(const p of M.roadSupports(road,height)){const post=box(group,p.w,p.h,p.w,p.x,p.y+p.h/2,p.z,iron);post.userData.support=true;}return group;
  }
  // Ocean is a template for the seabed, not a blue coating on raised land.
