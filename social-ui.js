@@ -36,7 +36,7 @@
  };
  C.openSocialView=async(main,view)=>{
   main.classList.add('s-main');if(view==='messages'&&C.query.get('id'))return conversation(main,C.query.get('id'));
-  main.innerHTML=`<section class="c-hero"><span class="c-kicker">V1.8 / YOUR PEOPLE</span><h1>Good company.<br>Better drives.</h1><p>Find a creator, send a request, and keep the conversation going.</p></section><div class="s-top-actions"><button class="c-primary" id="sFind">Find drivers ↗</button><button id="sMyProfile">Post an update</button><span id="sInboxStatus" role="status">Checking messages…</span></div><div id="sInbox"></div>`;
+  main.innerHTML=`<section class="c-hero"><span class="c-kicker">V1.81 / YOUR PEOPLE</span><h1>Good company.<br>Better drives.</h1><p>Find a creator, send a request, and keep the conversation going.</p></section><div class="s-top-actions"><button class="c-primary" id="sFind">Find drivers ↗</button><button id="sMyProfile">Post an update</button><span id="sInboxStatus" role="status">Checking messages…</span></div><div id="sInbox"></div>`;
   bind(main,'#sFind',()=>C.go({view:'search'}));bind(main,'#sMyProfile',()=>C.go({view:'profile',id:C.account.id}));
   const box=main.querySelector('#sInbox');let signature='';
   async function refresh(){const d=await C.api('social/inbox');if(!box.isConnected)return;main.querySelector('#sInboxStatus').textContent='Updates automatically';const json=JSON.stringify(d);if(signature===json)return;signature=json;

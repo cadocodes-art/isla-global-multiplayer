@@ -1,5 +1,5 @@
 {
-  "version": "1.8",
+  "version": "1.81",
   "files": [
     {
       "name": "three.min.js",
@@ -92,14 +92,19 @@
       "sha256": "d02c29b38c9d4a3c34f2152105d65656165eecaa5b29ee3c6bd6b7e7cee94853"
     },
     {
+      "name": "maker-selection.js",
+      "destination": "public/maker-selection.js",
+      "sha256": "9e1a310e222ad9dce32a071200dce2d0f016838a3f562a1186dbf330d26da1b8"
+    },
+    {
       "name": "map-editor.js",
       "destination": "public/map-editor.js",
-      "sha256": "c501c7f1504535222e86580c0c44e9f64379afac202be765ae0f7abe91844ea4"
+      "sha256": "d8f36c3ef26fdb3ccda4bd4cf4962a2f28f9abcb4726d194ce1768ff9925c61e"
     },
     {
       "name": "community-ui.js",
       "destination": "public/community-ui.js",
-      "sha256": "37df1955b18d5e49652da7341afa0abf09d544fa1b6573854fca5e8776426b5c"
+      "sha256": "c93aaee4d5a266ea60e0697c8bc9d0152d5a6f332a99c8c52b034d1ee2080e8d"
     },
     {
       "name": "social-rules.js",
@@ -109,7 +114,7 @@
     {
       "name": "social-ui.js",
       "destination": "public/social-ui.js",
-      "sha256": "11ea38c89497d2f964f86aba4751def7c7dac8254723de7c87ae7cb9280294bb"
+      "sha256": "95d57affe5fad58998c2386aaa764f0b4f4fd9fc865915c47e22d0dd8bae7286"
     },
     {
       "name": "maker-driving.js",
@@ -134,7 +139,7 @@
     {
       "name": "community.css",
       "destination": "public/community.css",
-      "sha256": "2536f5c064f9bff3b8a266d0faebbfbb66c6d7a5736c540c82a59ea582d27601"
+      "sha256": "aa3f2a59270cba4c2d8a9251b87a1584b9b532824aba8699bf00200b18eac3a8"
     },
     {
       "name": "social.css",
@@ -144,7 +149,7 @@
     {
       "name": "index.html",
       "destination": "public/index.html",
-      "sha256": "498001848238942b37cc565759a35508455012b2b76dee77ca408675796482d0"
+      "sha256": "1011e61b4d782e791ea777b752a75ceddc469bd884b428a18cd28c140cf4e635"
     },
     {
       "name": "THREE-LICENSE.txt",
@@ -204,7 +209,7 @@
     {
       "name": "editor-test.test.cjs",
       "destination": "test/editor-test.test.cjs",
-      "sha256": "430f2889d97b355b3f88fbb2ed2638735f736df67d226873fab1d636a0c7c37b"
+      "sha256": "1444a7af30ce563490b14ef5e072f124b2dc4633baf08606b21abbab7a53d4e3"
     },
     {
       "name": "game.test.cjs",
@@ -237,6 +242,11 @@
       "sha256": "23e3aebe9a6523de5c528d9a72a8ad1939a1c8e67192727cb84397c5506ce96c"
     },
     {
+      "name": "selection.test.cjs",
+      "destination": "test/selection.test.cjs",
+      "sha256": "374b1e386a2b10f854bf565ebe7b63fc1a068425d50eaafdc9020cb9ccfa50dd"
+    },
+    {
       "name": "social.test.cjs",
       "destination": "test/social.test.cjs",
       "sha256": "b81bc1321064905dd33bbac1e229a7e6353cf47e1efcc91e9601bbc2877944ed"
@@ -264,12 +274,12 @@
     {
       "name": "v16-integration.test.cjs",
       "destination": "test/v16-integration.test.cjs",
-      "sha256": "e35cc705d4c240eba173bf6b245e4edd5de8a982556f9ebe43dcaf37f670292a"
+      "sha256": "0a465382c9b88a7eadef49a064a9ab8845ec563c0308bbbc5f9f2efbbe144043"
     },
     {
       "name": "v17.test.cjs",
       "destination": "test/v17.test.cjs",
-      "sha256": "5bc4e2af2fbc0d0a37aabad2b32899509b3c738830afb649f5a727971d5ff8fc"
+      "sha256": "cd37eaf2cde2454753a6e54e00b1bd9e1e1659d4e27263ecedbad7ebd75ae1ae"
     },
     {
       "name": "aura-check.cjs",
@@ -319,22 +329,22 @@
     {
       "name": "package.json",
       "destination": "package.json",
-      "sha256": "5afab6379c99ea7ec515d8806aa159717514582a16f695142288ab325297f673"
+      "sha256": "3c890aac67a8c961a263887c604e6a9e59e1e65223e63634e097b0fef0b8741b"
     },
     {
       "name": "package-lock.json",
       "destination": "package-lock.json",
-      "sha256": "bb3b09df3740efd40692cb2976e956914df2ef48ed1609f8b03ea16d8c6e6370"
+      "sha256": "47b2fc32f5b14b4c829f4e1324accf64f9044333073a71aebc9efebec14c2162"
     },
     {
       "name": "prepare-cloudflare.cjs",
       "destination": "prepare-cloudflare.cjs",
-      "sha256": "b5164bb2d573cccf5eb071b40eca484bc6f8a0ab7ca01fb47233a037905896f7"
+      "sha256": "3c9a2828a3fe77636fa6836bd20bb5bff78fcc6b152eb0c25b7dea3ec12438a0"
     },
     {
       "name": "README.txt",
       "destination": "README.txt",
-      "sha256": "1f19db8e7f3ee1064a84d93c4da4d83a485258b07080c4e7e7bd7fa1ab60271f"
+      "sha256": "ce7512bfca1a25157a550088fbe72ebced3f956bb44e19ced3a47d3608245117"
     }
   ]
 }
