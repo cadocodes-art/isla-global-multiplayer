@@ -1,57 +1,79 @@
-ISLA V1.81 — MAP MAKER GROUPS & COPY / PASTE
+ISLA V1.9 — THE PLAYPLACE + NEW RIDES
 
-UPDATE THE ONLINE GAME
-1. Extract ISLA-V1.81-Update.zip.
+UPDATE YOUR ONLINE GAME
+1. Download ISLA-V1.9-Update.zip and extract it (right-click > Extract All).
 2. Open https://github.com/cadocodes-art/isla-global-multiplayer
-3. On the repository's main file screen, choose Add file > Upload files.
-4. Drag ALL files from inside the extracted folder onto the upload screen.
-   Upload the files themselves, including isla-v16-upload.json — not the ZIP
-   and not the folder containing them. Commit the changes.
-5. Wait for the existing Cloudflare deployment, then reload the game.
-   The main menu and community header will show V1.81.
+3. Stay on the branch your Cloudflare game already builds.
+4. On the screen listing your repository's files, choose Add file > Upload files.
+5. Open the extracted folder, select ALL the files inside it, and drag them
+   into GitHub's upload area. Upload the files themselves, NOT the ZIP and
+   NOT a folder containing them. Include isla-v16-upload.json.
+6. Commit the changes. Wait for the connected Cloudflare deployment to finish.
+7. Reload https://isla-global-multiplayer.cadocodes.workers.dev/?menu=1
+   The main menu and community header should show V1.9.
 
-Keep your current wrangler.jsonc, Worker name, OWNER_ACCOUNT_ID, secrets,
-database bindings, and settings. This ZIP has no replacement wrangler.jsonc.
-Use the existing isla-global-multiplayer Worker. No new Worker is needed.
-No account, map, aura balance, car, or owner setting is reset by this update.
-No new playtest aura is granted. Momster's recent credit is already saved.
+Use your existing Worker and existing configuration. The ZIP deliberately has
+no wrangler.jsonc. Your Worker name, database bindings, OWNER_ACCOUNT_ID, and
+secrets stay as they are. No new Worker, account reset, or database migration
+is needed. Existing maps, balances, and owned cars are preserved.
 
-Build command: npm run build
-Deploy command: npx wrangler deploy
-Preview command: npx wrangler versions upload
+Keep these existing build settings:
+  Build command: npm run build
+  Deploy command: npx wrangler deploy
+  Preview command: npx wrangler versions upload
 
-The old filename isla-v16-upload.json is intentional. Its version is 1.81.
-It verifies the complete upload and restores the required folders at build.
-This package has not been deployed automatically.
+The manifest filename isla-v16-upload.json stays the same for compatibility;
+its version is now 1.9. It verifies every file before restoring the folders.
+If the build reports an incomplete upload, re-upload all files from this ZIP.
+Do not remove scripts/build-world.cjs or change the build command to skip it.
+The file named "traffic (1).js" is intentional: it contains server traffic,
+while "traffic.js" contains browser traffic. Keep both exact filenames.
+This package is prepared for you to upload; it has not been deployed for you.
 
-USING THE NEW TOOLS
-- Open a map, select Edit, then choose Object.
-- Multi-select: turn it on and tap objects to add or remove them.
-- Box select: drag a rectangle to add the objects it touches. Clear empties
-  the selection. Use Select to return to tapping. Shift-click also adds or
-  removes objects on desktop; camera panning has its own Pan button.
-- Every selected object has an outline. The dock shows the selection count.
-- Copy remembers the selected objects. Paste shows a transparent preview.
-  Tap or drag on the map to position it, then choose Place objects or Cancel.
-- Duplicate copies the current selection and opens the same placement preview.
-- Copy/Paste works between your maps in the same browser tab and account.
-  Browser session storage must be allowed for the clipboard to survive leaving
-  the editor. This is the Map Maker's own clipboard, not your device clipboard.
-- Copies keep paint, sign text, surface, scale, elevation and all three angles.
-  Terrain and ground paint are not included. The starting diamond is never
-  duplicated; it can still be moved as part of a selected group.
-- With multiple objects selected, use the direction / Up / Down buttons to
-  move the whole group. Select a rotation axis, enter an angle, and tap Rotate
-  group. Scale by 2 doubles the group; 0.5 halves it. Each object's final scale
-  must stay between 0.25x and 4x. Focus group centers the camera on your objects.
-- If a paste or transform exceeds a map limit, the entire action is rejected.
-  Object origins must stay in the editable area. Limits remain 1,200 objects,
-  64 traffic cars, and the existing permitted elevation range.
-- Undo / Redo handles each paste or group transform as one action.
-- Two fingers pan and pinch to zoom in every selection / placement mode.
-  Buttons are sized for touch; the lower tool panel scrolls to more controls.
-- Ctrl/Cmd+C: copy. Ctrl/Cmd+V: preview paste. Ctrl/Cmd+D: duplicate.
-  Escape cancels a paste. Ctrl/Cmd+Z: undo. Ctrl/Cmd+Shift+Z: redo.
-  Shortcuts do not interfere with typing in signs or other text fields.
+WHAT IS NEW
+- The Playplace is map 04 / 04. Use the main-menu arrow to reach it.
+  A 1,600 by 1,400 meter indoor arena contains nine trampolines, two foam
+  pits, fifteen swinging ropes, two spiral climbs, slides, tunnels, elevated
+  bridges, and wide turning decks. The foam slows cars and moves when hit;
+  its sloped edges let even the starter car drive out. Ropes swing on impact.
+- Cars bump and push one another in every global room, including community
+  maps. The server sends the same impact to both drivers. New spawns and
+  recovery teleports have a brief three-second collision grace period.
+- Map Maker now has 50 original-map slots. Level copies also holds 50 maps.
+  Existing slots keep their contents.
+- Place Lamp posts from Build. They support the existing edit, color, group,
+  duplicate, copy/paste, and delete tools. They illuminate nearby surfaces
+  after dark. Nearby lights are limited to keep mobile rendering manageable.
+- The corner Time of day slider runs from 12 AM through noon to 12 AM,
+  in 15-minute steps. It works with touch and supports Undo / Redo. The time
+  saves in the map and is used in test drives and its published global room.
+  Old maps default to 2 PM. The driving settings show the map's saved time.
+- Shared map details show the date and time in the viewer's local time zone.
+  Future re-shares keep the first recorded publication date. Existing maps
+  retain the publication timestamp already stored by the previous version.
 
-Your game: https://isla-global-multiplayer.cadocodes.workers.dev/
+NEW GARAGE CARS
+  Water Skidder     280,000 aura    273 km/h with nitro
+    Boat-shaped body. Wheels retract on water. Unlimited water driving,
+    including stopping and restarting. Wheels extend again on land.
+  Micro            200,000 aura    261 km/h with nitro
+    40% of Solstice R size with extremely quick acceleration.
+  Vespera          340,000 aura    322 km/h with nitro
+    A sleek sculpted supercar, about Solstice R size.
+  Casual Cruiser    40,000 aura    214 km/h with nitro
+    An approachable everyday sedan.
+  Hover            255,000 aura    278 km/h with nitro
+    Four angled propellers. Rises about half a meter while moving on land.
+    It does not float on water: the normal skim and sinking rules apply.
+
+Plane Car now costs 330,000 aura. Existing owners keep it. Its speeds remain
+240 km/h with ground nitro and 290 km/h with airborne nitro.
+The US customary option also applies to the new cars and map information.
+
+VERIFICATION
+The update was checked with the existing regression suite plus new vehicle,
+lighting, 50-slot storage, publication date, playground physics, and two-client
+multiplayer collision tests. Desktop and 390-pixel phone layouts were checked
+in the local browser. This was not a hardware test on your iPad/Safari.
+Foam and rope animation is local visual physics; player impacts are synchronized.
+The package contains no local preview fixtures or test accounts.

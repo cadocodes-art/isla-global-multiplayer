@@ -2,17 +2,17 @@
 (()=>{
  const W=Isla,T=THREE;
  const requested=typeof IslaMapId==='string'?IslaMapId:typeof location!=='undefined'?new URLSearchParams(location.search).get('map'):null;
- W.mapId=requested==='obstacle'?'peaks':['city','peaks'].includes(requested)?requested:'islands';
- W.mapInfo=W.mapId==='peaks'?{name:'Islayan Peaks',short:'ISLAYAN PEAKS',index:3,headline:'Above the clouds.<br><em>Beyond the coast.</em>',description:'Five peaks. An endless snowfall.<br>Follow the passes. Find your mountain town.',specs:['5 mountain peaks','500 m summit','Snowfall · valley town']}:W.mapId==='city'?{name:'Costa Metro',short:'COSTA METRO',index:2,headline:'The city.<br><em>At your mercy.</em>',description:'A skyline to chase. Streets to own.<br>Go above the traffic. Or straight through it.',specs:['Coastal downtown','72 traffic cars','Rolling hillside roads']}:{name:'Santa Luz + Santa Ruiz',short:'LUZ + RUIZ',index:1,headline:'Paradise.<br><em>With consequences.</em>',description:'Two islands. Your next obsession.<br>Find your road. Or make your own.',specs:['2 islands · 400 m bridge','Open terrain','Persistent destruction']};
+ W.mapId=requested==='obstacle'?'peaks':['city','peaks','playplace'].includes(requested)?requested:'islands';
+ W.mapInfo=W.mapId==='playplace'?{name:'The Playplace',short:'THE PLAYPLACE',index:4,headline:'Go big.<br><em>Play bigger.</em>',description:'An entire playground. Built for cars.<br>Bounce higher. Take the slide. Make some noise.',specs:['Giant indoor arena','Trampolines · foam pits','Spiral ramps · swinging ropes']}:W.mapId==='peaks'?{name:'Islayan Peaks',short:'ISLAYAN PEAKS',index:3,headline:'Above the clouds.<br><em>Beyond the coast.</em>',description:'Five peaks. An endless snowfall.<br>Follow the passes. Find your mountain town.',specs:['5 mountain peaks','500 m summit','Snowfall · valley town']}:W.mapId==='city'?{name:'Costa Metro',short:'COSTA METRO',index:2,headline:'The city.<br><em>At your mercy.</em>',description:'A skyline to chase. Streets to own.<br>Go above the traffic. Or straight through it.',specs:['Coastal downtown','72 traffic cars','Rolling hillside roads']}:{name:'Santa Luz + Santa Ruiz',short:'LUZ + RUIZ',index:1,headline:'Paradise.<br><em>With consequences.</em>',description:'Two islands. Your next obsession.<br>Find your road. Or make your own.',specs:['2 islands · 400 m bridge','Open terrain','Persistent destruction']};
  W.bindMapMenu=()=>{
   const $=id=>document.getElementById(id),info=W.mapInfo;
-  $('mapName').textContent=info.name;$('mapNumber').textContent=String(info.index).padStart(2,'0')+' / 03';$('place').textContent=info.short;
+  $('mapName').textContent=info.name;$('mapNumber').textContent=String(info.index).padStart(2,'0')+' / 04';$('place').textContent=info.short;
   $('introTitle').innerHTML=info.headline;$('introDescription').innerHTML=info.description;$('introSpecs').innerHTML=info.specs.map(s=>'<span>'+W.units.text(s)+'</span>').join('<i></i>');
-  $('mapCaption').textContent=info.short;$('mapScale').textContent=W.units.distance(W.mapId==='peaks'?4800:W.mapId==='city'?2100:3400);$('world').setAttribute('aria-label',info.name+' driving game');
+  $('mapCaption').textContent=info.short;$('mapScale').textContent=W.units.distance(W.mapId==='playplace'?1600:W.mapId==='peaks'?4800:W.mapId==='city'?2100:3400);$('world').setAttribute('aria-label',info.name+' driving game');
   $('roomMapName').textContent=info.short+' · ONE SHARED WORLD';$('roomIntro').textContent='Join other drivers exploring '+info.name+'.';
-  $('mapNext').setAttribute('aria-label','Preview '+(W.mapId==='city'?'Islayan Peaks':W.mapId==='peaks'?'the islands':'Costa Metro city'));
+  $('mapNext').setAttribute('aria-label','Preview '+(W.mapId==='city'?'Islayan Peaks':W.mapId==='peaks'?'The Playplace':W.mapId==='playplace'?'the islands':'Costa Metro city'));
   const go=map=>{const url=new URL(location.href);url.searchParams.set('map',map);url.searchParams.set('menu','1');location.assign(url.href);};
-  $('mapNext').onclick=()=>go(W.mapId==='city'?'peaks':W.mapId==='peaks'?'islands':'city');
+  $('mapNext').onclick=()=>go(W.mapId==='city'?'peaks':W.mapId==='peaks'?'playplace':W.mapId==='playplace'?'islands':'city');
   $('mapMenuBtn').onclick=()=>{if(W.net?.active)W.net.leave();go(W.mapId);};
  };
  if(W.mapId!=='city')return;

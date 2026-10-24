@@ -5,7 +5,7 @@
  const safeWrite=(storage,key,value)=>{try{if(value===null)storage.removeItem(key);else storage.setItem(key,value)}catch{}};
  let local,session;try{local=localStorage;session=sessionStorage}catch{}
  let sessionKey=W.mapId==='peaks'?'isla-global-peaks-v1':W.mapId==='city'?'isla-global-city-v4':'isla-global-v2';
- const net=W.net={active:false,connected:false,code:'GLOBAL',id:'',host:'',players:[],remotes:new Map(),latency:0};
+ const net=W.net={collisionSeq:0,active:false,connected:false,code:'GLOBAL',id:'',host:'',players:[],remotes:new Map(),latency:0};
  let socket=null,identity=null,intent=null,connecting=false,leaving=false,retry=null,connectTimeout=null,attempt=0,lastSend=0,lastPing=0,lastAura=0,pendingAura=0,scoreSeq=0,trafficTargets=null,ui=null,open=false;
  let chatOpen=false,chatResume=false,chatCategory='Vibes',chatReadyAt=0,chatPendingUntil=0,lastChatHint='';
  const bubbles=new Map(),chatPoint=new T.Vector3(),chatView=new T.Vector3();
@@ -60,7 +60,7 @@
  };
  function status(message,error=false){$('roomStatus').textContent=message;$('roomStatus').classList.toggle('error',error);}
  function saveIdentity(){safeWrite(session,sessionKey,identity?JSON.stringify(identity):null);}
- function pose(){const c=W.vehicle,parked=ui.paused()||document.hidden;return {x:c.x,y:c.y,z:c.z,yaw:c.yaw,vx:parked?0:c.vx,vy:parked?0:c.vy,vz:parked?0:c.vz,pitch:c.pitch,roll:c.roll,steer:c.steer,speed:parked?0:c.speed,car:W.garage.selected,color:W.garage.getColor(),nitro:!parked&&c.nitroTime>0,wallMode:c.wallMode||'',roadMode:!!c.roadMode,grounded:c.grounded,water:c.waterMode,brake:!!c.brake,parked};}
+ function pose(){const c=W.vehicle,parked=ui.paused()||document.hidden;return {collisionAck:net.collisionSeq,x:c.x,y:c.y,z:c.z,yaw:c.yaw,vx:parked?0:c.vx,vy:parked?0:c.vy,vz:parked?0:c.vz,pitch:c.pitch,roll:c.roll,steer:c.steer,speed:parked?0:c.speed,car:W.garage.selected,color:W.garage.getColor(),nitro:!parked&&c.nitroTime>0,wallMode:c.wallMode||'',roadMode:!!c.roadMode,grounded:c.grounded,water:c.waterMode,brake:!!c.brake,parked};}
  function applySpawn(state){W.resetVehicle(true);Object.assign(W.vehicle,{x:state.x,y:state.y,z:state.z,yaw:state.yaw,lastSafe:{x:state.x,z:state.z,yaw:state.yaw}});}
  function drawRoster(){
   $('chatBtn').disabled=!net.connected;if(!net.connected)closeChat(false);lastChatHint='';
@@ -109,7 +109,7 @@
    if(data.type==='welcome'){
     const expected=W.buildings.map(b=>[b.id,Math.round(b.x*100),Math.round(b.z*100)]);
     if((data.mapId&&data.mapId!==W.mapId)||JSON.stringify(expected)!==JSON.stringify(data.buildings)){disconnectToSolo('This game version differs from the server. Refresh before joining.');openRoom();status('This game version differs from the server. Refresh before joining.',true);return;}
-    clearTimeout(connectTimeout);attempt=0;connecting=false;net.active=net.connected=true;net.code=data.code;net.id=data.id;net.host=data.host;net.players=data.players;scoreSeq=data.scoreSeq;pendingAura=0;
+    clearTimeout(connectTimeout);attempt=0;connecting=false;net.active=net.connected=true;net.code=data.code;net.id=data.id;net.collisionSeq=data.collisionSeq||0;net.host=data.host;net.players=data.players;scoreSeq=data.scoreSeq;pendingAura=0;
     identity={code:data.code,token:data.token,name:intent?.name||identity?.name||$('driverName').value};saveIdentity();
     ui.restore();ui.buildings(data.hp);for(const [id,dx,dz]of data.trees||[])W.fellTree?.(W.trees[id],dx,dz,true);applySpawn(data.state);drawRoster();ui.start();closeRoom();status('Connected to the global room.');ui.toast(data.resumed?'Back in the global room.':'GLOBAL ROOM · '+identity.name,5);
    }else if(data.type==='error'){
@@ -119,6 +119,8 @@
    }else if(data.type==='roster'){
     net.players=data.players;net.host=data.host;drawRoster();
     const ids=new Set(data.players.map(p=>p.id));for(const [id,r] of net.remotes)if(!ids.has(id)){disposeRemote(r);net.remotes.delete(id);}
+   }else if(data.type==='collision'&&net.active){
+    if(Number.isSafeInteger(data.seq)&&data.seq>net.collisionSeq&&['dx','dz','dvx','dvz'].every(k=>Number.isFinite(data[k]))){net.collisionSeq=data.seq;const c=W.vehicle;c.x+=data.dx;c.z+=data.dz;c.vx+=data.dvx;c.vz+=data.dvz;c.speed=c.vx*Math.sin(c.yaw)+c.vz*Math.cos(c.yaw);c.roadFrame=null;W.onImpact?.(c.x,c.y+.7,c.z,Math.min(35,data.speed||0));lastSend=0;send({type:'state',state:pose()});}
    }else if(data.type==='frame'&&net.active){
     for(const p of data.players){if(p.id!==net.id)remoteFor(p);else if(Number.isFinite(p.nukeRemaining))W.syncNukeTimer(p.nukeRemaining);}
     trafficTargets=data.traffic;
@@ -160,7 +162,7 @@
    car.nitro.group.visible=!!s.nitro&&r.connected&&s.water!=='sinking';car.nitro.light.intensity=car.nitro.group.visible?1.8:0;
    for(const jet of car.nitro.jets){jet.jet.scale.z=1.8+Math.sin(time*43)*.2;jet.material.uniforms.time.value=time;jet.material.uniforms.strength.value=1;jet.glow.material.opacity=.8;}
    for(const wheel of car.wheels){wheel.pivot.rotation.y=wheel.z>0?s.steer:0;wheel.spin.rotation.x+=s.speed*dt/(.36*car.size);}
-   car.tail.emissiveIntensity=s.brake?3:.35;
+   car.tail.emissiveIntensity=s.brake?3:.35;W.updateCarSpecialVisual?.(car,{...s,...c,waterMode:s.water},dt,time);
    if(s.water==='skimming'&&r.connected&&now-(r.sprayAt||0)>80){r.sprayAt=now;ui.spray({...s,...c});}
   }
   if(trafficTargets)W.traffic.forEach((t,i)=>{const a=trafficTargets[i];if(!a)return;const snap=Math.hypot(t.x-a[0],t.z-a[2])>30;for(const [j,k]of ['x','y','z'].entries())t[k]=snap?a[j]:W.mix(t[k],a[j],alpha);t.yaw+=Math.atan2(Math.sin(a[3]-t.yaw),Math.cos(a[3]-t.yaw))*alpha;[t.vx,t.vz,t.speed,t.distance]=a.slice(4,8);t.wrecked=!!a[8];t.burning=!!a[9];t.wetTime=Math.max(t.wetTime||0,a[10]||0);});

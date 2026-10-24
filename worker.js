@@ -1,6 +1,7 @@
 
 import {DurableObject} from 'cloudflare:workers';
 import '../public/player-rules.js';
+import '../public/player-collisions.js';
 import world from './world-data.json';
 import {freshTraffic,place,stepTraffic} from './traffic.js';
 import '../public/maker-core.js';
@@ -29,7 +30,7 @@ export class GlobalRoom extends DurableObject {
    this.nextAlarm=await ctx.storage.getAlarm()||0;this.cleanup();
   });
  }
- configureMap(mapId){this.mapId=['city','peaks'].includes(mapId)?mapId:'islands';this.world=this.mapId==='islands'?world:world.maps[this.mapId];this.hp=this.world.buildings.map(()=>100);this.hits=[];this.fallenTrees=[];this.nukes=[];this.traffic=freshTraffic(this.world);}
+ configureMap(mapId){this.mapId=['city','peaks','playplace'].includes(mapId)?mapId:'islands';this.world=this.mapId==='islands'?world:world.maps[this.mapId];this.hp=this.world.buildings.map(()=>100);this.hits=[];this.fallenTrees=[];this.nukes=[];this.traffic=freshTraffic(this.world);}
  configureCustom(info){this.custom=info;this.mapId='custom:'+info.id;this.world=globalThis.IslaMaker.worldData(info.document);this.hp=this.world.buildings.map(()=>100);this.hits=[];this.fallenTrees=[];this.nukes=[];this.traffic=freshTraffic(this.world);}
  async prepareCustom(info){if(this.mapBound){if(!this.custom||this.custom.id!==info.id||this.custom.revision!==info.revision)throw Error('Map version mismatch');return;}this.configureCustom(info);this.mapBound=true;await this.checkpoint();}
  attach(ws,p){const meta=this.meta.get(ws);if(meta)ws.serializeAttachment({meta,player:p?serial(p):null});}
@@ -50,7 +51,7 @@ export class GlobalRoom extends DurableObject {
  playerFor(ws){return [...this.players.values()].find(p=>p.ws===ws);}
  async fetch(request){
 
-  const requested=new URL(request.url).searchParams.get('map'),mapId=requested?.startsWith('custom:')?requested:['city','peaks'].includes(requested)?requested:'islands';
+  const requested=new URL(request.url).searchParams.get('map'),mapId=requested?.startsWith('custom:')?requested:['city','peaks','playplace'].includes(requested)?requested:'islands';
   if(!this.mapBound){this.configureMap(mapId);this.mapBound=true;await this.checkpoint();}
   if(mapId!==this.mapId)return new Response('Wrong map',{status:409});
   this.cleanup();const now=Date.now(),ip=request.headers.get('CF-Connecting-IP')||'local';
@@ -76,8 +77,8 @@ export class GlobalRoom extends DurableObject {
    p={id:crypto.randomUUID(),token:crypto.randomUUID()+crypto.randomUUID(),name:data.name,guest:!account,account:account?.id||null,slot,score:0,scoreSeq:0,lastScoreAt:0,lastTrafficHit:0,lastStateAt:0,state:spawn(slot,this.world),previous:null,disconnectedAt:0,ws:null};this.players.set(p.id,p);
   }
   const old=p.ws;if(old&&old!==ws){this.meta.delete(old);try{old.serializeAttachment({meta:{createdAt:Date.now()},player:null});old.close(4001,'Connection replaced');}catch{}}
-  p.ws=ws;p.disconnectedAt=0;this.emptyAt=0;this.attach(ws,p);await this.checkpoint();
-  reply(ws,{type:'welcome',mapId:this.mapId,v:rules.protocol,code:'GLOBAL',id:p.id,token:p.token,resumed,state:p.state,scoreSeq:p.scoreSeq,hp:this.hp,trees:this.fallenTrees,buildings:this.world.buildings.map(b=>[b.id,Math.round(b.x*100),Math.round(b.z*100)]),players:this.roster(),host:null});
+  p.ws=ws;p.disconnectedAt=0;p.collisionUntil=Date.now()+3000;p.collisionPending=0;p.collisionFrom=null;this.emptyAt=0;this.attach(ws,p);await this.checkpoint();
+  reply(ws,{type:'welcome',collisionSeq:p.collisionSeq||0,mapId:this.mapId,v:rules.protocol,code:'GLOBAL',id:p.id,token:p.token,resumed,state:p.state,scoreSeq:p.scoreSeq,hp:this.hp,trees:this.fallenTrees,buildings:this.world.buildings.map(b=>[b.id,Math.round(b.x*100),Math.round(b.z*100)]),players:this.roster(),host:null});
   this.announce();await this.schedule();
  }
  updateWeapon(p,s,now){
@@ -94,11 +95,18 @@ export class GlobalRoom extends DurableObject {
   }
   return ready.length>0;
  }
+ collidePlayers(now){
+  const list=[...this.players.values()].filter(p=>p.ws&&now>=(p.collisionUntil||0)&&(!p.collisionPending||now-p.collisionPending>800)&&(p.state.parked||now-p.lastStateAt<800));
+  for(let i=0;i<list.length;i++)for(let j=i+1;j<list.length;j++){const a=list[i],b=list[j];if(a.collisionPending||b.collisionPending)continue;const hit=globalThis.IslaPlayerCollisions.collide(a.state,b.state,a.collisionFrom||a.state,b.collisionFrom||b.state,models.get(a.state.car),models.get(b.state.car));if(!hit)continue;
+   for(const [p,d]of [[a,hit.a],[b,hit.b]]){p.state.x+=d.dx;p.state.z+=d.dz;p.state.vx+=d.dvx;p.state.vz+=d.dvz;p.collisionSeq=(p.collisionSeq||0)+1;p.collisionPending=now;p.collisionFrom={...p.state};reply(p.ws,{type:'collision',seq:p.collisionSeq,...d,speed:hit.speed});this.attach(p.ws,p);}
+  }
+  for(const p of this.players.values()){p.collisionFrom={...p.state};if(p.collisionPending&&now-p.collisionPending>800)p.collisionPending=0;}
+ }
  frame(){
   const now=Date.now();if(now-this.lastFrame<95)return;
   let remaining=Math.min(.3,(now-this.lastTick)/1000);const obstacles=[...this.players.values()].map(p=>p.state);
   while(remaining>0){const dt=Math.min(1/30,remaining);stepTraffic(this.traffic,obstacles,dt,this.world);remaining-=dt;}
-  this.lastTick=now;this.lastFrame=now;
+  this.lastTick=now;this.lastFrame=now;this.collidePlayers(now);
   const liveBuildings=this.world.buildings.filter(b=>this.hp[b.id]>0);
   for(const p of this.players.values())if(p.ws&&p.state.car==='firetruck'&&!p.state.parked&&p.state.water!=='sinking')for(const jet of rules.hoseJets(p.state,liveBuildings))for(const t of this.traffic)if(rules.inHose(jet,t)){t.wetTime=18;if(t.burning){t.burning=false;this.wetDirty=true;}}
  
@@ -115,7 +123,8 @@ export class GlobalRoom extends DurableObject {
   const p=this.playerFor(ws);if(!p)return;
   if(this.detonateNukes(now))await this.checkpoint();
   if(data.type==='state'&&validState(data.state)){
-   if(now-p.lastStateAt<40)return;const s=data.state,appearance=p.state.car!==s.car||p.state.color!==s.color.toLowerCase();this.updateWeapon(p,s,now);p.previous=p.state;p.lastStateAt=now;
+   if(p.collisionPending&&data.state.collisionAck!==(p.collisionSeq||0)&&now-p.collisionPending<800)return;
+   if(now-p.lastStateAt<40)return;if(data.state.collisionAck===(p.collisionSeq||0))p.collisionPending=0;const s=data.state;if(Math.hypot(s.x-p.state.x,s.z-p.state.z)>35||s.car!==p.state.car){p.collisionUntil=now+3000;p.collisionFrom=null;}const appearance=p.state.car!==s.car||p.state.color!==s.color.toLowerCase();this.updateWeapon(p,s,now);p.previous=p.state;p.lastStateAt=now;
    p.state=Object.fromEntries(['x','y','z','yaw','vx','vy','vz','pitch','roll','steer','speed','car','water'].map(k=>[k,s[k]]));p.state.color=s.color.toLowerCase();p.state.roadMode=s.roadMode===true;p.state.wallMode=s.car==='stick'&&['climbing','sliding'].includes(s.wallMode)?s.wallMode:'';
    for(const k of ['nitro','grounded','brake','parked'])p.state[k]=s[k]===true;if(p.state.parked)park(p.state);
    if(appearance)this.announce();this.frame();
@@ -155,7 +164,7 @@ export default {
  async fetch(request,env){
   const url=new URL(request.url);
   if(url.pathname.startsWith('/api/')){if(!env.COMMUNITY)return Response.json({error:'Complete the V1.6 CommunityHub setup.'},{status:503});return env.COMMUNITY.getByName('isla-community-v16').fetch(request);}
-  if(url.pathname==='/healthz')return Response.json({ok:true,release:'1.71',room:'GLOBAL',capacity:rules.capacity,version:rules.protocol,maps:['islands','city','peaks']});
+  if(url.pathname==='/healthz')return Response.json({ok:true,release:'1.71',room:'GLOBAL',capacity:rules.capacity,version:rules.protocol,maps:['islands','city','peaks','playplace']});
   if(url.pathname==='/ws'){
    if(url.searchParams.get('map')==='obstacle')return new Response('Void Run has been replaced by Islayan Peaks. Refresh your game.',{status:410});
    if(request.method!=='GET'||request.headers.get('Upgrade')?.toLowerCase()!=='websocket')return new Response('WebSocket required',{status:426});
@@ -164,7 +173,7 @@ export default {
    const hub=env.COMMUNITY?.getByName('isla-community-v16');if(hub){const account=await hub.internalIdentity(request.headers.get('Cookie'));if(account)headers.set('X-Isla-Account',JSON.stringify(account));}
    const mapId=url.searchParams.get('map');let room;
    if(mapId?.startsWith('custom:')){if(!hub)return new Response('Community maps are unavailable',{status:503});try{const info=await hub.internalMap(mapId.slice(7));if(Number(url.searchParams.get('revision'))!==info.revision)return new Response('A new version of this map is available. Refresh before joining.',{status:409});room=env.GLOBAL.getByName('custom-'+info.id+'-r'+info.revision);await room.prepareCustom(info);}catch{return new Response('This map is not available. Refresh the map page.',{status:404});}}
-   else room=env.GLOBAL.getByName(mapId==='peaks'?'isla-global-peaks-v1':mapId==='city'?'isla-global-city-v4':'isla-global-v2');
+   else room=env.GLOBAL.getByName(mapId==='playplace'?'isla-global-playplace-v1':mapId==='peaks'?'isla-global-peaks-v1':mapId==='city'?'isla-global-city-v4':'isla-global-v2');
    return room.fetch(new Request(request,{headers}));
   }
   return env.ASSETS?env.ASSETS.fetch(request):new Response('Not found',{status:404});

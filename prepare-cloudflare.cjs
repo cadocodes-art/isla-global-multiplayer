@@ -1,16 +1,16 @@
 'use strict';
 // Recover folder structure when a manual upload placed every file at the root.
-// A checked V1.81 manifest takes precedence over older structured files.
+// A checked V1.9 manifest takes precedence over older structured files.
 const fs = require('node:fs');
 const path = require('node:path');
 const root = __dirname;
-// A complete V1.81 flat upload replaces its matching structured files atomically
+// A complete V1.9 flat upload replaces its matching structured files atomically
 // after every checksum passes. This prevents old folders shadowing new uploads.
 const manifestPath=path.join(root,'isla-v16-upload.json');
 if(fs.existsSync(manifestPath)){
   const crypto=require('node:crypto'),manifest=JSON.parse(fs.readFileSync(manifestPath,'utf8'));
-  if(!['1.6','1.7','1.71','1.72','1.8','1.81'].includes(manifest.version)||!Array.isArray(manifest.files))throw Error('Invalid V1.81 upload manifest.');
-  for(const f of manifest.files){if(!/^[\w .()-]+$/.test(f.name)||!/^((public|src|scripts|test)(\/regression)?\/)?[\w .()-]+$/.test(f.destination))throw Error('Invalid upload path.');const source=path.join(root,f.name);if(!fs.existsSync(source)||crypto.createHash('sha256').update(fs.readFileSync(source)).digest('hex')!==f.sha256)throw Error('Incomplete V1.81 upload: upload '+f.name+' again from the ZIP.');}
+  if(!['1.6','1.7','1.71','1.72','1.8','1.81','1.9'].includes(manifest.version)||!Array.isArray(manifest.files))throw Error('Invalid V1.9 upload manifest.');
+  for(const f of manifest.files){if(!/^[\w .()-]+$/.test(f.name)||!/^((public|src|scripts|test)(\/regression)?\/)?[\w .()-]+$/.test(f.destination))throw Error('Invalid upload path.');const source=path.join(root,f.name);if(!fs.existsSync(source)||crypto.createHash('sha256').update(fs.readFileSync(source)).digest('hex')!==f.sha256)throw Error('Incomplete V1.9 upload: upload '+f.name+' again from the ZIP.');}
   for(const f of manifest.files){if(f.name===f.destination)continue;const destination=path.join(root,f.destination);fs.mkdirSync(path.dirname(destination),{recursive:true});fs.copyFileSync(path.join(root,f.name),destination);}
 }
 const looseFiles = fs.readdirSync(root, {withFileTypes:true})
@@ -42,7 +42,7 @@ function restore(relative, {optional=false, matches=null}={}) {
 try {
   for (const name of ['index.html','style.css','THREE-LICENSE.txt','three.min.js',
     'world.js','islands.js','ramps.js','physics.js','aura.js','player-rules.js',
-    'garage.js','maps.js','peaks.js','specials.js','utility-cars.js','multiplayer.js','game.js',
+    'garage.js','cars-v19.js','player-collisions.js','daylight.js','playplace.js','maps.js','peaks.js','specials.js','utility-cars.js','multiplayer.js','game.js',
     'maker-core.js','maker-assets.js','maker-selection.js','maker-driving.js','community-api.js','map-editor.js','community-ui.js','custom-map.js','community.css','editor-test.js','social-rules.js','social-ui.js','social.css']) restore('public/' + name);
   restore('public/traffic.js', {matches:text => /\bW\.initTraffic\s*=/.test(text) && !/\bexport\s/.test(text)});
   restore('src/traffic.js', {matches:text => /\bexport\s+(?:const|function)\s+freshTraffic\b/.test(text)});

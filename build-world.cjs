@@ -12,5 +12,5 @@ const spawns=Array.from({length:32},(_,slot)=>{const p=W.roads[0].samples[slot*3
 const data={mapId,buildings,trees,cars:W.carModels.map(m=>({...m,mass:m.mass||1})),bridge:{start:W.bridge.start,end:W.bridge.end},routes,traffic,spawns};
 
 console.log('Prepared '+buildings.length+' buildings, '+traffic.length+' traffic cars, and '+spawns.length+' global spawn points for '+mapId+'.');return data;}
-const data=build('islands');data.maps={city:build('city'),peaks:build('peaks')};
+const data=build('islands');data.maps={city:build('city'),peaks:build('peaks'),playplace:build('playplace')};
 fs.writeFileSync(path.resolve(__dirname,'../src/world-data.json'),JSON.stringify(data));

@@ -1,8 +1,8 @@
 {
   "name": "isla-drive-cloudflare",
-  "version": "1.8.1",
+  "version": "1.9.0",
   "private": true,
-  "description": "ISLA V1.81 — mobile Map Maker multi-select, group transforms, and copy/paste",
+  "description": "ISLA V1.9 — The Playplace, five cars, global collisions, Map Maker lighting and 50 slots",
   "engines": {
     "node": ">=22.0.0"
   },
