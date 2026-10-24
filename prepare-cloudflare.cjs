@@ -1,16 +1,16 @@
 'use strict';
 // Recover folder structure when a manual upload placed every file at the root.
-// A checked V1.9 manifest takes precedence over older structured files.
+// A checked V1.91 manifest takes precedence over older structured files.
 const fs = require('node:fs');
 const path = require('node:path');
 const root = __dirname;
-// A complete V1.9 flat upload replaces its matching structured files atomically
+// A complete V1.91 flat upload replaces its matching structured files atomically
 // after every checksum passes. This prevents old folders shadowing new uploads.
 const manifestPath=path.join(root,'isla-v16-upload.json');
 if(fs.existsSync(manifestPath)){
   const crypto=require('node:crypto'),manifest=JSON.parse(fs.readFileSync(manifestPath,'utf8'));
-  if(!['1.6','1.7','1.71','1.72','1.8','1.81','1.9'].includes(manifest.version)||!Array.isArray(manifest.files))throw Error('Invalid V1.9 upload manifest.');
-  for(const f of manifest.files){if(!/^[\w .()-]+$/.test(f.name)||!/^((public|src|scripts|test)(\/regression)?\/)?[\w .()-]+$/.test(f.destination))throw Error('Invalid upload path.');const source=path.join(root,f.name);if(!fs.existsSync(source)||crypto.createHash('sha256').update(fs.readFileSync(source)).digest('hex')!==f.sha256)throw Error('Incomplete V1.9 upload: upload '+f.name+' again from the ZIP.');}
+  if(!['1.6','1.7','1.71','1.72','1.8','1.81','1.9','1.91'].includes(manifest.version)||!Array.isArray(manifest.files))throw Error('Invalid V1.91 upload manifest.');
+  for(const f of manifest.files){if(!/^[\w .()-]+$/.test(f.name)||!/^((public|src|scripts|test)(\/regression)?\/)?[\w .()-]+$/.test(f.destination))throw Error('Invalid upload path.');const source=path.join(root,f.name);if(!fs.existsSync(source)||crypto.createHash('sha256').update(fs.readFileSync(source)).digest('hex')!==f.sha256)throw Error('Incomplete V1.91 upload: upload '+f.name+' again from the ZIP.');}
   for(const f of manifest.files){if(f.name===f.destination)continue;const destination=path.join(root,f.destination);fs.mkdirSync(path.dirname(destination),{recursive:true});fs.copyFileSync(path.join(root,f.name),destination);}
 }
 const looseFiles = fs.readdirSync(root, {withFileTypes:true})

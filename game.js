@@ -28,7 +28,7 @@
  W.onRecover=msg=>toast(msg);
  W.onNitroStart=duration=>{toast('NITRO · '+duration.toFixed(1)+' seconds',2);shake=Math.max(shake,.07);};
  W.onWaterSkim=()=>{toast(W.getCarSpec().amphibious?'BOAT MODE · WHEELS RETRACTED':'WATER SKIM · 3.5 seconds to find dry land',3);emitWaterSpray(W.vehicle,24);};
- W.onPlayBounce=()=>{toast('BOUNCE! · TAKE IT HIGHER',1.2);shake=Math.max(shake,.10);};
+ W.onPlayBounce=()=>{toast('BOUNCE! · STEER IN THE AIR',1.2);shake=Math.max(shake,.10);};
  W.onWaterSink=()=>{toast('Skim over. Going under…',1.4);emitWaterSpray(W.vehicle,30);};
  W.onBuildingContact=(b,damage,speed)=>{damageEnd=simTime+5;$('damagePanel').classList.remove('hidden');$('buildingName').textContent=b.name.toUpperCase();$('buildingPct').textContent=Math.ceil(b.hp)+'%';$('integrityBar').style.width=b.hp+'%';$('impactHint').textContent=b.collapsed?'Structure collapsed.':damage>0?'Structural damage · '+Math.round(W.units.speed(speed))+' '+W.units.speedUnit.toLowerCase()+' impact':'Reinforced walls held. More impact energy needed.';};
  W.onBuildingDamage=(b,damage,speed)=>{b.cracks.forEach(c=>c.visible=b.hp<80);b.wall.color.multiplyScalar(.95);emitDust(b.x,b.y+1,b.z,25,3);};
@@ -69,7 +69,7 @@
   desired.y=Math.max(desired.y,W.height(desired.x,desired.z)+1.25,c.waterMode!=='dry'?.85:-Infinity);if(camMode!==1){ // Lift the chase camera above buildings along its line of sight.
    for(let b of W.buildings){if(b.collapsed||Math.hypot(b.x-c.x,b.z-c.z)>24)continue;for(let f of [.45,.7,1]){let px=W.mix(c.x,desired.x,f),pz=W.mix(c.z,desired.z,f);if(W.circleOBB(px,pz,.6,b))desired.y=Math.max(desired.y,b.y+b.h+2);}}
   }
-  if(W.mapId==='playplace'){desired.y=Math.min(desired.y,119);desired.x=clamp(desired.x,-790,790);desired.z=clamp(desired.z,-690,690);}
+  if(W.mapId==='playplace'){desired.y=Math.min(desired.y,119);desired.x=clamp(desired.x,-W.playplace.halfX+10,W.playplace.halfX-10);desired.z=clamp(desired.z,-W.playplace.halfZ+10,W.playplace.halfZ-10);}
   let lag=!started?2.5:camMode===1?22:6;camPosition.lerp(desired,1-Math.exp(-dt*lag));camTarget.lerp(lookAt,1-Math.exp(-dt*9));camera.position.copy(camPosition);if(shake>0){camera.position.x+=(Math.random()-.5)*shake;camera.position.y+=(Math.random()-.5)*shake;shake*=Math.exp(-dt*9)}camera.lookAt(camTarget);camera.updateProjectionMatrix();W.sun.target.position.set(c.x,(W.mapId==='peaks'||W.customMap)?c.y:0,c.z);let sd=W.sky.material.uniforms.sunDirection.value;W.sun.position.set(c.x+sd.x*340,sd.y*340+55+((W.mapId==='peaks'||W.customMap)?c.y:0),c.z+sd.z*340);W.sun.target.updateMatrixWorld();W.sky.position.copy(camera.position);
  }
  // The car faces local +Z, so positive yaw turns left from the driver's view.

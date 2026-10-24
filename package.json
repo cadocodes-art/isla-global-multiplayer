@@ -1,8 +1,8 @@
 {
   "name": "isla-drive-cloudflare",
-  "version": "1.9.0",
+  "version": "1.9.1",
   "private": true,
-  "description": "ISLA V1.9 — The Playplace, five cars, global collisions, Map Maker lighting and 50 slots",
+  "description": "ISLA V1.91 — Playplace collision, foam, rope and trampoline fixes",
   "engines": {
     "node": ">=22.0.0"
   },

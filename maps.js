@@ -8,7 +8,7 @@
   const $=id=>document.getElementById(id),info=W.mapInfo;
   $('mapName').textContent=info.name;$('mapNumber').textContent=String(info.index).padStart(2,'0')+' / 04';$('place').textContent=info.short;
   $('introTitle').innerHTML=info.headline;$('introDescription').innerHTML=info.description;$('introSpecs').innerHTML=info.specs.map(s=>'<span>'+W.units.text(s)+'</span>').join('<i></i>');
-  $('mapCaption').textContent=info.short;$('mapScale').textContent=W.units.distance(W.mapId==='playplace'?1600:W.mapId==='peaks'?4800:W.mapId==='city'?2100:3400);$('world').setAttribute('aria-label',info.name+' driving game');
+  $('mapCaption').textContent=info.short;$('mapScale').textContent=W.units.distance(W.mapId==='playplace'?1200:W.mapId==='peaks'?4800:W.mapId==='city'?2100:3400);$('world').setAttribute('aria-label',info.name+' driving game');
   $('roomMapName').textContent=info.short+' · ONE SHARED WORLD';$('roomIntro').textContent='Join other drivers exploring '+info.name+'.';
   $('mapNext').setAttribute('aria-label','Preview '+(W.mapId==='city'?'Islayan Peaks':W.mapId==='peaks'?'The Playplace':W.mapId==='playplace'?'the islands':'Costa Metro city'));
   const go=map=>{const url=new URL(location.href);url.searchParams.set('map',map);url.searchParams.set('menu','1');location.assign(url.href);};
