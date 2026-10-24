@@ -28,6 +28,7 @@
  W.onRecover=msg=>toast(msg);
  W.onNitroStart=duration=>{toast('NITRO · '+duration.toFixed(1)+' seconds',2);shake=Math.max(shake,.07);};
  W.onWaterSkim=()=>{toast(W.getCarSpec().amphibious?'BOAT MODE · WHEELS RETRACTED':'WATER SKIM · 3.5 seconds to find dry land',3);emitWaterSpray(W.vehicle,24);};
+ W.onPlayBasket=(kind,total)=>toast('BASKET! · '+total+' scored this session',2.5);
  W.onPlayBounce=()=>{toast('BOUNCE! · STEER IN THE AIR',1.2);shake=Math.max(shake,.10);};
  W.onWaterSink=()=>{toast('Skim over. Going under…',1.4);emitWaterSpray(W.vehicle,30);};
  W.onBuildingContact=(b,damage,speed)=>{damageEnd=simTime+5;$('damagePanel').classList.remove('hidden');$('buildingName').textContent=b.name.toUpperCase();$('buildingPct').textContent=Math.ceil(b.hp)+'%';$('integrityBar').style.width=b.hp+'%';$('impactHint').textContent=b.collapsed?'Structure collapsed.':damage>0?'Structural damage · '+Math.round(W.units.speed(speed))+' '+W.units.speedUnit.toLowerCase()+' impact':'Reinforced walls held. More impact energy needed.';};
@@ -93,7 +94,7 @@
 
  function frame(now){requestAnimationFrame(frame);let dt=Math.min((now-last)/1000,.05)||.016;last=now;W.course?.readControls(paused?{gas:0,brake:0,steer:0}:input());W.net?.tick(dt,simTime);W.course?.animate(dt);if(paused&&!W.net?.active)return;simTime+=dt;W.water.material.uniforms.time.value=simTime;
   if(started&&(!paused||W.course?.locked())){accumulator+=dt;let controls=paused?{gas:0,brake:0,steer:0}:input();while(accumulator>=1/120){if(!W.net?.active)W.stepTraffic(1/120);W.stepVehicle(1/120,controls,simTime);W.resolveTraffic();W.aura.update(W.vehicle,1/120);W.stepWeapons(1/120);accumulator-=1/120;}let c=W.vehicle;if(frameNo%3===0){addSkids(c,dt*3);if(c.waterMode==='skimming')emitWaterSpray(c);else if(c.grounded&&Math.abs(c.speed)>5&&c.surface!=='ASPHALT')emitDust(c.x,c.y+.25,c.z,2,1+Math.abs(c.speed)*.018);}updateEffects(dt);updateAudio();if(frameNo%5===0)updateHUD();}
-  if(started&&paused&&W.net?.active&&!W.course?.locked()){updateEffects(dt);if(frameNo%5===0)updateHUD();}updateCarAndCamera(dt);W.animateMap?.(dt,simTime,camera);W.mapLamps?.update(camera.position);W.renderTraffic();renderer.render(scene,camera);W.net?.renderChat(camera);frameNo++;
+  if(started&&paused&&W.net?.active&&!W.course?.locked()){W.idlePlayplace?.(dt);updateEffects(dt);if(frameNo%5===0)updateHUD();}updateCarAndCamera(dt);W.animateMap?.(dt,simTime,camera);W.mapLamps?.update(camera.position);W.renderTraffic();renderer.render(scene,camera);W.net?.renderChat(camera);frameNo++;
  }
 
  function startDriving(){if(!started&&(!W.customMap||!IslaCommunity.custom?.info.draft)&&IslaCommunity.online)IslaCommunity.startRun().catch(e=>{IslaCommunity.syncError=e.message;});if(started){setPause(false);return;}initAudio();if(audio)audio.ctx.resume();started=true;$('intro').classList.add('hidden');$('hud').classList.remove('hidden');document.body.classList.add('playing');$('startBtn').blur();$('world').tabIndex=0;$('world').focus();toast(W.course?'Void Run · One attempt per round · No recovery':document.body.classList.contains('touch-mode')?'Joystick: up for gas · down to brake / reverse · sideways to steer':'WASD to drive · S brakes, then reverses · R recovers your car',6);}

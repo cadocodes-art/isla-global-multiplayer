@@ -1,8 +1,8 @@
 {
   "name": "isla-drive-cloudflare",
-  "version": "1.9.1",
+  "version": "1.9.2",
   "private": true,
-  "description": "ISLA V1.91 — Playplace collision, foam, rope and trampoline fixes",
+  "description": "ISLA V1.92 — moving playground, solid foam, responsive ropes and Hover propulsion",
   "engines": {
     "node": ">=22.0.0"
   },

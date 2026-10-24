@@ -42,6 +42,7 @@
   if(boosting)c.throttle=1;
   let hFront=surfaceHeight(c.x+sx*1.42*size,c.z+sz*1.42*size),hRear=surfaceHeight(c.x-sx*1.43*size,c.z-sz*1.43*size),hLeft=surfaceHeight(c.x-rx*.94*size,c.z-rz*.94*size),hRight=surfaceHeight(c.x+rx*.94*size,c.z+rz*.94*size),groundY=(hFront+hRear+hLeft+hRight)*.25+.12+(boosting?.08:0),groundDelta=groundY-c.y;
   if(ramp){groundY=W.rampHeight(ramp,c.x,c.z)+.12+(boosting?.08:0);groundDelta=groundY-c.y;}
+  const propSupport=W.vehicleGroundSupport?.(c);if(!ramp&&propSupport&&Math.abs(c.y-propSupport.y-.12)<.5){groundY=propSupport.y+.12;groundDelta=groundY-c.y;}
   c.grounded=!!ramp||(groundDelta>-.24&&c.vy<3.8);
   let ax=0,az=0,acc=0;
   if(c.waterMode==='skimming'){

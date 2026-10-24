@@ -17,7 +17,7 @@
     // Contact must be above the actual road face. Clamping to a triangle's
     // closest edge repeatedly pulls an exiting car back, forming an invisible wall.
     q.copy(position).addScaledVector(data.normal,-gap);data.triangle.getBarycoord(q,bary);
-    if(Math.min(bary.x,bary.y,bary.z)<-1e-7)continue;
+    if(Math.min(bary.x,bary.y,bary.z)<-1e-7&&data.triangle.closestPointToPoint(q,new T.Vector3()).distanceTo(q)>.025)continue;
     // A tilted piece may extend underground. Its hidden face cannot replace
     // the terrain underneath the car, including when reversing down the piece.
     feet.copy(q).addScaledVector(data.normal,.12);

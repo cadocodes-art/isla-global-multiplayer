@@ -104,7 +104,7 @@
   const ws=new WebSocket((location.protocol==='https:'?'wss://':'ws://')+location.host+'/ws?map='+encodeURIComponent(W.mapId)+(W.customMap?'&revision='+IslaCommunity.custom.info.revision:''));socket=ws;
   status(identity?'Reconnecting to the global room…':'Connecting to the global room…');
   connectTimeout=setTimeout(()=>{if(socket===ws&&!net.connected){status('The server is taking a while. Retrying…');ws.close();}},70000);
-  ws.onopen=()=>{if(socket!==ws)return;send({...identity?{type:'resume',v:IslaRules.protocol,name:identity.name,token:identity.token}:intent,...W.mapId==='playplace'?{playplaceRevision:2}:{}});};
+  ws.onopen=()=>{if(socket!==ws)return;send({...identity?{type:'resume',v:IslaRules.protocol,name:identity.name,token:identity.token}:intent,...W.mapId==='playplace'?{playplaceRevision:3}:{}});};
   ws.onmessage=e=>{if(socket!==ws)return;let data;try{data=JSON.parse(e.data)}catch{return;}
    if(data.type==='welcome'){
     const expected=W.buildings.map(b=>[b.id,Math.round(b.x*100),Math.round(b.z*100)]);
@@ -168,7 +168,7 @@
   if(trafficTargets)W.traffic.forEach((t,i)=>{const a=trafficTargets[i];if(!a)return;const snap=Math.hypot(t.x-a[0],t.z-a[2])>30;for(const [j,k]of ['x','y','z'].entries())t[k]=snap?a[j]:W.mix(t[k],a[j],alpha);t.yaw+=Math.atan2(Math.sin(a[3]-t.yaw),Math.cos(a[3]-t.yaw))*alpha;[t.vx,t.vz,t.speed,t.distance]=a.slice(4,8);t.wrecked=!!a[8];t.burning=!!a[9];t.wetTime=Math.max(t.wetTime||0,a[10]||0);});
  };
  W.initMultiplayer=hooks=>{
-  ui=hooks;sessionKey='isla-global-v16-'+W.mapId+(W.mapId==='playplace'?'-r2':'')+'-'+(window.IslaCommunity?.account?.id||'guest');
+  ui=hooks;sessionKey='isla-global-v16-'+W.mapId+(W.mapId==='playplace'?'-r3':'')+'-'+(window.IslaCommunity?.account?.id||'guest');
   $('chatBtn').onclick=net.toggleChat;$('chatClose').onclick=()=>closeChat();drawChat();
   const previousEarn=W.onAuraEarn;W.onAuraEarn=(points,best)=>{previousEarn?.(points,best);if(net.connected&&!W.auraDisabled)pendingAura+=points;};
   $('driverName').value=window.IslaCommunity?.account?.username||safeRead(local,'isla-car-name-v2')||'';$('driverName').readOnly=!!window.IslaCommunity?.account;if(window.IslaCommunity?.account)$('nameRules').textContent='Playing as your signed-in account. Guests are labeled Guest.';

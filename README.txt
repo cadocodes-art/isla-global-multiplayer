@@ -1,7 +1,7 @@
-ISLA V1.91 — PLAYPLACE FIXES
+ISLA V1.92 — PLAYPLACE EXPANSION
 
 UPDATE YOUR ONLINE GAME
-1. Download ISLA-V1.91-Update.zip and extract it (right-click > Extract All).
+1. Download ISLA-V1.92-Update.zip and extract it (right-click > Extract All).
 2. Open https://github.com/cadocodes-art/isla-global-multiplayer
 3. Stay on the branch your Cloudflare game already builds.
 4. On the screen listing your repository's files, choose Add file > Upload files.
@@ -10,7 +10,7 @@ UPDATE YOUR ONLINE GAME
    NOT a folder containing them. Include isla-v16-upload.json.
 6. Commit the changes. Wait for the connected Cloudflare deployment to finish.
 7. Reload https://isla-global-multiplayer.cadocodes.workers.dev/?menu=1
-   The main menu and community header should show V1.91.
+   The main menu and community header should show V1.92.
 
 Use your existing Worker and existing configuration. The ZIP deliberately has
 no wrangler.jsonc. Your Worker name, database bindings, OWNER_ACCOUNT_ID, and
@@ -23,7 +23,7 @@ Keep these existing build settings:
   Preview command: npx wrangler versions upload
 
 The manifest filename isla-v16-upload.json stays the same for compatibility;
-its version is now 1.91. It verifies every file before restoring the folders.
+its version is now 1.92. It verifies every file before restoring the folders.
 If the build reports an incomplete upload, re-upload all files from this ZIP.
 Do not remove scripts/build-world.cjs or change the build command to skip it.
 The file named "traffic (1).js" is intentional: it contains server traffic,
@@ -31,28 +31,34 @@ while "traffic.js" contains browser traffic. Keep both exact filenames.
 This package is prepared for you to upload; it has not been deployed for you.
 
 WHAT CHANGED
-- Solid 1.8-meter-thick elevated decks, with matching sides and undersides.
-- Flush ramp entrances and level joins between spirals, platforms and slides.
-- Support-post hitboxes stop below the decks; cars can drive off open edges.
-- A closer layout: the building is now 1,200 by 1,050 meters. The rope frame
-  has moved away from a spiral ramp. All existing attractions are retained.
-- Ropes receive one gentle push per impact. Hanging balls follow their visible
-  ropes at a fixed length, then gradually settle.
-- Foam blocks now support cars, compress under weight and give a small bounce
-  on landing. Sloped edges still allow you to drive out of the pits.
-- Lower trampoline launches. Each repeated bounce loses height until you rest.
-  Driving onto ordinary floor resets the bounce chain. Steer in the air;
-  gas adds some movement and brake slows your drift. Mobile uses the joystick.
-- Hover now has exposed propeller blades without outer rings. All four tilt
-  backward toward the chase camera instead of sideways.
+- Foam cubes are tilted, mixed up and movable. Cars can push and tumble them,
+  land on top, compress them and bounce gently. Contacts follow each cube's
+  current position and orientation. Partial contact still provides traction.
+- Rope weights and cords separate from the full car body. Ropes respond and
+  swing back faster; their physics no longer depends on animation frame rate.
+- Four ceiling-hung decks, two moving shuttles, a rising lift and a wave road.
+  Moving platforms carry resting cars. A driveable side branch links the old
+  skybridge directly to the hanging trail. Another climb starts at ground level.
+- Four basketballs, four soccer balls and six colorful dodgeballs. Drive into
+  them to roll, bounce or launch them. They collide with each other, foam,
+  platforms and the building. No extra key or mobile button is needed.
+- A giant basketball court and hoop with a solid rim and backboard. Knock any
+  ball down through the hoop to get a BASKET message. The counter lasts for the
+  current play session and does not award aura.
+- Hover's exposed propellers lean farther backward as it moves forward, then
+  ease back toward their resting angle when it slows down.
+- Existing thick decks, slides, tunnels, trampolines and mobile controls stay.
 
 ONLINE PLAY
-The updated Playplace uses a fresh global room for its smaller layout. Players
+The updated Playplace uses a fresh global room for the expanded layout. Players
 with an older game tab need to reload before joining. Other maps keep their
-existing room names. Rope and foam animation remains local, while car bumps
-remain shared. Accounts, maps, balances, and owned cars are preserved.
+existing room names. Platform schedules line up while players are online.
+Foam, ropes, loose balls and basket counters are simulated on each device;
+nearby remote cars can hit them, but their exact positions are not synchronized
+by the server. Car-to-car bumps remain shared as before.
 
 CHECKS
-Physics and multiplayer regression tests passed, along with a deployment dry
-run. Browser previews were checked locally; this was not an iPad hardware test.
-The package contains no local preview fixtures or test accounts.
+Physics and multiplayer regression tests passed, plus a deployment dry run and
+an upload rehearsal that preserves your existing Worker and database settings.
+Desktop and phone-sized browser previews were checked locally. This was not
+an iPad hardware test. No preview fixtures or test accounts are in the package.
