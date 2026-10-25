@@ -97,3 +97,15 @@ body.paused #touchControls,body:not(.playing) #touchControls{display:none!import
 @media(max-width:700px) and (orientation:portrait){#intro .menu-version{position:absolute;top:28px;left:100px;right:auto;bottom:auto}}
 
 #cannonStatus{position:fixed;top:18%;left:50%;transform:translateX(-50%);z-index:45;max-width:85vw;padding:14px 22px;border-radius:12px;background:#18323bf2;color:#ffe6a4;font:700 18px system-ui;text-align:center;pointer-events:none}#cannonStatus[hidden]{display:none}@media(max-width:700px){#cannonStatus{top:14%;font-size:13px;padding:10px 12px}}
+
+/* V2.1 walking controls */
+#walkToggle{position:fixed;right:26px;top:90px;z-index:12;background:#173b36e8;color:#edfff5;border:1px solid #9adbc27a;border-radius:12px;padding:14px 19px;min-height:48px;font:700 12px system-ui;letter-spacing:1px;cursor:pointer;touch-action:manipulation;backdrop-filter:blur(8px)}
+#walkToggle[hidden]{display:none}#walkStatus,#walkHint{display:none;position:fixed;left:50%;transform:translateX(-50%);z-index:10;pointer-events:none;color:#f0f8ee;text-align:center;text-shadow:0 2px 5px #000;background:#132926bb;border:1px solid #9db2aa33;border-radius:10px;padding:9px 14px;font:600 11px system-ui;letter-spacing:.4px}
+.on-foot #walkStatus{display:block;top:94px;white-space:nowrap}.on-foot #walkHint{display:block;bottom:32px;max-width:70vw}.on-foot .speed-panel,.on-foot .controls,.on-foot #rocketButton{display:none!important}.paused #walkStatus,.paused #walkHint{display:none!important}
+.touch-mode #walkToggle{top:auto;bottom:214px;right:20px;padding:12px 15px;max-width:150px}.touch-mode.on-foot #walkHint{bottom:auto;top:136px;width:max-content;max-width:80vw;font-size:10px}.touch-mode.on-foot #walkStatus{top:103px;font-size:10px;padding:7px 10px}
+@media(max-width:600px){.touch-mode #walkToggle{right:12px;bottom:205px;font-size:10px;min-height:44px}.touch-mode.on-foot #walkHint{max-width:72vw;font-size:9px}}
+@media(max-height:500px){.touch-mode #walkToggle{bottom:157px;right:18px}.touch-mode.on-foot #walkHint{display:none}.touch-mode.on-foot #walkStatus{top:67px}}
+
+body.on-foot:not(.touch-mode) #toast{top:140px}body.on-foot:has(#toast[style*="opacity: 1"]) #walkStatus{visibility:hidden}body.on-foot #walkToggle{right:80px}body.touch-mode.on-foot #walkToggle{right:14px}
+body.touch-mode.on-foot #auraPanel{width:116px;top:72px;padding:8px}body.touch-mode.on-foot #auraScore{font-size:23px;margin:5px 0 0}body.touch-mode.on-foot #auraChain,body.touch-mode.on-foot #auraBest,body.touch-mode.on-foot #auraWallet,body.touch-mode.on-foot .aura-chain-track{display:none}body.touch-mode.on-foot #walkStatus{top:75px;left:145px;right:66px;transform:none;width:auto;white-space:normal}body.touch-mode:not(.on-foot) #walkToggle{top:190px;bottom:auto;right:14px}
+@media(max-height:500px){body.touch-mode.on-foot #walkStatus{top:67px;left:50%;right:auto;transform:translateX(-50%);width:max-content;max-width:40vw}body.touch-mode:not(.on-foot) #walkToggle{top:auto;bottom:157px}}

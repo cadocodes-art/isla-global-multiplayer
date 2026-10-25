@@ -39,7 +39,7 @@
     {
       "name": "player-rules.js",
       "destination": "public/player-rules.js",
-      "sha256": "ac83ee2524f08978b68d58eb88a3de03cf6813a7d358fc933cb935ce7018332f"
+      "sha256": "441a29c1f9bfd829e1bf4eefe0b97c51ce61d05fcb2dec64e1c970db2f575061"
     },
     {
       "name": "garage.js",
@@ -79,7 +79,7 @@
     {
       "name": "multiplayer.js",
       "destination": "public/multiplayer.js",
-      "sha256": "998c27c3b49afd3a6cf6ca26a979f820093bce4ead0110d376e5a2a83831b448"
+      "sha256": "8a904bbdfc364a7f904e8dcb6a0c815dc76de66e399657756cc8fbd5fc2a6a1d"
     },
     {
       "name": "maker-core.js",
@@ -212,14 +212,19 @@
       "sha256": "9f0a5ba20fd7a89ff3119f0d143da6c33ab41c8b8cf7595fa9b16a834f683919"
     },
     {
+      "name": "walking.js",
+      "destination": "public/walking.js",
+      "sha256": "b14bcd6a5b4ef633a728799db5d6c3170e004c8e0662f1920f9bd31b20ba0f40"
+    },
+    {
       "name": "game.js",
       "destination": "public/game.js",
-      "sha256": "86fc90d1b74533d4cf395a434b0bd6e0f42e26508060f4a18bfda6ea4200b749"
+      "sha256": "6053ea970311b437fc972b96ecf5bda3a859954dec480e45c7cd5f347a8d6c60"
     },
     {
       "name": "style.css",
       "destination": "public/style.css",
-      "sha256": "f4f6db7f44072868faa40516e7e8e5a3d41e1f31929b450cb7aa9ba3051b3b46"
+      "sha256": "7d78e7bef51e8ecec7e25e9d146304d1ec11a017916eda3e6aa1425a5b2b0b67"
     },
     {
       "name": "community.css",
@@ -234,7 +239,7 @@
     {
       "name": "index.html",
       "destination": "public/index.html",
-      "sha256": "b07e44ff563c163ce604a718aaae3871bbc9612e51a13f58d4f43a2000601fb6"
+      "sha256": "51223c262ead8519ab9cd745b7bb249489ee96fa799bba3573a7e1560b06d94d"
     },
     {
       "name": "player-collisions.js",
@@ -249,7 +254,7 @@
     {
       "name": "worker.js",
       "destination": "src/worker.js",
-      "sha256": "333032f749ff726ee26639804e47cda7183d538ddc0738d3728e5112ba09e458"
+      "sha256": "13afa265c526640f820f49723a6e4532b45a4ce35c432185c637e0cc29504f4d"
     },
     {
       "name": "playground.js",
@@ -284,7 +289,7 @@
     {
       "name": "source-world.cjs",
       "destination": "scripts/source-world.cjs",
-      "sha256": "30743fd8a7a8d82111c9f6f555e4623389049d02b2f315c41e585674058fc777"
+      "sha256": "319635459237b1289b127fe9241debf48fa787b254f5072a5f2423cf77b14f24"
     },
     {
       "name": "upgrade-v16-config.cjs",
@@ -424,7 +429,7 @@
     {
       "name": "v21.test.cjs",
       "destination": "test/v21.test.cjs",
-      "sha256": "9c8865643e89a4c7d6ff420320f85a89d1a01f0ceb35e7752c184ba0f1751a4b"
+      "sha256": "e9ecc02e59f76f2e411504674cf90eeeb4c8b587d7f417b646b2e71609b55ecc"
     },
     {
       "name": "aura-check.cjs",
@@ -489,7 +494,7 @@
     {
       "name": "README.txt",
       "destination": "README.txt",
-      "sha256": "1a7dcfb254afa9279131f97db64f67737c7aa2be73dda0a55ca61970e98509ed"
+      "sha256": "ec28186a79c09ec538466754376e5db88375e1ada893d3f76c63f99a97731108"
     }
   ]
 }

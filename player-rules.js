@@ -39,7 +39,14 @@
   }return jets;
  }
  function inHose(jet,t){const dx=t.x-jet.start.x,dz=t.z-jet.start.z,d=dx*jet.dx+dz*jet.dz,cross=dx*jet.dz-dz*jet.dx,y=jet.start.y+.10*d-.014*d*d;return d>=-1&&d<=jet.distance+1&&Math.abs(cross)<2.6&&Math.abs(t.y+.8-y)<2.5;}
- const rules=Object.freeze({hoseJets,inHose,nuke,nukeShot,blastHits,blastTraffic,validateName,validColor,protocol:2,capacity:32,quickChat,validChat,chatDuration:6000,chatCooldown:3000});
+ const footMaps=['islands','city','peaks','playplace','fern'];
+ const footEnabled=map=>footMaps.includes(map);
+ const validFoot=s=>s&&['x','y','z','yaw','speed','vy','tumble'].every(k=>typeof s[k]==='number'&&Number.isFinite(s[k]))&&Math.abs(s.x)<=5000&&Math.abs(s.z)<=5000&&s.y>=-120&&s.y<=1500&&Math.abs(s.yaw)<100000&&s.speed>=0&&s.speed<=7&&Math.abs(s.vy)<=45&&s.tumble>=0&&s.tumble<=1.5;
+ function roomPlan(b){return {id:b.id,x:b.x,z:b.z,y:b.y+(b.foundation||0)+.12,yaw:b.yaw||0,w:b.w,d:b.d,h:Math.min(3.1,Math.max(2.7,b.h-(b.foundation||0)-.35)),door:2.15};}
+ function roomLocal(b,x,z){const dx=x-b.x,dz=z-b.z,c=Math.cos(b.yaw),s=Math.sin(b.yaw);return {x:dx*c-dz*s,z:dx*s+dz*c};}
+ function roomPoint(b,x,z){const c=Math.cos(b.yaw),s=Math.sin(b.yaw);return {x:b.x+x*c+z*s,z:b.z-x*s+z*c};}
+ function footHit(p,c,previous=c,size=1){const speed=Math.hypot(c.vx||0,c.vz||0);if(speed<2.7||c.parked||Math.abs(p.y-c.y)>2.4*size)return false;const sx=Math.sin(c.yaw),sz=Math.cos(c.yaw),ax=previous.x-sx*2.1*size,az=previous.z-sz*2.1*size,bx=c.x+sx*2.1*size,bz=c.z+sz*2.1*size,dx=bx-ax,dz=bz-az,t=Math.max(0,Math.min(1,((p.x-ax)*dx+(p.z-az)*dz)/(dx*dx+dz*dz||1)));return Math.hypot(p.x-ax-dx*t,p.z-az-dz*t)<size+ .38;}
+ const rules=Object.freeze({footEnabled,validFoot,roomPlan,roomLocal,roomPoint,footHit,hoseJets,inHose,nuke,nukeShot,blastHits,blastTraffic,validateName,validColor,protocol:2,capacity:32,quickChat,validChat,chatDuration:6000,chatCooldown:3000});
  globalThis.IslaRules=rules;
  if(typeof module!=='undefined'&&module.exports)module.exports=rules;
 })();

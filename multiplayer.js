@@ -50,8 +50,8 @@
   for(const [id,bubble]of bubbles){
    const player=net.players.find(p=>p.id===id);
    if(now>=bubble.until||!player?.connected||!net.active){bubble.element.remove();bubbles.delete(id);continue;}
-   const own=id===net.id,remote=net.remotes.get(id),car=own?W.vehicle:remote?.current,size=own?(W.carMesh?.size||1):(remote?.mesh.size||1);
-   if(!car||(!own&&Math.hypot(car.x-W.vehicle.x,car.z-W.vehicle.z)>220)){bubble.element.hidden=true;continue;}
+   const own=id===net.id,remote=net.remotes.get(id),foot=own?(W.walk?.active?W.walk.state:null):(remote?.target.walk?remote.footState||remote.target.walk:null),car=foot||(own?W.vehicle:remote?.current),size=foot?.75:own?(W.carMesh?.size||1):(remote?.mesh.size||1),focus=W.walk?.active?W.walk.state:W.vehicle;
+   if(!car||(!own&&Math.hypot(car.x-focus.x,car.z-focus.z)>220)){bubble.element.hidden=true;continue;}
    chatPoint.set(car.x,car.y+2.8*size,car.z);chatView.copy(chatPoint).applyMatrix4(camera.matrixWorldInverse);
    if(chatView.z>=0){bubble.element.hidden=true;continue;}chatPoint.project(camera);
    if(chatPoint.z<-1||chatPoint.z>1||Math.abs(chatPoint.x)>1.1||Math.abs(chatPoint.y)>1.1){bubble.element.hidden=true;continue;}
@@ -60,8 +60,8 @@
  };
  function status(message,error=false){$('roomStatus').textContent=message;$('roomStatus').classList.toggle('error',error);}
  function saveIdentity(){safeWrite(session,sessionKey,identity?JSON.stringify(identity):null);}
- function pose(){const c=W.vehicle,parked=ui.paused()||document.hidden;return {collisionAck:net.collisionSeq,x:c.x,y:c.y,z:c.z,yaw:c.yaw,vx:parked?0:c.vx,vy:parked?0:c.vy,vz:parked?0:c.vz,pitch:c.pitch,roll:c.roll,steer:c.steer,speed:parked?0:c.speed,car:W.garage.selected,color:W.garage.getColor(),nitro:!parked&&c.nitroTime>0,wallMode:c.wallMode||'',roadMode:!!c.roadMode,grounded:c.grounded,water:c.waterMode,brake:!!c.brake,parked};}
- function applySpawn(state){W.resetVehicle(true);Object.assign(W.vehicle,{x:state.x,y:state.y,z:state.z,yaw:state.yaw,lastSafe:{x:state.x,z:state.z,yaw:state.yaw}});}
+ function pose(){const c=W.vehicle,parked=ui.paused()||document.hidden||!!W.walk?.active;return {walk:W.walk?.snapshot(),collisionAck:net.collisionSeq,x:c.x,y:c.y,z:c.z,yaw:c.yaw,vx:parked?0:c.vx,vy:parked?0:c.vy,vz:parked?0:c.vz,pitch:c.pitch,roll:c.roll,steer:c.steer,speed:parked?0:c.speed,car:W.garage.selected,color:W.garage.getColor(),nitro:!parked&&c.nitroTime>0,wallMode:c.wallMode||'',roadMode:!!c.roadMode,grounded:c.grounded,water:c.waterMode,brake:!!c.brake,parked};}
+ function applySpawn(state){W.resetVehicle(true);Object.assign(W.vehicle,{x:state.x,y:state.y,z:state.z,yaw:state.yaw,lastSafe:{x:state.x,z:state.z,yaw:state.yaw}});W.walk?.restore(state.walk);}
  function drawRoster(){
   $('chatBtn').disabled=!net.connected;if(!net.connected)closeChat(false);lastChatHint='';
   $('roomLobby').classList.toggle('hidden',!net.active);$('roomEntry').classList.toggle('hidden',net.active);
@@ -87,14 +87,15 @@
  function closeRoom(){open=false;$('rooms').classList.add('hidden');if(ui.started())ui.pause(false);else $('startBtn').focus();}
  net.closePanel=()=>{if(chatOpen){closeChat();return true;}if(!open)return false;closeRoom();return true;};
  net.panelOpen=()=>open||chatOpen;
- function disposeRemote(remote){W.scene.remove(remote.mesh.root);const geometries=new Set(),materials=new Set(),textures=new Set();remote.mesh.root.traverse(o=>{if(o.geometry&&o.geometry!==W.unitBox&&!o.isSprite)geometries.add(o.geometry);if(o.material)for(const m of Array.isArray(o.material)?o.material:[o.material]){materials.add(m);if(m.map)textures.add(m.map);}});for(const g of geometries)g.dispose();for(const m of materials)m.dispose();for(const t of textures)t.dispose();}
+ function disposeRemote(remote){if(remote.person){if(remote.tag)remote.mesh.root.add(remote.tag);W.scene.remove(remote.person.root);}W.scene.remove(remote.mesh.root);const geometries=new Set(),materials=new Set(),textures=new Set();remote.mesh.root.traverse(o=>{if(o.geometry&&o.geometry!==W.unitBox&&!o.isSprite)geometries.add(o.geometry);if(o.material)for(const m of Array.isArray(o.material)?o.material:[o.material]){materials.add(m);if(m.map)textures.add(m.map);}});for(const g of geometries)g.dispose();for(const m of materials)m.dispose();for(const t of textures)t.dispose();}
  function clearRemotes(){for(const r of net.remotes.values())disposeRemote(r);net.remotes.clear();}
  function nameTag(name){const texture=W.textureCanvas(512,(c,s)=>{c.fillStyle='#10272be8';c.fillRect(0,160,s,110);c.strokeStyle='#b8edcb';c.lineWidth=4;c.strokeRect(2,162,s-4,106);c.fillStyle='#effff2';c.font='600 34px Arial';c.textAlign='center';c.fillText(name,256,228,480);});const sprite=new T.Sprite(new T.SpriteMaterial({map:texture,transparent:true,depthTest:false,depthWrite:false}));sprite.position.set(0,2.4,0);sprite.scale.set(2.6,2.6,1);return sprite;}
  function remoteFor(p){let remote=net.remotes.get(p.id);if(remote&&remote.car!==p.state.car){disposeRemote(remote);net.remotes.delete(p.id);remote=null;}
   if(!remote){const model=W.carModels.find(m=>m.id===p.state.car)||W.carModels[0],mesh=W.makeCar({...model,color:IslaRules.validColor(p.state.color)?p.state.color:model.color},true);const tag=nameTag(p.name+(p.guest?' · Guest':''));mesh.root.add(tag);remote={mesh,tag,car:p.state.car,current:{...p.state},target:{...p.state},at:performance.now(),connected:p.connected};net.remotes.set(p.id,remote);}
   if(IslaRules.validColor(p.state.color))remote.mesh.paint.color.set(p.state.color).convertSRGBToLinear();remote.target={...p.state};remote.at=performance.now();remote.connected=p.connected;return remote;
  }
- function disconnectToSolo(message){closeChat(false);clearBubbles();chatReadyAt=chatPendingUntil=0;clearTimeout(retry);clearTimeout(connectTimeout);leaving=true;const old=socket;socket=null;old?.close();identity=null;saveIdentity();intent=null;connecting=false;net.active=net.connected=false;W.playSync?.clear();net.code='';net.id='';net.players=[];pendingAura=0;trafficTargets=null;clearRemotes();ui.restore();W.initTraffic();W.resetVehicle(true);drawRoster();status(message);}
+ function disconnectToSolo(message){W.walk?.stop();closeChat(false);clearBubbles();chatReadyAt=chatPendingUntil=0;clearTimeout(retry);clearTimeout(connectTimeout);leaving=true;const old=socket;socket=null;old?.close();identity=null;saveIdentity();intent=null;connecting=false;net.active=net.connected=false;W.playSync?.clear();net.code='';net.id='';net.players=[];pendingAura=0;trafficTargets=null;clearRemotes();ui.restore();W.initTraffic();W.resetVehicle(true);drawRoster();status(message);}
+ net.footRecover=()=>{if(net.connected)send({type:'footRecover'});};
  net.sendPlayContact=()=>{if(net.connected)send({type:'playContact',state:pose()});};
  net.leave=()=>{send({type:'leave'});disconnectToSolo('You left the global room. Your aura, cars, and paint are still saved.');closeRoom();ui.toast('Back to solo driving.');};
  function connect(){
@@ -120,7 +121,7 @@
    }else if(data.type==='roster'){
     net.players=data.players;net.host=data.host;drawRoster();
     const ids=new Set(data.players.map(p=>p.id));for(const [id,r] of net.remotes)if(!ids.has(id)){disposeRemote(r);net.remotes.delete(id);}
-   }else if(data.type==='collision'&&net.active){
+   }else if(data.type==='footHit'&&net.active){if(W.walk?.active){W.walk.immune=0;W.walk.tumble(data.reason||'Ouch! Back beside your car.');}}else if(data.type==='collision'&&net.active){
     if(Number.isSafeInteger(data.seq)&&data.seq>net.collisionSeq&&['dx','dz','dvx','dvz'].every(k=>Number.isFinite(data[k]))){net.collisionSeq=data.seq;const c=W.vehicle;if(Number.isFinite(data.dvy)&&data.dvy>0){c.vy=Math.max(c.vy,0)+data.dvy;c.y+=.4;c.grounded=false;c.ramp=null;c.playSupport=null;c.playAir=true;c.roadMode=false;}c.x+=data.dx;c.z+=data.dz;c.vx+=data.dvx;c.vz+=data.dvz;c.speed=c.vx*Math.sin(c.yaw)+c.vz*Math.cos(c.yaw);c.roadFrame=null;W.onImpact?.(c.x,c.y+.7,c.z,Math.min(35,data.speed||0));lastSend=0;send({type:'state',state:pose()});}
    }else if(data.type==='frame'&&net.active){
     for(const p of data.players){if(p.id!==net.id)remoteFor(p);else{if(Number.isFinite(p.nukeRemaining))W.syncNukeTimer(p.nukeRemaining);if(p.rocket)W.acceptRocket?.(p.rocket);}}
@@ -166,7 +167,7 @@
    car.nitro.group.visible=!!s.nitro&&r.connected&&s.water!=='sinking';car.nitro.light.intensity=car.nitro.group.visible?1.8:0;
    for(const jet of car.nitro.jets){jet.jet.scale.z=1.8+Math.sin(time*43)*.2;jet.material.uniforms.time.value=time;jet.material.uniforms.strength.value=1;jet.glow.material.opacity=.8;}
    for(const wheel of car.wheels){wheel.pivot.rotation.y=wheel.z>0?s.steer:0;wheel.spin.rotation.x+=s.speed*dt/(.36*car.size);}
-   car.tail.emissiveIntensity=s.brake?3:.35;W.updateCarSpecialVisual?.(car,{...s,...c,waterMode:s.water},dt,time);
+   W.walk?.remote(r,dt,time);car.tail.emissiveIntensity=s.brake?3:.35;W.updateCarSpecialVisual?.(car,{...s,...c,waterMode:s.water},dt,time);
    if(s.water==='skimming'&&r.connected&&now-(r.sprayAt||0)>80){r.sprayAt=now;ui.spray({...s,...c});}
   }
   if(trafficTargets)W.traffic.forEach((t,i)=>{const a=trafficTargets[i];if(!a)return;const snap=Math.hypot(t.x-a[0],t.z-a[2])>30;for(const [j,k]of ['x','y','z'].entries())t[k]=snap?a[j]:W.mix(t[k],a[j],alpha);t.yaw+=Math.atan2(Math.sin(a[3]-t.yaw),Math.cos(a[3]-t.yaw))*alpha;[t.vx,t.vz,t.speed,t.distance]=a.slice(4,8);t.flightPitch=a[11]||0;t.wrecked=!!a[8];t.burning=!!a[9];t.wetTime=Math.max(t.wetTime||0,a[10]||0);});
