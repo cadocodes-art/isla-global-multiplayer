@@ -1,6 +1,6 @@
 'use strict';
 (()=>{
- const W=Isla,T=THREE,R=IslaRules;W.trees=[];
+ const W=Isla,T=THREE,R=IslaRules;W.trees=[];W.rocks=[];W.registerRock=(rock,parts=[])=>{rock.rockId=W.rocks.length;rock.parts=parts;W.rocks.push(rock);return rock;};
  W.registerTree=(tree,parts)=>{tree.treeId=W.trees.length;tree.parts=parts;for(const p of parts)if(!p.mesh.instanceColor)p.mesh.setColorAt(p.index,new T.Color(1,1,1));W.trees.push(tree);return tree;};
  W.fellTree=(tree,dx=1,dz=0,remote=false)=>{
   if(!tree||tree.collapsed)return;tree.collapsed=true;

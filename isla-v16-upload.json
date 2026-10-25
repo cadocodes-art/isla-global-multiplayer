@@ -1,5 +1,5 @@
 {
-  "version": "1.93",
+  "version": "2.0",
   "files": [
     {
       "name": "three.min.js",
@@ -7,14 +7,19 @@
       "sha256": "9274bbcec8d96168626c732b5d31c775aa8cfb7eaa0599bec0c175908a2c1ce2"
     },
     {
+      "name": "v20-rules.js",
+      "destination": "public/v20-rules.js",
+      "sha256": "a8c3579a42780fbf870f47a0046d07b19f062687b874cee48c7f2f2feb716ee5"
+    },
+    {
       "name": "world.js",
       "destination": "public/world.js",
-      "sha256": "daaf7f2214fa86c70793bfa79fb8e629279c2d28060048bf55e2babe9ec014ae"
+      "sha256": "6d687d1c2fe929ab5f9defce652783a1f4a387e4560dd5f3d1f50498027d074f"
     },
     {
       "name": "islands.js",
       "destination": "public/islands.js",
-      "sha256": "6fff1c3ff284ae4ed273bd73257f22d4d6764e6c1ad77dc9ceb2c26a0b37bc86"
+      "sha256": "3036562c57716564a16bfcbcffa4490938effc533ec083700608e81be1f23f2e"
     },
     {
       "name": "ramps.js",
@@ -24,7 +29,7 @@
     {
       "name": "physics.js",
       "destination": "public/physics.js",
-      "sha256": "977547687aa0e46412ecd0ef9f864dd70d7e12eb953be181a9c110d300f2c405"
+      "sha256": "0d251f2525e9c785354163c82bdfb3f4355cedfb127e1bcfef37a5f5d3bf91f8"
     },
     {
       "name": "aura.js",
@@ -39,7 +44,7 @@
     {
       "name": "garage.js",
       "destination": "public/garage.js",
-      "sha256": "51e345d33693e746d234b88265d716a9dfaf87906128e676cf3aa21623b7ad13"
+      "sha256": "aa3ac214d6bc2bdce2e2a7d3be3eb20f92ba297dbf2ecc430328bafebb9092b7"
     },
     {
       "name": "cars-v19.js",
@@ -49,12 +54,12 @@
     {
       "name": "traffic.js",
       "destination": "public/traffic.js",
-      "sha256": "0203a3e47abcf96c8fef1d0c7c2550d60684236f06f2a6967718ae083f25f683"
+      "sha256": "8b0fde13b30b5b9f78b52e25a3693f3c42d8ed1385d05eb510f618c6c3afc3e7"
     },
     {
       "name": "maps.js",
       "destination": "public/maps.js",
-      "sha256": "383c26e26bdec0f3cc4c99b97ae9fc8fd661b9ba6ad7fee1b891274584495bc7"
+      "sha256": "5b942bc75401fb62f25255fe376eadcf0fe4052cb436dc9188a4f16b903d7689"
     },
     {
       "name": "peaks.js",
@@ -69,17 +74,17 @@
     {
       "name": "utility-cars.js",
       "destination": "public/utility-cars.js",
-      "sha256": "065e54ba14e2743909f83362a34bd07a554ac68ab0f4d523a4782056315536c1"
+      "sha256": "cce4a559051b483181d77477216197a346083074b2c25fb6e3ee4f69efb22ef1"
     },
     {
       "name": "multiplayer.js",
       "destination": "public/multiplayer.js",
-      "sha256": "79dbc8be4042f8fe055a2d9d45f1b355e20ca27a8de07713ca5c4f4633d4f7a3"
+      "sha256": "a6c0e6a4abed960b277aaf1174a61f74d229b4db8385a02e7345cc16acbb8714"
     },
     {
       "name": "maker-core.js",
       "destination": "public/maker-core.js",
-      "sha256": "ae9dd9eeb3208104aa68d0d3490a0f09e9e27166585dfb7b8a0b7353ad6a70f2"
+      "sha256": "f45b89152565f49c87476fb83eecda251f5ff2e5756736d9e6f4c834e4404d92"
     },
     {
       "name": "maker-assets.js",
@@ -114,7 +119,7 @@
     {
       "name": "community-ui.js",
       "destination": "public/community-ui.js",
-      "sha256": "1e79c00f1d5dc5441cdc18f086549744e07b323940641f5c5292554fa606292b"
+      "sha256": "065d3885cdfd91efbd08e092c12955e6b15da0693217838e04777416a189b063"
     },
     {
       "name": "social-rules.js",
@@ -129,17 +134,17 @@
     {
       "name": "maker-driving.js",
       "destination": "public/maker-driving.js",
-      "sha256": "3668f02e55883850e28c431e4616103b9d575869f57339a2b4cd29a9728ae028"
+      "sha256": "042d476492cd392243b06308e9ed32dbad4fb05d7e83bd6242c27a2c225d4fa9"
     },
     {
       "name": "playplace-bodies.js",
       "destination": "public/playplace-bodies.js",
-      "sha256": "f34fc29265b5ddd28c81d395869f626126f15e12d28c018298121c3ddc048ed4"
+      "sha256": "06620ee8e7eb28292562ad131ff5e6c6c2d95c722f8348fc39b53ace7b33c82c"
     },
     {
       "name": "playplace-balls.js",
       "destination": "public/playplace-balls.js",
-      "sha256": "31c10799c566a1035af0ae11a32df2ff8b04e3608620d7c895552e505a2a1169"
+      "sha256": "ea539c8976be771a8b0d2f54092ac8f227cc9809f14dd3834c3899d99089d548"
     },
     {
       "name": "playplace-shared.js",
@@ -157,24 +162,44 @@
       "sha256": "2f1e3b089f61f916dcbb77cd33c2fef867f6bb49c50aee5c360396cd560d4dc3"
     },
     {
+      "name": "playplace-v20-shared.js",
+      "destination": "public/playplace-v20-shared.js",
+      "sha256": "affc2d25e43ec4a7859e15ab5b13a8e50746548f7c207cb41b3cb52ca7c08a70"
+    },
+    {
+      "name": "playplace-v20.js",
+      "destination": "public/playplace-v20.js",
+      "sha256": "18891d83471bb8d4bf0a429758a9e592360996f452a4f241e2faf5e3a7922de1"
+    },
+    {
       "name": "playplace-state.js",
       "destination": "public/playplace-state.js",
-      "sha256": "2c4bd505c3374e0d27ca7db864c9ac1cf90f2ba4bcf28683e86ad52187bb996c"
+      "sha256": "99ba4e5b83afae2bf9745de375f8bb2b503e4a9c9b98e27329df47f486003ac9"
     },
     {
       "name": "playplace-sync.js",
       "destination": "public/playplace-sync.js",
-      "sha256": "738d0ab2324da9d262a6a96ddf32e67520b0f420f90de89e0e6e9777c78bca79"
+      "sha256": "a9d68e46a0f95c992769c7674cd268ae6943674a09749aed7627727e1df6b5e1"
     },
     {
       "name": "custom-map.js",
       "destination": "public/custom-map.js",
-      "sha256": "16c55eb0f8e48dd435c464fb18673c64bbc7bfecbd8e8df323d68ca6c5b9ff1d"
+      "sha256": "c2cfcb3560bcfc935523174e8fb7f0473fbf6fde9380a392b002b7c876c55f9d"
+    },
+    {
+      "name": "launcher-props.js",
+      "destination": "public/launcher-props.js",
+      "sha256": "8c0c51809f81b755c2af1df6f0f70cd4719809e989a236926e4fb713be76c055"
+    },
+    {
+      "name": "cars-v20.js",
+      "destination": "public/cars-v20.js",
+      "sha256": "9f0a5ba20fd7a89ff3119f0d143da6c33ab41c8b8cf7595fa9b16a834f683919"
     },
     {
       "name": "game.js",
       "destination": "public/game.js",
-      "sha256": "11031fe4a4115468aba05f00600e4f4e06e872f0a25d179fd001c6b440025931"
+      "sha256": "131c4048a9f400beb5323ff5d7af49076011c93b128f707780b027a22526f9c1"
     },
     {
       "name": "style.css",
@@ -194,12 +219,12 @@
     {
       "name": "index.html",
       "destination": "public/index.html",
-      "sha256": "cf6978490410f6484d327eed4946ab2e92c99000e977939cbe0a01184fa354e4"
+      "sha256": "00881c79bef0f22231204bff99cca5301174826c48a6d5817bb27e8cf2c2c554"
     },
     {
       "name": "player-collisions.js",
       "destination": "public/player-collisions.js",
-      "sha256": "f6b9ce469d656528f572e27b791d52da585f9d52aa315fa03c871858a11ac7f3"
+      "sha256": "3fdf60ab9d42c79d90c88ee28e5481d8d0b35c353862450aae05295b5a46cae5"
     },
     {
       "name": "THREE-LICENSE.txt",
@@ -209,17 +234,17 @@
     {
       "name": "worker.js",
       "destination": "src/worker.js",
-      "sha256": "51f1564a69221a707f90b5ae6e063e025cddbfc20bad87e94253bb1df2e0349d"
+      "sha256": "38f5ef990bd1ca6b40a1184c6b247a4e073ddb4cf651c7bab2145a10308f0504"
     },
     {
       "name": "playground.js",
       "destination": "src/playground.js",
-      "sha256": "d1c0646989cb09078b06847249dce2db8180b1e86c1785c296488b02e82b2573"
+      "sha256": "898eb8a5e8b8f4a9dd6a8fe7de1768c6595a5452eabc2069cbcec55cffd7056b"
     },
     {
       "name": "community.js",
       "destination": "src/community.js",
-      "sha256": "9f9fdc45a8b94bff8143c168e3f7107c900c7a778a8b6f33064020bc21559a5b"
+      "sha256": "2067aa2ffd0c0d70607054004a0dda5433ffe6f032fae5ab896c882dd0123adb"
     },
     {
       "name": "social.js",
@@ -229,7 +254,7 @@
     {
       "name": "traffic (1).js",
       "destination": "src/traffic.js",
-      "sha256": "056438578cfbbbfb52a24e00b079f88b16db83cc807cabe138f08177c97d3bd4"
+      "sha256": "2ef78e91746db227c8b6b0bb7d4e2f5f0a705d60c61ed08a5870a31afa84a710"
     },
     {
       "name": "build-offline.cjs",
@@ -239,12 +264,12 @@
     {
       "name": "build-world.cjs",
       "destination": "scripts/build-world.cjs",
-      "sha256": "5c7b270382f4e7d3d3702a92319a9afaf3eeddcf3d606732cf881e02ea842522"
+      "sha256": "85b205477ef5d7c1b9f2306b512d82262e7e7ed16c0a2c2977f22f1a081e29a9"
     },
     {
       "name": "source-world.cjs",
       "destination": "scripts/source-world.cjs",
-      "sha256": "d35996f54ea06009559dc89e8f902148bb806fcb502281db64ff84fe00fba617"
+      "sha256": "f16a60e6192d50f82a3053cb90df2049abd728ac2803aed84f08febcd64d0293"
     },
     {
       "name": "upgrade-v16-config.cjs",
@@ -339,12 +364,12 @@
     {
       "name": "v19-network.test.cjs",
       "destination": "test/v19-network.test.cjs",
-      "sha256": "a6f242c25780efddb5d69a5386a3820deb4ed6621e8b61d5fe66cb5e316ff38a"
+      "sha256": "f76e26841b0462278beb2bcc7a1b76c9e4fc3218d971af9b43e1e040e9f79bc4"
     },
     {
       "name": "v19.test.cjs",
       "destination": "test/v19.test.cjs",
-      "sha256": "bd61fb2407e1f4bfa839409ac68d15643995cdfce6fc3e9f43f18bdb47580165"
+      "sha256": "47833d89a25d17a73ff9a4c5d71e7cd06400f907b50a8acf9cfeb01d6b533bdb"
     },
     {
       "name": "v191.test.cjs",
@@ -359,12 +384,22 @@
     {
       "name": "v193-network.test.cjs",
       "destination": "test/v193-network.test.cjs",
-      "sha256": "63dd630f5b0111b8c2a2aa75e2b29516244f25fc8803b529942f3d80329c8a5f"
+      "sha256": "f041cd43af0baf81558f465d6d30c5698340a941acaff3ccab6f5fb5131665a4"
     },
     {
       "name": "v193.test.cjs",
       "destination": "test/v193.test.cjs",
       "sha256": "d793b5d27690ccf97bbe55ac32179a49c352539274fc185ddfb5de9d776fca12"
+    },
+    {
+      "name": "v20-network.test.cjs",
+      "destination": "test/v20-network.test.cjs",
+      "sha256": "4bd277358fdb76573a931864a1d7dd45010615ed392178fc774f455b0a8966c4"
+    },
+    {
+      "name": "v20.test.cjs",
+      "destination": "test/v20.test.cjs",
+      "sha256": "8ac6ed37029c710b6004069479741e0ecaa9857a92da2b492277866e83134e84"
     },
     {
       "name": "aura-check.cjs",
@@ -374,7 +409,7 @@
     {
       "name": "garage-check.cjs",
       "destination": "test/regression/garage-check.cjs",
-      "sha256": "2cae1e37d8f378617b6aa90bb05a6f6bea15da566c52077cb1b4cf7a9e70902a"
+      "sha256": "fb22c80e34d01ecaf58bf3fd953562286e7548231f400b594485530345f48a06"
     },
     {
       "name": "island-check.cjs",
@@ -414,22 +449,22 @@
     {
       "name": "package.json",
       "destination": "package.json",
-      "sha256": "060adcd5b0efc2d50c4bb994e1874e2a85558c94575cbcf23cc979a17a91c22a"
+      "sha256": "8b98fe57a360ea2d7392b1158f3fe4e52977648430b6b455c5668d634f72b55c"
     },
     {
       "name": "package-lock.json",
       "destination": "package-lock.json",
-      "sha256": "e9d61a6568e99c55d57ad19da5e2802682b3212ae2b647fd85916ec618b686bb"
+      "sha256": "b02fa970fa6a08f935f59e2543514b74aa4c4fbb9a4c54e138e6ef4e0572ffb2"
     },
     {
       "name": "prepare-cloudflare.cjs",
       "destination": "prepare-cloudflare.cjs",
-      "sha256": "eb7c495ece1902d593a3bf052b8562af3b162c325de8d909a67181beabe46901"
+      "sha256": "ed947a679a1e4a2513b242d453b15470128a1906898530da3025d827584516ec"
     },
     {
       "name": "README.txt",
       "destination": "README.txt",
-      "sha256": "c036eec71e639fb98b79e40ee27f39c9d9e04c376b0ac3580e20c9fb6163e8b0"
+      "sha256": "54cff9e362fe0b9da624230c4800bb3051c83672daf6585a0005ae225f339cea"
     }
   ]
 }

@@ -13,7 +13,8 @@
  // Broad phase: nearby objects only. Both axles collide, rather than just the car's centre.
  const bins=new Map(),cs=45;
  W.buildCollisionIndex=()=>{bins.clear();for(let b of W.colliders){let radius=(b.r||Math.hypot(b.w,b.d)*.5)+4;for(let x=Math.floor((b.x-radius)/cs);x<=Math.floor((b.x+radius)/cs);x++)for(let z=Math.floor((b.z-radius)/cs);z<=Math.floor((b.z+radius)/cs);z++){let key=x+','+z;if(!bins.has(key))bins.set(key,[]);bins.get(key).push(b)}}};
- function collide(c,time){const size=W.getCarSpec?.()?.size??1,mass=W.getCarSpec?.()?.mass??1;let list=bins.get(Math.floor(c.x/cs)+','+Math.floor(c.z/cs));if(!list)return;let sx=Math.sin(c.yaw),sz=Math.cos(c.yaw);for(let b of list){if(b.collapsed||(b.rampStructure&&c.ramp?.id===b.rampId))continue;if(c.y>(b.y+(b.h||6)+(b.rampStructure||b.preciseHeight?0:.7))||c.y+1.6*size<b.y)continue;for(let off of [1.22*size,-1.22*size]){let x=c.x+sx*off,z=c.z+sz*off,hit;if(b.kind==='ramp'&&(c.ramp===b||c.y>=W.rampHeight(b,x,z)-.4))continue;if(b.obb&&W.makerBoxHit){hit=W.makerBoxHit(x,c.y+.8*size,z,.96*size,b);if(!hit)continue;}else if(b.kind&&!b.w){let dx=x-b.x,dz=z-b.z,d=Math.hypot(dx,dz),r=b.r+.96*size;if(d>=r)continue;hit={nx:dx/(d||1),nz:dz/(d||1),depth:r-d};}else hit=W.circleOBB(x,z,.96*size,b.kind==='ramp'&&b.openFrame?W.rampBlockingPart(b,c.y,1.6*size):b);if(!hit)continue;let approach=-(c.vx*hit.nx+c.vz*hit.nz+c.vy*(hit.ny||0));
+ function collide(c,time){const size=W.getCarSpec?.()?.size??1,mass=W.getCarSpec?.()?.mass??1;let list=bins.get(Math.floor(c.x/cs)+','+Math.floor(c.z/cs));if(!list)return;let sx=Math.sin(c.yaw),sz=Math.cos(c.yaw);for(let b of list){if(b.collapsed||(b.rampStructure&&c.ramp?.id===b.rampId))continue;if(c.y>(b.y+(b.h||6)+(b.rampStructure||b.preciseHeight?0:.7))||c.y+1.6*size<b.y)continue;for(let off of [(W.getCarSpec?.()?.launcher?2.2:1.22)*size,-1.22*size]){const radius=(off>0&&W.getCarSpec?.()?.launcher?1.2:.96)*size;let x=c.x+sx*off,z=c.z+sz*off,hit;if(b.kind==='ramp'&&(c.ramp===b||c.y>=W.rampHeight(b,x,z)-.4))continue;if(b.obb&&W.makerBoxHit){hit=W.makerBoxHit(x,c.y+.8*size,z,radius,b);if(!hit)continue;}else if(b.kind&&!b.w){let dx=x-b.x,dz=z-b.z,d=Math.hypot(dx,dz),r=b.r+radius;if(d>=r)continue;hit={nx:dx/(d||1),nz:dz/(d||1),depth:r-d};}else hit=W.circleOBB(x,z,radius,b.kind==='ramp'&&b.openFrame?W.rampBlockingPart(b,c.y,1.6*size):b);if(!hit)continue;let approach=-(c.vx*hit.nx+c.vz*hit.nz+c.vy*(hit.ny||0));
+   if(W.tryLauncherHit?.(c,b,hit,approach,time))continue;
    if(!b.kind&&W.tryWallClimb?.(c,b,hit,approach))return;
    if(W.getCarSpec?.()?.beast&&approach>=4){if(!b.kind){W.hitBuilding(b,approach,time);continue;}if(b.kind==='tree'){W.fellTree?.(b,-hit.nx,-hit.nz);continue;}}
    c.x+=hit.nx*hit.depth;c.z+=hit.nz*hit.depth;c.y+=(hit.ny||0)*hit.depth;if(approach>0){c.vy+=(hit.ny||0)*approach*1.14;c.vx+=hit.nx*approach*1.14;c.vz+=hit.nz*approach*1.14;c.yawRate+=(sx*hit.nz-sz*hit.nx)*off*approach*.018/(mass*size);c.vy+=Math.min(1.8,approach*.035)/mass;if(!b.kind)W.hitBuilding(b,approach,time);if(approach>2&&W.onImpact)W.onImpact(x,c.y+.7,z,approach,b);}}}}
@@ -30,12 +31,12 @@
   c.nitroHeld=!!input.boost;
   c.surface=ramp?'RAMP':road?'ASPHALT':sand?'BEACH':'OFF ROAD';c.speed=forward;c.slip=Math.abs(lateral);c.throttle=clamp(Number(input.gas)||0,0,1);c.brake=forward>.5?clamp(Number(input.brake)||0,0,1):0;
   let maxSteer=.56/(1+absSpeed*.027),targetSteer=input.steer*maxSteer;c.steer=mix(c.steer,targetSteer,1-Math.exp(-dt*(input.steer?5.5:7)/Math.sqrt(mass)));let steer=c.steer;
-  const overWater=W.height(c.x,c.z)<-.5&&!onBridge,skim=W.waterSkim;
+  const waterLevel=W.waterLevelAt?.(c.x,c.z)??0,overWater=W.height(c.x,c.z)<waterLevel-.5&&!onBridge,skim=W.waterSkim;
   if(!overWater){c.waterMode='dry';c.skimTime=0;c.waterTime=0;}
   // A jump over the ocean does not use up the skim: start on actual water contact.
-  else if(c.waterMode==='dry'&&c.y<=.25&&c.vy<=.5){
+  else if(c.waterMode==='dry'&&c.y<=waterLevel+.25&&c.vy<=.5){
    c.waterMode=spec?.amphibious||Math.hypot(c.vx,c.vz)>skim.minimumSpeed?'skimming':'sinking';c.skimTime=0;c.waterTime=0;c.airtime=0;
-   if(c.waterMode==='skimming'){c.y=skim.level;c.vy=0;if(W.onWaterSkim)W.onWaterSkim();}
+   if(c.waterMode==='skimming'){c.y=waterLevel+skim.level;c.vy=0;if(W.onWaterSkim)W.onWaterSkim();}
   }
   if(c.waterMode==='sinking')c.nitroTime=0;
   const boosting=c.nitroTime>0,thrust=boosting&&!input.brake&&!input.handbrake?(spec?.thrust??W.nitro.thrust)/mass*clamp(((spec?.boostMax??W.nitro.maxSpeed)-Math.max(0,forward))/7,0,1):0;
@@ -52,7 +53,7 @@
    const boatPower=spec?.amphibious?((input.brake?(forward>.6?-14:-5):input.gas||boosting?Math.min(12,420/(Math.abs(forward)+12)):0)+thrust):thrust*.65;
    ax=-c.vx*drag-rx*lateral*.22+sx*boatPower;az=-c.vz*drag-rz*lateral*.22+sz*boatPower;
    c.yawRate=mix(c.yawRate,clamp(forward/(2.85*size)*Math.tan(steer)*.10,-.28,.28),1-Math.exp(-dt*3));
-   c.y=skim.level+Math.sin(time*18)*.018;c.vy=0;
+   c.y=waterLevel+skim.level+Math.sin(time*18)*.018;c.vy=0;
    c.pitch=mix(c.pitch,.035,1-Math.exp(-dt*8));c.roll=mix(c.roll,-c.yawRate*.12,1-Math.exp(-dt*5));
    c.skimTime=Math.min(skim.duration,c.skimTime+dt);
   }else if(c.waterMode==='sinking'){
@@ -86,11 +87,11 @@
    ax+=sx*airThrust;az+=sz*airThrust;c.yawRate*=Math.exp(-dt*(boosting?.45:.7));c.airtime+=dt;c.contact=0;c.pitch-=dt*(spec?.glider?.008:boosting?.015:.05);
   }
   c.vx+=ax*dt;c.vz+=az*dt;
-  if(boosting&&spec?.boostLimit){const limit=!c.grounded&&c.waterMode==='dry'&&spec.glider?spec.airBoostLimit:spec.boostLimit,v=Math.hypot(c.vx,c.vz);if(v>limit){c.vx*=limit/v;c.vz*=limit/v;}}
+  if(boosting&&spec?.boostLimit&&!W.rocketCoasting?.()){const limit=!c.grounded&&c.waterMode==='dry'&&spec.glider?spec.airBoostLimit:spec.boostLimit,v=Math.hypot(c.vx,c.vz);if(v>limit){c.vx*=limit/v;c.vz*=limit/v;}}
   c.x+=c.vx*dt;c.z+=c.vz*dt;c.y+=c.vy*dt;c.yaw+=c.yawRate*dt;
   if(ramp){if(W.rampAt(c.x,c.z)===ramp){const g=W.rampGradient(ramp,c.x,c.z);c.y=W.rampHeight(ramp,c.x,c.z)+.12+(boosting?.08:0);c.vy=g.x*c.vx+g.z*c.vz;}else{c.ramp=null;c.grounded=false;c.contact=0;c.airtime=dt;}}
   // Reaching shore ends the skim safely; submerged ground must not lift a sinking car.
-  if(W.height(c.x,c.z)>=-.5||(W.bridgeSurface?.(c.x,c.z)!=null&&c.y>=W.bridge.deckY-.6)){c.waterMode='dry';c.skimTime=0;c.waterTime=0;}
+  if(W.height(c.x,c.z)>=(W.waterLevelAt?.(c.x,c.z)??0)-.5||(W.bridgeSurface?.(c.x,c.z)!=null&&c.y>=W.bridge.deckY-.6)){c.waterMode='dry';c.skimTime=0;c.waterTime=0;}
   let floor=surfaceHeight(c.x,c.z)+.10;if(c.waterMode==='dry'&&c.y<floor-.15){if(c.vy<-3&&W.onLanding)W.onLanding(.35,c.vy);c.y=floor-.06;c.vy=Math.max(0,-c.vy*.12);}
   collide(c,time);for(let d of W.debris){let p=d.mesh.position,dx=p.x-c.x,dz=p.z-c.z;if(Math.abs(dx)>5*size||Math.abs(dz)>5*size||Math.abs(c.y-p.y)>2)continue;let along=dx*sx+dz*sz,across=dx*rx+dz*rz;if(Math.abs(along)<2.4*size+d.mesh.scale.z*.3&&Math.abs(across)<size+d.mesh.scale.x*.3&&Math.hypot(c.vx,c.vz)>1.5){d.vx=c.vx*.65;d.vz=c.vz*.65;d.vy=1.1;d.rest=false;d.age=0;c.vx*=1-dt*.7/mass;c.vz*=1-dt*.7/mass;}}c.distance+=Math.hypot(c.vx,c.vz)*dt;
   if(road&&Math.abs(forward)>2&&Math.abs(lateral)<3){let next=near.p.road.samples[Math.min(near.p.index+1,near.p.road.samples.length-1)],prev=near.p.road.samples[Math.max(0,near.p.index-1)],angle=Math.atan2(next.x-prev.x,next.z-prev.z);if(Math.cos(angle-c.yaw)<0)angle+=Math.PI;c.lastSafe={x:near.p.x,z:near.p.z,yaw:angle};}

@@ -4,7 +4,7 @@ import {scrypt as nodeScrypt, timingSafeEqual} from 'node:crypto';
 import '../public/maker-core.js';
 import '../public/player-rules.js';
 const M=globalThis.IslaMaker,DAY=86400000,COOKIE='__Host-isla_session';
-const prices={classic:0,rally:30000,gt:80000,truck:70000,solstice:180000,moonlight:250000,nuker:275000,plane:330000,firetruck:135000,stick:315000,beast:320000,waterskidder:280000,micro:200000,vespera:340000,cruiser:40000,hover:255000};
+const prices={classic:0,rally:30000,gt:80000,truck:70000,solstice:180000,moonlight:250000,nuker:275000,plane:330000,firetruck:135000,stick:315000,beast:320000,waterskidder:280000,micro:200000,vespera:340000,cruiser:40000,hover:255000,launcher:290000,ultra:500000};
 const json=(v,status=200,headers={})=>Response.json(v,{status,headers:{'Cache-Control':'no-store','X-Content-Type-Options':'nosniff',...headers}});
 const fail=(message,status=400)=>{throw Object.assign(Error(message),{status});};
 const retryLater=seconds=>{const retryAfter=Math.max(1,Math.ceil(seconds));throw Object.assign(Error('Too many attempts. Try again in '+Math.floor(retryAfter/60)+':'+String(retryAfter%60).padStart(2,'0')+'.'),{status:429,retryAfter});};

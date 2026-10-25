@@ -1,7 +1,7 @@
 const fs=require('fs'),vm=require('vm'),assert=require('assert');global.window=global;global.THREE=require('../../public/three.min.js');
 for(const f of ['world.js','physics.js','aura.js','garage.js'])vm.runInThisContext(fs.readFileSync(__dirname+'/../../public/'+f,'utf8'));
 const W=Isla,memory=new Map(),storage={getItem:k=>memory.get(k),setItem:(k,v)=>memory.set(k,v)};let g=W.createGarage(storage);
-assert.deepEqual(W.carModels.map(m=>m.price),[0,30000,80000,70000,180000,250000,275000,330000,135000,315000,320000,280000,200000,340000,40000,255000]);
+assert.deepEqual(W.carModels.map(m=>m.price),[0,30000,80000,70000,180000,250000,275000,330000,135000,315000,320000,280000,200000,340000,40000,290000,500000,255000]);
 const previousSave=JSON.stringify({balance:50000,earned:350000,bestChain:12000,owned:['classic','rally','gt','solstice'],selected:'solstice'}),resetMemory=new Map([['isla-drive-garage-v1',previousSave]]),resetStorage={getItem:k=>resetMemory.get(k),setItem:(k,v)=>resetMemory.set(k,v)};
 let fresh=W.createGarage(resetStorage);
 assert.equal(fresh.balance,0);assert.equal(fresh.earned,0);assert.equal(fresh.bestChain,0);assert.equal(fresh.selected,'classic');assert.deepEqual(fresh.owned,['classic']);assert(!fresh.choose('solstice').ok);

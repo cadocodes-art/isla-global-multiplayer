@@ -1,3 +1,4 @@
+import '../public/v20-rules.js';
 import defaultData from './world-data.json';
 const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
 export function place(t,data=defaultData){
@@ -10,11 +11,11 @@ export function place(t,data=defaultData){
 }
 export const freshTraffic=(data=defaultData)=>data.traffic.map(t=>place({...t},data));
 export function stepTraffic(traffic,players,dt,data=defaultData){
- for(const t of traffic){t.wetTime=Math.max(0,(t.wetTime||0)-dt);let target=t.wrecked?0:t.cruise,sx=Math.sin(t.yaw),sz=Math.cos(t.yaw);
+ for(const t of traffic){if(globalThis.IslaV20.stepTraffic(t,dt,(x,z)=>globalThis.IslaV20.gridHeight(data.ground,x,z)))continue;t.wetTime=Math.max(0,(t.wetTime||0)-dt);let target=t.wrecked?0:t.cruise,sx=Math.sin(t.yaw),sz=Math.cos(t.yaw);
   for(const other of [...traffic,...players]){if(other===t||Math.abs(other.y-t.y)>2.4)continue;const dx=other.x-t.x,dz=other.z-t.z,ahead=dx*sx+dz*sz,cross=dx*sz-dz*sx;if(ahead>0&&ahead<55&&Math.abs(cross)<2.4)target=Math.min(target,Math.max(0,(ahead-7)*.55));}
   if(t.stun>0){t.stun=Math.max(0,t.stun-dt);target=0;}
   t.speed+=clamp(target-t.speed,-6*dt,1.8*dt);t.distance+=t.speed*t.direction*dt;
-  t.offsetX=clamp((t.offsetX+t.driftX*dt)*Math.exp(-dt*.65),-5,5);t.offsetZ=clamp((t.offsetZ+t.driftZ*dt)*Math.exp(-dt*.65),-5,5);t.driftX*=Math.exp(-dt*2.4);t.driftZ*=Math.exp(-dt*2.4);
+  t.offsetX=clamp((t.offsetX+t.driftX*dt)*Math.exp(-dt*.65),-600,600);t.offsetZ=clamp((t.offsetZ+t.driftZ*dt)*Math.exp(-dt*.65),-600,600);t.driftX*=Math.exp(-dt*2.4);t.driftZ*=Math.exp(-dt*2.4);
   place(t,data);if(t.x>=data.bridge.start&&t.x<=data.bridge.end&&Math.abs(t.z)<6){t.offsetZ=clamp(t.offsetZ,-1,1);place(t,data);}
  }
 }

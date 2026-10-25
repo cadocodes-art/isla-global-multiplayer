@@ -105,12 +105,12 @@
   const ws=new WebSocket((location.protocol==='https:'?'wss://':'ws://')+location.host+'/ws?map='+encodeURIComponent(W.mapId)+(W.customMap?'&revision='+IslaCommunity.custom.info.revision:''));socket=ws;
   status(identity?'Reconnecting to the global room…':'Connecting to the global room…');
   connectTimeout=setTimeout(()=>{if(socket===ws&&!net.connected){status('The server is taking a while. Retrying…');ws.close();}},70000);
-  ws.onopen=()=>{if(socket!==ws)return;send({...identity?{type:'resume',v:IslaRules.protocol,name:identity.name,token:identity.token}:intent,...W.mapId==='playplace'?{playplaceRevision:4}:{}});};
+  ws.onopen=()=>{if(socket!==ws)return;send({...identity?{type:'resume',v:IslaRules.protocol,name:identity.name,token:identity.token}:intent,...W.mapId==='playplace'?{playplaceRevision:5}:{}});};
   ws.onmessage=e=>{if(socket!==ws)return;let data;try{data=JSON.parse(e.data)}catch{return;}
    if(data.type==='welcome'){
     const expected=W.buildings.map(b=>[b.id,Math.round(b.x*100),Math.round(b.z*100)]);
     if((data.mapId&&data.mapId!==W.mapId)||JSON.stringify(expected)!==JSON.stringify(data.buildings)){disconnectToSolo('This game version differs from the server. Refresh before joining.');openRoom();status('This game version differs from the server. Refresh before joining.',true);return;}
-    clearTimeout(connectTimeout);attempt=0;connecting=false;net.active=net.connected=true;net.code=data.code;net.id=data.id;net.collisionSeq=data.collisionSeq||0;net.host=data.host;net.players=data.players;scoreSeq=data.scoreSeq;pendingAura=0;
+    clearTimeout(connectTimeout);attempt=0;connecting=false;net.active=net.connected=true;net.code=data.code;net.id=data.id;net.collisionSeq=data.collisionSeq||0;if(data.props)W.receiveThrownProps?.(data.props);if(data.rocket)W.acceptRocket?.(data.rocket);net.host=data.host;net.players=data.players;scoreSeq=data.scoreSeq;pendingAura=0;
     identity={code:data.code,token:data.token,name:intent?.name||identity?.name||$('driverName').value};saveIdentity();
     ui.restore();ui.buildings(data.hp);for(const [id,dx,dz]of data.trees||[])W.fellTree?.(W.trees[id],dx,dz,true);applySpawn(data.state);if(data.playground)W.playSync?.receive(data.playground,true);drawRoster();ui.start();closeRoom();status('Connected to the global room.');ui.toast(data.resumed?'Back in the global room.':'GLOBAL ROOM · '+identity.name,5);
    }else if(data.type==='error'){
@@ -121,11 +121,13 @@
     net.players=data.players;net.host=data.host;drawRoster();
     const ids=new Set(data.players.map(p=>p.id));for(const [id,r] of net.remotes)if(!ids.has(id)){disposeRemote(r);net.remotes.delete(id);}
    }else if(data.type==='collision'&&net.active){
-    if(Number.isSafeInteger(data.seq)&&data.seq>net.collisionSeq&&['dx','dz','dvx','dvz'].every(k=>Number.isFinite(data[k]))){net.collisionSeq=data.seq;const c=W.vehicle;c.x+=data.dx;c.z+=data.dz;c.vx+=data.dvx;c.vz+=data.dvz;c.speed=c.vx*Math.sin(c.yaw)+c.vz*Math.cos(c.yaw);c.roadFrame=null;W.onImpact?.(c.x,c.y+.7,c.z,Math.min(35,data.speed||0));lastSend=0;send({type:'state',state:pose()});}
+    if(Number.isSafeInteger(data.seq)&&data.seq>net.collisionSeq&&['dx','dz','dvx','dvz'].every(k=>Number.isFinite(data[k]))){net.collisionSeq=data.seq;const c=W.vehicle;if(Number.isFinite(data.dvy)&&data.dvy>0){c.vy=Math.max(c.vy,0)+data.dvy;c.y+=.4;c.grounded=false;c.ramp=null;c.playSupport=null;c.playAir=true;c.roadMode=false;}c.x+=data.dx;c.z+=data.dz;c.vx+=data.dvx;c.vz+=data.dvz;c.speed=c.vx*Math.sin(c.yaw)+c.vz*Math.cos(c.yaw);c.roadFrame=null;W.onImpact?.(c.x,c.y+.7,c.z,Math.min(35,data.speed||0));lastSend=0;send({type:'state',state:pose()});}
    }else if(data.type==='frame'&&net.active){
-    for(const p of data.players){if(p.id!==net.id)remoteFor(p);else if(Number.isFinite(p.nukeRemaining))W.syncNukeTimer(p.nukeRemaining);}
-    trafficTargets=data.traffic;if(data.playground)W.playSync?.receive(data.playground);
-   }else if(data.type==='nukeLaunch'&&net.active){W.showNuke(data.shot);if(data.id===net.id)W.syncNukeTimer(15);}
+    for(const p of data.players){if(p.id!==net.id)remoteFor(p);else{if(Number.isFinite(p.nukeRemaining))W.syncNukeTimer(p.nukeRemaining);if(p.rocket)W.acceptRocket?.(p.rocket);}}
+    trafficTargets=data.traffic;if(data.props)W.receiveThrownProps?.(data.props);if(data.playground)W.playSync?.receive(data.playground);
+   }else if(data.type==='rocket'){W.acceptRocket?.(data.rocket);}
+   else if(data.type==='propLaunch'){W.receiveThrownProps?.([data.prop]);}
+   else if(data.type==='nukeLaunch'&&net.active){W.showNuke(data.shot);if(data.id===net.id)W.syncNukeTimer(15);}
    else if(data.type==='nukeBlast'&&net.active){for(const [id,hp]of data.buildings)ui.building(id,hp,0);W.showNukeBlast(data.blast);}
    else if(data.type==='treeDown'&&net.active){W.fellTree?.(W.trees[data.id],data.dx,data.dz,true);}
    else if(data.type==='chat'){showChat(data);}
@@ -144,6 +146,7 @@
   $('driverName').removeAttribute('aria-invalid');safeWrite(local,'isla-car-name-v2',name);identity=null;intent={type:'join',v:IslaRules.protocol,name};connect();
  }
  net.hit=(b,speed)=>{if(!net.connected)return;send({type:'state',state:pose()});send({type:'hit',id:b.id,speed});};
+ net.rocketAction=action=>{if(net.connected){send({type:'state',state:pose()});send({type:'rocket',action});}};net.propLaunch=(kind,id)=>{if(net.connected){send({type:'state',state:pose()});send({type:'propLaunch',kind,id});}};
  net.treeHit=(t,dx,dz)=>{if(!net.connected)return;send({type:'state',state:pose()});send({type:'treeHit',id:t.treeId,dx,dz});};
  let lastTrafficHit=0;
  net.trafficHit=(t,nx,nz,speed)=>{if(net.connected&&performance.now()-lastTrafficHit>220){lastTrafficHit=performance.now();send({type:'state',state:pose()});send({type:'trafficHit',id:t.id,nx,nz,speed});}};
@@ -166,10 +169,10 @@
    car.tail.emissiveIntensity=s.brake?3:.35;W.updateCarSpecialVisual?.(car,{...s,...c,waterMode:s.water},dt,time);
    if(s.water==='skimming'&&r.connected&&now-(r.sprayAt||0)>80){r.sprayAt=now;ui.spray({...s,...c});}
   }
-  if(trafficTargets)W.traffic.forEach((t,i)=>{const a=trafficTargets[i];if(!a)return;const snap=Math.hypot(t.x-a[0],t.z-a[2])>30;for(const [j,k]of ['x','y','z'].entries())t[k]=snap?a[j]:W.mix(t[k],a[j],alpha);t.yaw+=Math.atan2(Math.sin(a[3]-t.yaw),Math.cos(a[3]-t.yaw))*alpha;[t.vx,t.vz,t.speed,t.distance]=a.slice(4,8);t.wrecked=!!a[8];t.burning=!!a[9];t.wetTime=Math.max(t.wetTime||0,a[10]||0);});
+  if(trafficTargets)W.traffic.forEach((t,i)=>{const a=trafficTargets[i];if(!a)return;const snap=Math.hypot(t.x-a[0],t.z-a[2])>30;for(const [j,k]of ['x','y','z'].entries())t[k]=snap?a[j]:W.mix(t[k],a[j],alpha);t.yaw+=Math.atan2(Math.sin(a[3]-t.yaw),Math.cos(a[3]-t.yaw))*alpha;[t.vx,t.vz,t.speed,t.distance]=a.slice(4,8);t.flightPitch=a[11]||0;t.wrecked=!!a[8];t.burning=!!a[9];t.wetTime=Math.max(t.wetTime||0,a[10]||0);});
  };
  W.initMultiplayer=hooks=>{
-  ui=hooks;sessionKey='isla-global-v16-'+W.mapId+(W.mapId==='playplace'?'-r4':'')+'-'+(window.IslaCommunity?.account?.id||'guest');
+  ui=hooks;sessionKey='isla-global-v16-'+W.mapId+(W.mapId==='playplace'?'-r5':'')+'-'+(window.IslaCommunity?.account?.id||'guest');
   $('chatBtn').onclick=net.toggleChat;$('chatClose').onclick=()=>closeChat();drawChat();
   const previousEarn=W.onAuraEarn;W.onAuraEarn=(points,best)=>{previousEarn?.(points,best);if(net.connected&&!W.auraDisabled)pendingAura+=points;};
   $('driverName').value=window.IslaCommunity?.account?.username||safeRead(local,'isla-car-name-v2')||'';$('driverName').readOnly=!!window.IslaCommunity?.account;if(window.IslaCommunity?.account)$('nameRules').textContent='Playing as your signed-in account. Guests are labeled Guest.';

@@ -65,7 +65,7 @@
    if(input.handbrake)acceleration-=Math.sign(along)*5.1/mass;
    velocity.addScaledVector(up,-velocity.dot(up));velocity.addScaledVector(forward,acceleration*dt);velocity.addScaledVector(right,-lateral*Math.min(1,dt*(input.handbrake?1.5:7.5)));
    const gravity=new T.Vector3(0,-9.81,0);gravity.addScaledVector(up,-gravity.dot(up));velocity.addScaledVector(gravity,dt);
-   const max=boost?(spec.boostLimit||spec.boostMax||53):Math.max(66,spec.boostMax||66);if(velocity.length()>max)velocity.setLength(max);
+   const max=boost?(spec.boostLimit||spec.boostMax||53):Math.max(66,spec.boostMax||66);if(velocity.length()>max&&!W.rocketCoasting?.())velocity.setLength(max);
    pos.copy(hit.point).addScaledVector(up,.12).addScaledVector(velocity,dt);const next=contact(pos,1,up);
    if(next){const q=new T.Quaternion().setFromUnitVectors(up,next.normal);forward.applyQuaternion(q).normalize();velocity.applyQuaternion(q);up.copy(next.normal);pos.copy(next.point).addScaledVector(up,.12);hit=next;}
    // Hand back to terrain physics at ground level, without spending a frame
