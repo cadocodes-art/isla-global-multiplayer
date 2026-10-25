@@ -6,6 +6,9 @@ const person=a=>({id:a.id,username:a.username});
 const integer=(v,fallback=0)=>/^\d+$/.test(String(v))?Math.min(Number(v),Number.MAX_SAFE_INTEGER):fallback;
 
 export function installSocial(h){h.db.exec(`
+CREATE TABLE IF NOT EXISTS notifications(seq INTEGER PRIMARY KEY AUTOINCREMENT,account TEXT,kind TEXT,target TEXT,actor TEXT,marker INTEGER DEFAULT 0,at INTEGER,seen INTEGER DEFAULT 0,UNIQUE(account,kind,target,marker));
+CREATE INDEX IF NOT EXISTS plays_map_visitor ON plays(map,visitor);
+CREATE INDEX IF NOT EXISTS notifications_account ON notifications(account,seq);
 CREATE TABLE IF NOT EXISTS friendships(pair TEXT PRIMARY KEY,first TEXT,second TEXT,requester TEXT,status TEXT,at INTEGER);
 CREATE INDEX IF NOT EXISTS friends_first ON friendships(first,status);
 CREATE INDEX IF NOT EXISTS friends_second ON friendships(second,status);
@@ -19,6 +22,14 @@ CREATE TABLE IF NOT EXISTS message_reads(account TEXT,pair TEXT,seq INTEGER,PRIM
 CREATE TABLE IF NOT EXISTS social_reports(id TEXT PRIMARY KEY,reporter TEXT,kind TEXT,target TEXT,author TEXT,text TEXT,reason TEXT,detail TEXT,at INTEGER,resolved INTEGER DEFAULT 0,UNIQUE(reporter,kind,target));
 `);}
 function blocked(h,a,b){return !!h.one('SELECT 1 FROM blocks WHERE (account=? AND target=?) OR (account=? AND target=?)',a,b,b,a);}
+export function notifyMapPlay(h,m,visitor,now){
+ h.ctx.storage.transactionSync(()=>{
+  const previous=h.count('SELECT COUNT(DISTINCT visitor) n FROM plays WHERE map=?',m.id);
+  h.db.exec('INSERT INTO plays VALUES(?,?,?)',visitor,m.id,now);
+  const current=h.count('SELECT COUNT(DISTINCT visitor) n FROM plays WHERE map=?',m.id);
+  for(const milestone of [50,100,500,1000,5000,10000,50000,100000])if(previous<milestone&&current>=milestone)h.db.exec('INSERT OR IGNORE INTO notifications(account,kind,target,actor,marker,at) VALUES(?,?,?,?,?,?)',m.owner,'milestone',m.id,m.owner,milestone,now);
+ });
+}
 export function relationship(h,a,b){
  if(!a||a===b)return {status:'none'};
  if(h.one('SELECT 1 FROM blocks WHERE account=? AND target=?',a,b))return {status:'blocked'};
@@ -47,6 +58,17 @@ export async function socialRoute(h,{path,method,url,body,a,need,admin,censor}){
   return {posts:posts.slice(0,10).map(postView),more:posts.length>10,relationship:relationship(h,a?.id,u.id)};
  }
  need();
+ const notificationFilter=`n.account=? AND (n.kind='milestone' AND EXISTS(SELECT 1 FROM maps WHERE id=n.target AND deleted=0 AND hidden=0) OR n.kind='message' AND EXISTS(SELECT 1 FROM messages WHERE id=n.target AND removed=0) AND NOT EXISTS(SELECT 1 FROM blocks WHERE (account=n.account AND target=n.actor) OR (account=n.actor AND target=n.account)))`;
+ if(path==='social/notifications'&&method==='GET'){
+  const after=integer(url.searchParams.get('after')),before=integer(url.searchParams.get('before')),updates=url.searchParams.has('after');
+  const rows=h.rows(`SELECT n.*,a.username,m.name AS map_name FROM notifications n LEFT JOIN accounts a ON a.id=n.actor LEFT JOIN maps m ON n.kind='milestone' AND m.id=n.target WHERE ${notificationFilter} AND n.seq${updates?'>':'<'}? ORDER BY n.seq ${updates?'ASC':'DESC'} LIMIT 41`,a.id,updates?after:before||Number.MAX_SAFE_INTEGER);
+  const items=rows.slice(0,40).map(n=>({seq:n.seq,kind:n.kind,target:n.kind==='message'?n.actor:n.target,username:n.username||'Driver',mapName:n.map_name||'Your map',milestone:n.marker,at:n.at,seen:!!n.seen}));
+  return {items,more:rows.length>40,cursor:updates?(items.at(-1)?.seq||after):(items[0]?.seq||0),unread:h.count(`SELECT COUNT(*) n FROM notifications n WHERE ${notificationFilter} AND n.seen=0`,a.id)};
+ }
+ if(path==='social/notifications/read'&&method==='POST'){
+  const seq=integer(body.seq),through=integer(body.through);if(!seq&&!through)fail('Choose a notification.');
+  h.db.exec(`UPDATE notifications SET seen=1 WHERE account=? AND seq${through?'<=':'='}?`,a.id,through||seq);return {ok:true};
+ }
  if(path==='social/relationship'&&method==='GET')return relationship(h,a.id,other(url.searchParams.get('id')).id);
  if(path==='social/friend'&&method==='POST'){
   const u=other(body.id),key=pair(a.id,u.id),f=h.one('SELECT * FROM friendships WHERE pair=?',key);
@@ -99,7 +121,7 @@ export async function socialRoute(h,{path,method,url,body,a,need,admin,censor}){
  }
  if(path==='social/read'&&method==='POST'){
   const u=other(body.id),key=pair(a.id,u.id),seq=integer(body.seq),m=h.one('SELECT seq FROM messages WHERE pair=? AND seq=?',key,seq);if(!m)fail('Message not found.',404);
-  h.db.exec('INSERT INTO message_reads VALUES(?,?,?) ON CONFLICT(account,pair) DO UPDATE SET seq=MAX(seq,excluded.seq)',a.id,key,seq);return {ok:true};
+  h.db.exec('INSERT INTO message_reads VALUES(?,?,?) ON CONFLICT(account,pair) DO UPDATE SET seq=MAX(seq,excluded.seq)',a.id,key,seq);h.db.exec("UPDATE notifications SET seen=1 WHERE account=? AND kind='message' AND target IN (SELECT id FROM messages WHERE pair=? AND seq<=?)",a.id,key,seq);return {ok:true};
  }
  if(path==='social/send'&&method==='POST'){
   const u=other(body.id),key=pair(a.id,u.id);if(relationship(h,a.id,u.id).status!=='friends')fail('You must be accepted friends to send messages.',403);
@@ -107,7 +129,7 @@ export async function socialRoute(h,{path,method,url,body,a,need,admin,censor}){
   const old=h.one('SELECT * FROM messages WHERE sender=? AND nonce=?',a.id,body.nonce);if(old){if(old.recipient!==u.id)fail('This message was already used.',409);return {message:messageView(old)};}
   const problem=R.messageError(body.text);if(problem)fail(problem);const text=content(body.text,500);
   h.limit('message-second:'+a.id,1,1000);h.limit('message-minute:'+a.id,30,60000);
-  const mid=id();h.db.exec('INSERT INTO messages(id,pair,sender,recipient,text,at,nonce) VALUES(?,?,?,?,?,?,?)',mid,key,a.id,u.id,text,now,body.nonce);return {message:messageView(h.one('SELECT * FROM messages WHERE id=?',mid))};
+  const mid=id();h.ctx.storage.transactionSync(()=>{h.db.exec('INSERT INTO messages(id,pair,sender,recipient,text,at,nonce) VALUES(?,?,?,?,?,?,?)',mid,key,a.id,u.id,text,now,body.nonce);h.db.exec('INSERT INTO notifications(account,kind,target,actor,at) VALUES(?,?,?,?,?)',u.id,'message',mid,a.id,now);});return {message:messageView(h.one('SELECT * FROM messages WHERE id=?',mid))};
  }
  if(path==='social/report'&&method==='POST'){
   if(!['message','post'].includes(body.kind)||!R.messageReasons.includes(body.reason))fail('Choose a report reason.');

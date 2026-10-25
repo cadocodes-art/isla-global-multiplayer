@@ -1,4 +1,4 @@
-import {installSocial,socialRoute,socialAffinity} from './social.js';
+import {installSocial,socialRoute,socialAffinity,notifyMapPlay} from './social.js';
 import {DurableObject} from 'cloudflare:workers';
 import {scrypt as nodeScrypt, timingSafeEqual} from 'node:crypto';
 import '../public/maker-core.js';
@@ -130,7 +130,7 @@ CREATE INDEX IF NOT EXISTS maps_owner ON maps(owner,deleted);CREATE INDEX IF NOT
   if(path==='admin/approve'&&method==='POST'){admin();const m=this.publicMap(body.id);if(body.approve&&m.source)fail('Copied maps cannot be approved.');this.db.exec('UPDATE maps SET approved=?,approved_at=? WHERE id=?',body.approve?1:0,body.approve?now:0,m.id);return json({ok:true});}
   if(path==='admin/moderate'&&method==='POST'){admin();if(body.map)this.db.exec('UPDATE maps SET hidden=1,approved=0 WHERE id=?',body.map);if(body.comment)this.db.exec('DELETE FROM comments WHERE id=?',body.comment);if(body.report)this.db.exec('UPDATE reports SET resolved=1 WHERE id=?',body.report);return json({ok:true});}
   if(path==='play/start'&&method==='POST'){
-   const id=String(body.map||'islands');let revision=0,eligible=['islands','city','peaks','playplace'].includes(id);if(!eligible){const m=this.publicMap(id);revision=m.revision;eligible=!!m.approved;const visitor=a?.id||await digest('visitor:'+ip);if(!this.one('SELECT 1 FROM plays WHERE visitor=? AND map=? AND at>?',visitor,id,now-30*60000))this.db.exec('INSERT INTO plays VALUES(?,?,?)',visitor,id,now);}
+   const id=String(body.map||'islands');let revision=0,eligible=['islands','city','peaks','playplace'].includes(id);if(!eligible){const m=this.publicMap(id);revision=m.revision;eligible=!!m.approved;const visitor=a?.id||await digest('visitor:'+ip);if(!this.one('SELECT 1 FROM plays WHERE visitor=? AND map=? AND at>?',visitor,id,now-30*60000))notifyMapPlay(this,m,visitor,now);}
    if(!a||!eligible)return json({run:null,eligible});const run=uid();this.db.exec('INSERT INTO rewards(id,account,map,revision,at,last,total) VALUES(?,?,?,?,?,?,0)',run,a.id,id,revision,now,now);return json({run,eligible:true});
   }
   if(path==='garage'&&method==='GET'){need();return json({garage:JSON.parse(a.garage)});}

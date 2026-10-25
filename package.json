@@ -1,8 +1,8 @@
 {
   "name": "isla-drive-cloudflare",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "private": true,
-  "description": "ISLA V2.0 - bowling, conveyors, water park, Launcher and Ultra",
+  "description": "ISLA V2.01 - notifications, map milestones and water park expansion",
   "engines": {
     "node": ">=22.0.0"
   },

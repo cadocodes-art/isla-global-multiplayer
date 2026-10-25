@@ -1,7 +1,7 @@
 /* V2.0 attractions: the same simulation runs solo and on the room server. */
 (()=>{'use strict';const layout={
  lanes:[{id:0,x:-132,start:388,end:500,w:20},{id:1,x:-82,start:388,end:500,w:20}],
- pools:[{x:337,z:-205,w:78,d:88,depth:.38,name:'SPLASH POOL'},{x:468,z:-205,w:142,d:104,depth:8,name:'DEEP WATER'}],
+ pools:[{x:337,z:-205,w:78,d:88,depth:.5,name:'SPLASH POOL'},{x:468,z:-205,w:142,d:104,depth:2,name:'DEEP WATER'}],
  belts:[{id:0,x:270,z:-235,w:16,d:130,y:12,rise:25,speed:9,yaw:Math.PI},{id:1,x:252,z:35,w:18,d:88,y:12,rise:0,speed:12,yaw:0},{id:2,x:-352,z:147,w:18,d:92,y:12,rise:0,speed:10,yaw:0},{id:3,x:-42,z:302,w:18,d:70,y:12,rise:0,speed:13,yaw:0},{id:4,x:150,z:-65,w:18,d:80,y:12,rise:9,speed:11,yaw:Math.PI/2}]
 };globalThis.IslaV20Layout=layout;
  globalThis.IslaPlayAttractions=(W,T)=>{
