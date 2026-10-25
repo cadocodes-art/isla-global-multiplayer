@@ -1,5 +1,5 @@
 {
-  "version": "2.01",
+  "version": "2.1",
   "files": [
     {
       "name": "three.min.js",
@@ -29,7 +29,7 @@
     {
       "name": "physics.js",
       "destination": "public/physics.js",
-      "sha256": "0d251f2525e9c785354163c82bdfb3f4355cedfb127e1bcfef37a5f5d3bf91f8"
+      "sha256": "ab0f79b5dd429bc5f373df4747c0cab10d54e2f4a3aefdfc7a4836ece58ca341"
     },
     {
       "name": "aura.js",
@@ -59,7 +59,7 @@
     {
       "name": "maps.js",
       "destination": "public/maps.js",
-      "sha256": "5b942bc75401fb62f25255fe376eadcf0fe4052cb436dc9188a4f16b903d7689"
+      "sha256": "5b6ee94c69d09351e411182646d5a758e29838a7d3ba721719ab745f93507db5"
     },
     {
       "name": "peaks.js",
@@ -84,12 +84,12 @@
     {
       "name": "maker-core.js",
       "destination": "public/maker-core.js",
-      "sha256": "f45b89152565f49c87476fb83eecda251f5ff2e5756736d9e6f4c834e4404d92"
+      "sha256": "f31e2ac76c793890acce5d0d618db7101dee79724f6f03569080690627b050ed"
     },
     {
       "name": "maker-assets.js",
       "destination": "public/maker-assets.js",
-      "sha256": "0e843259ef7318fce411c5e299aa826c007d8ce5b613ba6543dbb72963ba7666"
+      "sha256": "37999e3fb71b0c3582783013e91ff0d4cb72d03c6e219bfadd6c8b0196cdf36d"
     },
     {
       "name": "community-api.js",
@@ -114,12 +114,12 @@
     {
       "name": "map-editor.js",
       "destination": "public/map-editor.js",
-      "sha256": "99a4e7ef55484e7cf9f30cf73eba4c7568ba50c22dfa1c2157257cc5dc9f1a5e"
+      "sha256": "3bcffe3b3cb412d3dda78696028dc23b7c0a970ab96997d518b26dc9c549ea4c"
     },
     {
       "name": "community-ui.js",
       "destination": "public/community-ui.js",
-      "sha256": "dbb43d2925ed72f3b2238fe5fe5606f10adb43f197a1485b6972bce799820238"
+      "sha256": "5697a7f49ecabe00a6205d6227bea96037f1d5e224d665a0c24f7754e8d4986f"
     },
     {
       "name": "social-rules.js",
@@ -192,9 +192,14 @@
       "sha256": "a1963e4aaa661519b25aee021d3d8163155ee55a9f889fd672dcd0189faf735d"
     },
     {
+      "name": "fern-valley.js",
+      "destination": "public/fern-valley.js",
+      "sha256": "d9acc21b4726d9a46f2ed80caafd8fb9013e6ef002a593ab3191fce355c3b220"
+    },
+    {
       "name": "custom-map.js",
       "destination": "public/custom-map.js",
-      "sha256": "c2cfcb3560bcfc935523174e8fb7f0473fbf6fde9380a392b002b7c876c55f9d"
+      "sha256": "68939e899b96cc6ada63c9164c8ac34deac0e67aa859f637d7343f63857274a1"
     },
     {
       "name": "launcher-props.js",
@@ -209,7 +214,7 @@
     {
       "name": "game.js",
       "destination": "public/game.js",
-      "sha256": "131c4048a9f400beb5323ff5d7af49076011c93b128f707780b027a22526f9c1"
+      "sha256": "86fc90d1b74533d4cf395a434b0bd6e0f42e26508060f4a18bfda6ea4200b749"
     },
     {
       "name": "style.css",
@@ -229,7 +234,7 @@
     {
       "name": "index.html",
       "destination": "public/index.html",
-      "sha256": "65a4379c1952341244db908c77898efbbea33be3d17e36e1c6ff7289bb39a98e"
+      "sha256": "b07e44ff563c163ce604a718aaae3871bbc9612e51a13f58d4f43a2000601fb6"
     },
     {
       "name": "player-collisions.js",
@@ -244,7 +249,7 @@
     {
       "name": "worker.js",
       "destination": "src/worker.js",
-      "sha256": "11d1836e29a1017bb19a349061a11ea9a5cfb42bdf8c68c85653bacdcf18d068"
+      "sha256": "333032f749ff726ee26639804e47cda7183d538ddc0738d3728e5112ba09e458"
     },
     {
       "name": "playground.js",
@@ -254,7 +259,7 @@
     {
       "name": "community.js",
       "destination": "src/community.js",
-      "sha256": "0501d248c0a6ea3f8b95f1f48e9074d35b754ad1775052128e78abe886b91d5c"
+      "sha256": "713836c5ec07a34b320c95d05170ba98848492ebbcf3c36cf982f2f3c8da7949"
     },
     {
       "name": "social.js",
@@ -274,12 +279,12 @@
     {
       "name": "build-world.cjs",
       "destination": "scripts/build-world.cjs",
-      "sha256": "85b205477ef5d7c1b9f2306b512d82262e7e7ed16c0a2c2977f22f1a081e29a9"
+      "sha256": "592cfc79bd158ec25c23b3a3af9ffa08f15ec9d658ed2eb144a968829b40ffe0"
     },
     {
       "name": "source-world.cjs",
       "destination": "scripts/source-world.cjs",
-      "sha256": "4502789fc5cf786eb7f834d35121642a0b9903c4ff292a31897d898da0c4f74d"
+      "sha256": "30743fd8a7a8d82111c9f6f555e4623389049d02b2f315c41e585674058fc777"
     },
     {
       "name": "upgrade-v16-config.cjs",
@@ -329,7 +334,7 @@
     {
       "name": "peaks-network.test.cjs",
       "destination": "test/peaks-network.test.cjs",
-      "sha256": "a5f5199dbd1bf4c539a95e280ebdf312d88910d64cbe37d386192c9f3287ccc1"
+      "sha256": "c269c1557822f6476b89fd5c83cb4a989635e8cc3a035956aeaad385c249bc85"
     },
     {
       "name": "peaks.test.cjs",
@@ -417,6 +422,11 @@
       "sha256": "e8ec922b7f803c6b9fdbd0a1723659eb2354a4f87974de4563bb9be0df2fe11d"
     },
     {
+      "name": "v21.test.cjs",
+      "destination": "test/v21.test.cjs",
+      "sha256": "9c8865643e89a4c7d6ff420320f85a89d1a01f0ceb35e7752c184ba0f1751a4b"
+    },
+    {
       "name": "aura-check.cjs",
       "destination": "test/regression/aura-check.cjs",
       "sha256": "6eb6bf9c9c49667392601c1e88f7f89bf1b988e27571467a501660431e4b0317"
@@ -464,22 +474,22 @@
     {
       "name": "package.json",
       "destination": "package.json",
-      "sha256": "67a213a0efbad416af0d0c6c822dbdb72cfb77880382ab04af03e49c1a2ffacd"
+      "sha256": "4378a007cf63412373c355406c8aa4eae227f2c8137fa0defeca3616cb899e1c"
     },
     {
       "name": "package-lock.json",
       "destination": "package-lock.json",
-      "sha256": "e8f761ebe3bfed675b7ce957fcc182b569fdee248b3fe6908fc06a5d15cb7a8e"
+      "sha256": "4096ae0374e6761e214dc1816494c85771d44394e9fd789f9692ea646e721b56"
     },
     {
       "name": "prepare-cloudflare.cjs",
       "destination": "prepare-cloudflare.cjs",
-      "sha256": "a05c72ec8f5fda370bbc8c51e6f3bd41a15b7df1aadbd3bf4ed94991dfba5389"
+      "sha256": "f24f9e0e45e381ee0faa1e6fe446cba9b6a5aaf1cbd13c1eeccea89168c0c768"
     },
     {
       "name": "README.txt",
       "destination": "README.txt",
-      "sha256": "ce8c3d80708455629b0dec92df95cb14910bbcc3e0c0440e607b8e52edcf5196"
+      "sha256": "1a7dcfb254afa9279131f97db64f67737c7aa2be73dda0a55ca61970e98509ed"
     }
   ]
 }

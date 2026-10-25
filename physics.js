@@ -19,7 +19,7 @@
    if(W.getCarSpec?.()?.beast&&approach>=4){if(!b.kind){W.hitBuilding(b,approach,time);continue;}if(b.kind==='tree'){W.fellTree?.(b,-hit.nx,-hit.nz);continue;}}
    c.x+=hit.nx*hit.depth;c.z+=hit.nz*hit.depth;c.y+=(hit.ny||0)*hit.depth;if(approach>0){c.vy+=(hit.ny||0)*approach*1.14;c.vx+=hit.nx*approach*1.14;c.vz+=hit.nz*approach*1.14;c.yawRate+=(sx*hit.nz-sz*hit.nx)*off*approach*.018/(mass*size);c.vy+=Math.min(1.8,approach*.035)/mass;if(!b.kind)W.hitBuilding(b,approach,time);if(approach>2&&W.onImpact)W.onImpact(x,c.y+.7,z,approach,b);}}}}
  W.collideVehicle=collide;
- W.stepVehicle=(dt,input,time)=>{if(W.stepWallClimb?.(dt,input,time))return;let c=W.vehicle,sx=Math.sin(c.yaw),sz=Math.cos(c.yaw),rx=sz,rz=-sx,forward=c.vx*sx+c.vz*sz,lateral=c.vx*rx+c.vz*rz,absSpeed=Math.abs(forward),near=W.nearestRoad(c.x,c.z),road=near.p&&near.d<near.p.width*.5+.2,h=W.driveHeight(c.x,c.z,c.y<(W.bridgeSurface?.(c.x,c.z)??-Infinity)-.6),sand=(W.groundType?W.groundType(c.x,c.z)==='sand':h<9)&&!road,grip=road?1.05:sand?.61:.74;
+ W.stepVehicle=(dt,input,time)=>{if(W.stepWallClimb?.(dt,input,time))return;let c=W.vehicle,sx=Math.sin(c.yaw),sz=Math.cos(c.yaw),rx=sz,rz=-sx,forward=c.vx*sx+c.vz*sz,lateral=c.vx*rx+c.vz*rz,absSpeed=Math.abs(forward),near=W.nearestRoad(c.x,c.z),road=near.p&&near.d<near.p.width*.5+.2,h=W.driveHeight(c.x,c.z,c.y<(W.bridgeSurface?.(c.x,c.z)??-Infinity)-.6),sand=(W.groundType?W.groundType(c.x,c.z)==='sand':h<9)&&!road,grip=road?(near.p.road.surface==='gravel'?.79:1.05):sand?.61:.74;
   const surfaceHeight=(x,z)=>W.driveHeight(x,z,c.y<(W.bridgeSurface?.(x,z)??-Infinity)-.6),onBridge=W.bridgeSurface?.(c.x,c.z)!=null&&c.y>=W.bridge.deckY-.6;
   const spec=W.getCarSpec?.(),engine=spec?.engine??1,size=spec?.size??1,mass=spec?.mass??1,speedScale=spec?.speedScale??1,driveScale=speedScale/mass,scaledForward=forward/speedScale,scaledSpeed=absSpeed/speedScale;grip*=road?(spec?.grip??1):(spec?.offroad??1);
   let ramp=W.rampAt?.(c.x,c.z)||null;
@@ -65,7 +65,7 @@
    if(boosting&&brake){acc=(forward>.6?-11.8:-4.2)*brake;}else if(gas||boosting){acc=(forward<-.6?10:Math.min(7.6*engine,220*engine/(scaledSpeed+12)))*(boosting?1:gas);}else if(brake){acc=(forward>.6?-11.8:-4.2)*brake;}else acc=-Math.sign(forward)*(.20+scaledSpeed*.016);
    acc=acc*driveScale+thrust;
    if(forward>Math.max(66,spec?.boostMax??66)&&acc>0)acc=0;if(forward<-13*speedScale&&acc<0)acc=0;
-   acc-=(scaledForward*Math.abs(scaledForward)*.0016+Math.sign(forward)*(road?.14:sand?.85:.43))*driveScale;
+   acc-=(scaledForward*Math.abs(scaledForward)*.0016+Math.sign(forward)*(road?(near.p.road.surface==='gravel'?.36:.14):sand?.85:.43))*driveScale;
    if(input.handbrake)acc-=Math.sign(forward)*5.1/mass;
    let available=grip*9.81;acc=clamp(acc,-available*1.18,available+(boosting?4:0));
    let lateralAccel=clamp(-lateral*(input.handbrake?1.5:7.5),-available*(input.handbrake?.46:1),available*(input.handbrake?.46:1));

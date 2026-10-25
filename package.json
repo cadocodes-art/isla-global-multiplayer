@@ -1,8 +1,8 @@
 {
   "name": "isla-drive-cloudflare",
-  "version": "2.0.1",
+  "version": "2.1.0",
   "private": true,
-  "description": "ISLA V2.01 - notifications, map milestones and water park expansion",
+  "description": "ISLA V2.1 - Fern Valley and country Map Maker objects",
   "engines": {
     "node": ">=22.0.0"
   },

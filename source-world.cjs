@@ -6,10 +6,10 @@ const path = require('node:path');
 // Run the same terrain and traffic model as the browser, without a renderer.
 module.exports = function createWorld(mapId = 'islands', includeTrees = false) {
   const THREE = require('../public/three.min.js');
-  const paint = new Proxy({createRadialGradient:()=>({addColorStop(){}})}, { get: (o, k) => o[k] ?? (() => {}), set: (o, k, v) => (o[k] = v, true) });
+  const paint = new Proxy({measureText:s=>({width:String(s).length*20}),createRadialGradient:()=>({addColorStop(){}})}, { get: (o, k) => o[k] ?? (() => {}), set: (o, k, v) => (o[k] = v, true) });
   const context = vm.createContext({ THREE, console, document: { createElement: () => ({ getContext: () => paint }) } });
   context.window = context;context.IslaMapId=mapId;
-  for (const file of ['v20-rules.js', 'world.js', 'islands.js', 'ramps.js', 'physics.js', 'garage.js', 'traffic.js', 'maps.js', 'peaks.js', 'player-rules.js', 'utility-cars.js', 'maker-core.js', 'maker-assets.js', 'maker-driving.js', 'playplace-bodies.js', 'playplace-balls.js', 'playplace-shared.js', 'playplace.js', 'playplace-v193.js', 'playplace-v20-shared.js', 'playplace-v20.js', 'waterpark-v201.js']) {
+  for (const file of ['v20-rules.js', 'world.js', 'islands.js', 'ramps.js', 'physics.js', 'garage.js', 'traffic.js', 'maps.js', 'peaks.js', 'player-rules.js', 'utility-cars.js', 'maker-core.js', 'maker-assets.js', 'maker-driving.js', 'playplace-bodies.js', 'playplace-balls.js', 'playplace-shared.js', 'playplace.js', 'playplace-v193.js', 'playplace-v20-shared.js', 'playplace-v20.js', 'waterpark-v201.js', 'fern-valley.js']) {
     vm.runInContext(fs.readFileSync(path.join(__dirname, '../public', file), 'utf8'), context, { filename: file });
   }
   const W = context.Isla;
