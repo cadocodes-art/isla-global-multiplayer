@@ -1,11 +1,11 @@
-ISLA V2.1 — FERN VALLEY + ON-FOOT EXPLORATION
+ISLA V2.1 — FERN VALLEY
 
 UPDATE YOUR EXISTING ONLINE GAME
 1. Download ISLA-V2.1-Update.zip and extract it (right-click > Extract All).
 2. Open https://github.com/cadocodes-art/isla-global-multiplayer
 3. Stay on the branch your existing Cloudflare game builds.
 4. On the page listing the repository files, choose Add file > Upload files.
-5. Open the extracted folder and select ALL 100 files inside. Drag those files
+5. Open the extracted folder and select ALL 99 files inside. Drag those files
    into GitHub. Upload the individual files, not the ZIP or an enclosing folder.
    Keep both traffic.js and traffic (1).js. Include isla-v16-upload.json.
 6. Commit the changes. Wait for the connected Cloudflare deployment to finish.
@@ -46,25 +46,6 @@ FERN VALLEY
   Cows have no collisions, damage, destruction, or Launcher/Nuker interactions.
 - Road signs, wooden property fences, and a countryside minimap.
 
-ON-FOOT EXPLORATION
-- Stop on solid ground and press F, or tap GET OUT on mobile.
-- A fixed human character can walk, run, jump and look around.
-- Keyboard: WASD/arrow keys walk, Shift runs, Space jumps, drag the view to look.
-- Mobile: joystick walks, hold RUN, tap JUMP, swipe the view to look.
-- Walk back near your own car and press F / ENTER CAR to drive again.
-  Traffic and other players' cars cannot be entered.
-- On foot, R / the recovery button returns you beside your parked car.
-- Outdoor main-map buildings have open entrances and furnished ground-floor
-  rooms. Walk straight in without an interior loading screen.
-- Background people idle/walk indoors. They ignore you and have no collision.
-- Car impacts or a building collapsing around you cause a brief tumble, then
-  a safe respawn beside your own car. There is no health bar or death penalty.
-- Works on all five official maps, including their global rooms. Other players
-  see your walking character and your parked car.
-- The Playplace already has an open interior, now with walking and background
-  people too. Creator/community maps and Maker playtests remain driving-only.
-- Car stunts earn aura as before. Walking/jumping on foot do not earn aura.
-
 MAP MAKER
 - New objects: Cactus, Restaurant and Wooden fence.
 - Use the existing mobile tap-to-place controls, or drag from the palette.
@@ -79,14 +60,12 @@ play. The special no-online-features ISLA-Offline.html is a separate edition
 and has not been replaced by this update.
 
 AFTER UPDATING
-Ask all players to reload to see Fern Valley, walking, and the new Maker objects. Existing
+Ask players to reload to see Fern Valley and the new Maker objects. Existing
 main maps keep their room names and the Playplace retains its current revision.
 No new sign-in or owner setup is needed.
 
 Checks include terrain, roads, ramp launches, borders, cow behavior, Maker
 transforms, multiplayer room separation, traffic and aura eligibility, plus the
-existing game/account regression suite (196 tests passed), doorway/collision
-checks on every main map, pedestrian synchronization, and a 390-pixel mobile
-browser layout.
+existing game/account regression suite and a 390-pixel mobile browser layout.
 This is not a physical iPad/Safari test. Local test controls and sample accounts
 are not included in the upload ZIP.

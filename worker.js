@@ -12,7 +12,7 @@ const RECONNECT=90000,EMPTY_RESET=600000,MAX_SOCKETS=48;
 const numeric=(n,min,max)=>typeof n==='number'&&Number.isFinite(n)&&n>=min&&n<=max;
 const park=s=>Object.assign(s,{parked:true,nitro:false,vx:0,vy:0,vz:0,speed:0});
 const spawn=(slot,data=world)=>({...data.spawns[slot],vx:0,vy:0,vz:0,pitch:0,roll:0,steer:0,speed:0,car:'classic',color:models.get('classic').color,nitro:false,grounded:true,water:'dry',brake:false,parked:false});
-function validState(s){return s&&models.has(s.car)&&rules.validColor(s.color)&&[['x',-3000,4000],['y',-100,1500],['z',-3000,3000],['yaw',-100000,100000],['vx',-190,190],['vy',-150,150],['vz',-190,190],['pitch',-4,4],['roll',-4,4],['steer',-2,2],['speed',-190,190]].every(([k,a,b])=>numeric(s[k],a,b))&&['dry','skimming','sinking'].includes(s.water)&&(s.walk==null||rules.validFoot(s.walk));}
+function validState(s){return s&&models.has(s.car)&&rules.validColor(s.color)&&[['x',-3000,4000],['y',-100,1500],['z',-3000,3000],['yaw',-100000,100000],['vx',-190,190],['vy',-150,150],['vz',-190,190],['pitch',-4,4],['roll',-4,4],['steer',-2,2],['speed',-190,190]].every(([k,a,b])=>numeric(s[k],a,b))&&['dry','skimming','sinking'].includes(s.water);}
 function reply(ws,data){try{ws.send(JSON.stringify(data));return true;}catch{return false;}}
 function serial(p){const {ws,previous,...saved}=p;return saved;}
 export class GlobalRoom extends DurableObject {
@@ -104,36 +104,14 @@ export class GlobalRoom extends DurableObject {
   }
   for(const p of this.players.values()){p.collisionFrom={...p.state};if(p.collisionPending&&now-p.collisionPending>800)p.collisionPending=0;}
  }
- acceptFoot(p,s,now){
-  const a=p.state.walk,b=s.walk,size=models.get(s.car)?.size||1,near=(f,c,r)=>Math.hypot(f.x-c.x,f.y-c.y,f.z-c.z)<=r;
-  if(b){
-   if(!rules.footEnabled(this.mapId)||!rules.validFoot(b)||!s.parked||s.nitro||Math.hypot(s.vx,s.vy,s.vz)>0.1)return false;
-   if(!a){if(!s.grounded||s.water!=='dry'||!near(b,s,8*size+2)||Math.hypot(p.state.vx,p.state.vz)>3)return false;p.footImmune=now+2000;}
-   else{const dt=Math.min(6,Math.max(.04,(now-p.lastStateAt)/1000)),recover=now<(p.footResetUntil||0)&&near(b,s,8*size+2);if(!recover&&(Math.hypot(b.x-a.x,b.z-a.z)>8*dt+1.2||Math.abs(b.y-a.y)>45*dt+2))return false;if(!recover&&(s.car!==p.state.car||Math.hypot(s.x-p.state.x,s.z-p.state.z)>15))return false;}
-   if(b.tumble>0)p.footResetUntil=now+5000;
-  }else if(a&&!near(a,s,4+size+.5)&&now>=(p.footResetUntil||0))return false;
-  return true;
- }
- collideWalkers(now){
-  if(!rules.footEnabled(this.mapId))return;
-  for(const p of this.players.values()){
-   const foot=p.state.walk;if(!p.ws||!foot||foot.tumble>0||now<(p.footImmune||0))continue;let reason='';
-   for(const b of this.world.buildings){if(this.hp[b.id]>0||foot.y<b.y-1||foot.y>b.y+b.h)continue;const q=rules.roomLocal(b,foot.x,foot.z);if(Math.abs(q.x)<b.w/2&&Math.abs(q.z)<b.d/2){reason='The building collapsed! Back beside your car.';break;}}
-   if(!reason)for(const q of this.players.values()){if(q===p||!q.ws)continue;if(rules.footHit(foot,q.state,q.footCarPrevious||q.state,models.get(q.state.car)?.size||1)){reason='Ouch! Back beside your car.';break;}}
-   if(!reason)for(const t of this.traffic)if(rules.footHit(foot,t,t.footPrevious||t,t.size||1)){reason='Ouch! Back beside your car.';break;}
-   if(reason){foot.tumble=1.35;foot.speed=foot.vy=0;p.footImmune=now+4500;p.footResetUntil=now+5000;reply(p.ws,{type:'footHit',reason});this.attach(p.ws,p);}
-  }
-  for(const p of this.players.values())p.footCarPrevious={x:p.state.x,y:p.state.y,z:p.state.z,yaw:p.state.yaw};
- }
  rocketState(p,now){p.rocket??={until:0,readyAt:0,normal:0,nitro:0};const r=p.rocket;if(r.until&&now>=r.until){r.readyAt=r.until+30000+Math.random()*5000;r.until=0;}p.state.rocket=p.state.car==='ultra'&&r.until>now&&!p.state.parked;return {left:Math.max(0,(r.until-now)/1000),cooldown:Math.max(0,(r.readyAt-now)/1000),normal:r.normal,nitro:r.nitro};}
  stopRocket(p,now){if(p.rocket?.until){p.rocket.until=0;p.rocket.readyAt=now+30000+Math.random()*5000;}p.state.rocket=false;}
  frame(){
   const now=Date.now();if(now-this.lastFrame<95)return;
   let remaining=Math.min(.3,(now-this.lastTick)/1000);const obstacles=[...this.players.values()].map(p=>p.state);
   this.playground?.advance(remaining,[...this.players.values()].filter(p=>p.ws));
-  for(const t of this.traffic)t.footPrevious={x:t.x,y:t.y,z:t.z,yaw:t.yaw};
   while(remaining>0){const dt=Math.min(1/30,remaining);stepTraffic(this.traffic,obstacles,dt,this.world);for(const p of this.props)V20.stepProp(p,dt,(x,z)=>V20.gridHeight(this.world.ground,x,z));remaining-=dt;}
-  this.lastTick=now;this.lastFrame=now;this.collidePlayers(now);this.collideWalkers(now);
+  this.lastTick=now;this.lastFrame=now;this.collidePlayers(now);
   const liveBuildings=this.world.buildings.filter(b=>this.hp[b.id]>0);
   for(const p of this.players.values())if(p.ws&&p.state.car==='firetruck'&&!p.state.parked&&p.state.water!=='sinking')for(const jet of rules.hoseJets(p.state,liveBuildings))for(const t of this.traffic)if(rules.inHose(jet,t)){t.wetTime=18;if(t.burning){t.burning=false;this.wetDirty=true;}}
  
@@ -151,12 +129,11 @@ export class GlobalRoom extends DurableObject {
   if(this.detonateNukes(now))await this.checkpoint();
   if(data.type==='state'&&validState(data.state)){
    if(p.collisionPending&&data.state.collisionAck!==(p.collisionSeq||0)&&now-p.collisionPending<800)return;
-   if(now-p.lastStateAt<40||!this.acceptFoot(p,data.state,now))return;if(data.state.collisionAck===(p.collisionSeq||0))p.collisionPending=0;const s=data.state;if(Math.hypot(s.x-p.state.x,s.z-p.state.z)>35||s.car!==p.state.car){p.collisionUntil=now+3000;p.collisionFrom=null;}const appearance=p.state.car!==s.car||p.state.color!==s.color.toLowerCase();this.updateWeapon(p,s,now);p.previous=p.state;p.lastStateAt=now;
-   p.state=Object.fromEntries(['x','y','z','yaw','vx','vy','vz','pitch','roll','steer','speed','car','water'].map(k=>[k,s[k]]));if(s.walk)p.state.walk=Object.fromEntries(['x','y','z','yaw','speed','vy','tumble'].map(k=>[k,s.walk[k]]));p.state.color=s.color.toLowerCase();p.state.roadMode=s.roadMode===true;p.state.wallMode=s.car==='stick'&&['climbing','sliding'].includes(s.wallMode)?s.wallMode:'';
+   if(now-p.lastStateAt<40)return;if(data.state.collisionAck===(p.collisionSeq||0))p.collisionPending=0;const s=data.state;if(Math.hypot(s.x-p.state.x,s.z-p.state.z)>35||s.car!==p.state.car){p.collisionUntil=now+3000;p.collisionFrom=null;}const appearance=p.state.car!==s.car||p.state.color!==s.color.toLowerCase();this.updateWeapon(p,s,now);p.previous=p.state;p.lastStateAt=now;
+   p.state=Object.fromEntries(['x','y','z','yaw','vx','vy','vz','pitch','roll','steer','speed','car','water'].map(k=>[k,s[k]]));p.state.color=s.color.toLowerCase();p.state.roadMode=s.roadMode===true;p.state.wallMode=s.car==='stick'&&['climbing','sliding'].includes(s.wallMode)?s.wallMode:'';
    for(const k of ['nitro','grounded','brake','parked'])p.state[k]=s[k]===true;if(p.state.parked)park(p.state);
    if(s.brake||s.parked||s.car!=='ultra')this.stopRocket(p,now);if(appearance)this.announce();this.frame();
-  }else if(data.type==='footRecover'&&p.state.walk){p.footResetUntil=now+5000;p.state.walk.tumble=1.35;reply(ws,{type:'footHit',reason:'Returning beside your car.'});this.attach(ws,p);
-  }else if(data.type==='playContact'&&this.playground&&validState(data.state)&&!p.state.walk){
+  }else if(data.type==='playContact'&&this.playground&&validState(data.state)){
    const s=data.state;if(now-(p.lastPlayContact||0)<85||s.car!==p.state.car||Math.hypot(s.x-p.state.x,s.y-p.state.y,s.z-p.state.z)>35||Math.hypot(s.vx,s.vy,s.vz)>Math.hypot(p.state.vx,p.state.vy,p.state.vz)+15)return;p.lastPlayContact=now;this.playground.contact({...s,driverId:p.id,driverName:p.name});this.frame();
    }else if(data.type==='rocket'){
    this.rocketState(p,now);if(data.action==='stop')this.stopRocket(p,now);else if(data.action==='start'&&p.state.car==='ultra'&&!p.state.parked&&p.state.water!=='sinking'&&!p.rocket.until&&now>=p.rocket.readyAt){p.rocket.until=now+8000;p.rocket.normal=(571+Math.random()*12)/3.6;p.rocket.nitro=(613+Math.random()*20)/3.6;}reply(ws,{type:'rocket',rocket:this.rocketState(p,now)});this.attach(ws,p);
