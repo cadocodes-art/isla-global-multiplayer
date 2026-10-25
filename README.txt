@@ -1,7 +1,7 @@
-ISLA V1.92 — PLAYPLACE EXPANSION
+ISLA V1.93 — PLAYPLACE CHAOS
 
 UPDATE YOUR ONLINE GAME
-1. Download ISLA-V1.92-Update.zip and extract it (right-click > Extract All).
+1. Download ISLA-V1.93-Update.zip and extract it (right-click > Extract All).
 2. Open https://github.com/cadocodes-art/isla-global-multiplayer
 3. Stay on the branch your Cloudflare game already builds.
 4. On the screen listing your repository's files, choose Add file > Upload files.
@@ -10,7 +10,7 @@ UPDATE YOUR ONLINE GAME
    NOT a folder containing them. Include isla-v16-upload.json.
 6. Commit the changes. Wait for the connected Cloudflare deployment to finish.
 7. Reload https://isla-global-multiplayer.cadocodes.workers.dev/?menu=1
-   The main menu and community header should show V1.92.
+   The main menu and community header should show V1.93.
 
 Use your existing Worker and existing configuration. The ZIP deliberately has
 no wrangler.jsonc. Your Worker name, database bindings, OWNER_ACCOUNT_ID, and
@@ -23,7 +23,7 @@ Keep these existing build settings:
   Preview command: npx wrangler versions upload
 
 The manifest filename isla-v16-upload.json stays the same for compatibility;
-its version is now 1.92. It verifies every file before restoring the folders.
+its version is now 1.93. It verifies every file before restoring the folders.
 If the build reports an incomplete upload, re-upload all files from this ZIP.
 Do not remove scripts/build-world.cjs or change the build command to skip it.
 The file named "traffic (1).js" is intentional: it contains server traffic,
@@ -31,34 +31,30 @@ while "traffic.js" contains browser traffic. Keep both exact filenames.
 This package is prepared for you to upload; it has not been deployed for you.
 
 WHAT CHANGED
-- Foam cubes are tilted, mixed up and movable. Cars can push and tumble them,
-  land on top, compress them and bounce gently. Contacts follow each cube's
-  current position and orientation. Partial contact still provides traction.
-- Rope weights and cords separate from the full car body. Ropes respond and
-  swing back faster; their physics no longer depends on animation frame rate.
-- Four ceiling-hung decks, two moving shuttles, a rising lift and a wave road.
-  Moving platforms carry resting cars. A driveable side branch links the old
-  skybridge directly to the hanging trail. Another climb starts at ground level.
-- Four basketballs, four soccer balls and six colorful dodgeballs. Drive into
-  them to roll, bounce or launch them. They collide with each other, foam,
-  platforms and the building. No extra key or mobile button is needed.
-- A giant basketball court and hoop with a solid rim and backboard. Knock any
-  ball down through the hoop to get a BASKET message. The counter lasts for the
-  current play session and does not award aura.
-- Hover's exposed propellers lean farther backward as it moves forward, then
-  ease back toward their resting angle when it slows down.
-- Existing thick decks, slides, tunnels, trampolines and mobile controls stay.
+- A large connected maze with three secret rooms. Every car has a full-width
+  route through it; green MICRO passages are shortcuts for the Micro.
+- Exactly five cannons around the arena. Drive onto the yellow pad at the back
+  to enter. A five-second countdown begins automatically. Use A/D, the arrow
+  keys, or the mobile joystick to aim. The dotted line previews your launch.
+  Recover exits the cannon. The launch travels roughly half the building.
+- Exactly three seesaws. Drive up the lowered end to tip the deck with your
+  car's weight. The deck carries your car and can give a small pop on the rise.
+- Ten Santa Luz-style stunt ramps, including ramps near the maze and sky roads.
+- Balls, foam cubes, ropes, seesaws and basket counts now have one shared state
+  in the Playplace global room. New arrivals see the current positions.
+- Mobile controls work for the new attractions without extra keyboard keys.
 
 ONLINE PLAY
-The updated Playplace uses a fresh global room for the expanded layout. Players
-with an older game tab need to reload before joining. Other maps keep their
-existing room names. Platform schedules line up while players are online.
-Foam, ropes, loose balls and basket counters are simulated on each device;
-nearby remote cars can hit them, but their exact positions are not synchronized
-by the server. Car-to-car bumps remain shared as before.
+The updated Playplace uses a new room version, so everyone should reload after
+this deployment. Other maps keep their existing room names. The server runs
+shared playground physics and sends changes to connected players. Local impact
+prediction helps hits feel responsive; objects can correct slightly with lag.
+Late joins and reconnects receive the current shared scene. An empty room resets
+its toys after ten minutes. Solo free roam still runs entirely on your device.
 
 CHECKS
-Physics and multiplayer regression tests passed, plus a deployment dry run and
-an upload rehearsal that preserves your existing Worker and database settings.
-Desktop and phone-sized browser previews were checked locally. This was not
-an iPad hardware test. No preview fixtures or test accounts are in the package.
+Physics and multiplayer regression tests passed, including two WebSocket
+clients, late joins, reconnects and ignoring client-supplied object positions.
+A deployment dry run and upload rehearsal preserved Worker, owner and database
+settings. Desktop and phone-sized local browser previews were checked; this was
+not an iPad hardware test. Preview fixtures are excluded from the update.

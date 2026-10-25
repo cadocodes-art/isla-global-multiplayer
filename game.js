@@ -28,6 +28,8 @@
  W.onRecover=msg=>toast(msg);
  W.onNitroStart=duration=>{toast('NITRO · '+duration.toFixed(1)+' seconds',2);shake=Math.max(shake,.07);};
  W.onWaterSkim=()=>{toast(W.getCarSpec().amphibious?'BOAT MODE · WHEELS RETRACTED':'WATER SKIM · 3.5 seconds to find dry land',3);emitWaterSpray(W.vehicle,24);};
+ W.onCannonStatus=status=>{let panel=$('cannonStatus');if(!panel){panel=document.createElement('div');panel.id='cannonStatus';panel.setAttribute('role','status');document.body.append(panel);}panel.hidden=!status;if(status)panel.textContent='LAUNCH IN '+Math.ceil(status.remaining)+' · '+(document.body.classList.contains('touch-mode')?'JOYSTICK TO AIM':'A / D TO AIM');};
+ W.onCannonLaunch=()=>{toast('CANNON LAUNCH!',2);shake=.25;};W.onPlaySecret=(n,total)=>toast('SECRET ROOM · '+n+' / '+total+' FOUND',3);
  W.onPlayBasket=(kind,total)=>toast('BASKET! · '+total+' scored this session',2.5);
  W.onPlayBounce=()=>{toast('BOUNCE! · STEER IN THE AIR',1.2);shake=Math.max(shake,.10);};
  W.onWaterSink=()=>{toast('Skim over. Going under…',1.4);emitWaterSpray(W.vehicle,30);};
@@ -71,7 +73,7 @@
    for(let b of W.buildings){if(b.collapsed||Math.hypot(b.x-c.x,b.z-c.z)>24)continue;for(let f of [.45,.7,1]){let px=W.mix(c.x,desired.x,f),pz=W.mix(c.z,desired.z,f);if(W.circleOBB(px,pz,.6,b))desired.y=Math.max(desired.y,b.y+b.h+2);}}
   }
   if(W.mapId==='playplace'){desired.y=Math.min(desired.y,119);desired.x=clamp(desired.x,-W.playplace.halfX+10,W.playplace.halfX-10);desired.z=clamp(desired.z,-W.playplace.halfZ+10,W.playplace.halfZ-10);}
-  let lag=!started?2.5:camMode===1?22:6;camPosition.lerp(desired,1-Math.exp(-dt*lag));camTarget.lerp(lookAt,1-Math.exp(-dt*9));camera.position.copy(camPosition);if(shake>0){camera.position.x+=(Math.random()-.5)*shake;camera.position.y+=(Math.random()-.5)*shake;shake*=Math.exp(-dt*9)}camera.lookAt(camTarget);camera.updateProjectionMatrix();W.sun.target.position.set(c.x,(W.mapId==='peaks'||W.customMap)?c.y:0,c.z);let sd=W.sky.material.uniforms.sunDirection.value;W.sun.position.set(c.x+sd.x*340,sd.y*340+55+((W.mapId==='peaks'||W.customMap)?c.y:0),c.z+sd.z*340);W.sun.target.updateMatrixWorld();W.sky.position.copy(camera.position);
+  if(W.cannonStatus?.()){desired.set(c.x-sx*26,c.y+14,c.z-sz*26);lookAt.set(c.x+sx*45,c.y+15,c.z+sz*45);camera.fov=72;}let lag=!started?2.5:camMode===1?22:6;camPosition.lerp(desired,1-Math.exp(-dt*lag));camTarget.lerp(lookAt,1-Math.exp(-dt*9));camera.position.copy(camPosition);if(shake>0){camera.position.x+=(Math.random()-.5)*shake;camera.position.y+=(Math.random()-.5)*shake;shake*=Math.exp(-dt*9)}camera.lookAt(camTarget);camera.updateProjectionMatrix();W.sun.target.position.set(c.x,(W.mapId==='peaks'||W.customMap)?c.y:0,c.z);let sd=W.sky.material.uniforms.sunDirection.value;W.sun.position.set(c.x+sd.x*340,sd.y*340+55+((W.mapId==='peaks'||W.customMap)?c.y:0),c.z+sd.z*340);W.sun.target.updateMatrixWorld();W.sky.position.copy(camera.position);
  }
  // The car faces local +Z, so positive yaw turns left from the driver's view.
  function input(){let right=keys.has('KeyD')||keys.has('ArrowRight'),left=keys.has('KeyA')||keys.has('ArrowLeft');return {gas:keys.has('KeyW')||keys.has('ArrowUp')?1:touchDrive.gas,brake:keys.has('KeyS')||keys.has('ArrowDown')?1:touchDrive.brake,steer:left||right?Number(left)-Number(right):touchDrive.steer,handbrake:keys.has('Space')||touchHeld('Space'),boost:keys.has('ShiftLeft')||keys.has('ShiftRight')||touchHeld('ShiftLeft')}}

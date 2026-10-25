@@ -1,12 +1,12 @@
 /* V1.92: compact indoor playground; visible decks and physical surfaces agree. */
 (()=>{'use strict';const W=Isla,T=THREE,M=IslaMaker;if(W.mapId!=='playplace')return;
- const bodies=IslaPlayBodies(W,T);
+ const bodies=IslaPlayBodies(W,T),stuntRampBuilder=W.makeRamps;
  const floor=12,roof=124,scale=.75,halfX=600,halfZ=525,TAU=Math.PI*2,deckDepth=1.8;
  Object.assign(W,{span:1240,depth:1100,N:249,NZ:221,minX:-620,minZ:-550,mapBounds:{x:-600,z:-600,size:1200},environmentColor:'#a8b8cd'});
  const pits=[{x:-470,z:330,w:135,d:120},{x:460,z:60,w:140,d:130}].map(b=>({x:b.x*scale,z:b.z*scale,w:b.w*scale,d:b.d*scale})),pads=[];
  for(let row=0;row<3;row++)for(let col=0;col<3;col++)pads.push({x:(-260+col*66)*scale,z:(70+row*64)*scale,w:44*scale,d:44*scale,power:11+row});
  const ropes=Array.from({length:15},(_,i)=>({x:(-20+i%5*32)*scale,z:(240+Math.floor(i/5)*38)*scale,length:35,dir:new T.Vector3(0,-1,0),velocity:new T.Vector3(),touching:new Set(),ax:0,az:0}));
- W.playplace={floor,roof,pits,pads,ropes,roads:[],cubes:[],halfX,halfZ,bodies,clock:0};
+ W.playplace={floor,roof,pits,pads,ropes,roads:[],cubes:[],halfX,halfZ,bodies,clock:0,stuntRampBuilder};
  const inBox=(c,b,margin=0)=>Math.abs(c.x-b.x)<b.w/2+margin&&Math.abs(c.z-b.z)<b.d/2+margin;
  W.playPitAt=(x,z)=>pits.find(p=>inBox({x,z},p));
  W.mapRawHeight=(x,z)=>{const pit=W.playPitAt(x,z);if(!pit)return floor;const edge=Math.min(pit.w/2-Math.abs(x-pit.x),pit.d/2-Math.abs(z-pit.z));return floor-4*W.smooth(0,13,edge);};
@@ -46,7 +46,7 @@
   {name:'SKY LIFT',a:{x:420,y:12.16,z:-270},b:{x:420,y:56.16,z:-270},period:18,w:40,d:40,color:'#edb35e'}];
  // A dwell at each dock and eased acceleration give drivers time to board.
  const travel=(t,period)=>{const u=((t%period)+period)%period/period;if(u<.12)return 0;if(u<.45){const f=(u-.12)/.33;return f*f*(3-2*f);}if(u<.62)return 1;if(u<.95){const f=(u-.62)/.33;return 1-f*f*(3-2*f);}return 0;};
- for(const p of platformPlans){const b=bodies.create({kind:'platform',name:p.name,x:p.a.x,y:p.a.y-deckDepth/2,z:p.a.z,w:p.w,d:p.d,h:deckDepth,color:p.color,period:p.period});b.motion=t=>{const f=travel(t,p.period);return {x:W.mix(p.a.x,p.b.x,f),y:W.mix(p.a.y,p.b.y,f)-deckDepth/2,z:W.mix(p.a.z,p.b.z,f)};};}
+ for(const p of platformPlans){const b=bodies.create({kind:'platform',name:p.name,x:p.a.x,y:p.a.y-deckDepth/2,z:p.a.z,w:p.w,d:p.d,h:deckDepth,color:p.color,period:p.period});b.plan=p;b.motion=t=>{const f=travel(t,p.period);return {x:W.mix(p.a.x,p.b.x,f),y:W.mix(p.a.y,p.b.y,f)-deckDepth/2,z:W.mix(p.a.z,p.b.z,f)};};}
  W.playplace.platforms=bodies.platforms;bodies.reindex();
  W.playFoamAt=(x,z)=>bodies.nearby(x,z).filter(b=>b.kind==='foam').find(b=>bodies.surface(b,x,z))||null;
  W.driveHeight=(x,z)=>{let h=Math.max(W.height(x,z),W.makerRoadHeight(x,z,floor-.01,floor+.45));const hit=bodies.height(x,z,-Infinity,(W.vehicle?.y??-Infinity)+.3);if(hit)h=Math.max(h,hit.y);const c=W.vehicle,b=bodies.byId.get(c?.playSupport);if(b){const center=bodies.surface(b,c.x,c.z);if(center&&Math.abs(c.y-center.y)<.45&&Math.hypot(x-c.x,z-c.z)<4)h=Math.max(h,center.y);}return h;};
@@ -68,7 +68,7 @@
   for(const [x,z,w,d,color]of [[-194,134,218,215,'#635a89'],[44,280,205,165,'#b89666'],[35,-30,95,235,'#5b979d'],[-540,-150,70,240,'#b89761']]){const tile=new T.Mesh(new T.PlaneGeometry(w*scale,d*scale),W.mat(color));tile.rotation.x=-Math.PI/2;tile.position.set(x*scale,12.03,z*scale);tile.receiveShadow=true;scene.add(tile);}
   for(const r of W.playplace.roads){scene.add(deckMesh(r));if(!r.hanging)supports(shell,r,steel);}
   for(const p of hanging)for(const dx of [-1,1])for(const dz of [-1,1]){const x=p.x+dx*(p.w/2-1.1),z=p.z+dz*(p.d/2-1.1),bottom=p.y+.16;W.box(shell,x,(roof+bottom)/2,z,.28,roof-bottom,.28,steel);collider(x,bottom,z,.28,roof-bottom,.28);W.box(shell,x,bottom+.15,z,1.7,.3,1.7,steel);}
-  const moving=new T.Group();moving.userData.dynamic=true;scene.add(moving);for(const p of bodies.platforms){const g=new T.Group();g.position.copy(p.p);moving.add(g);W.box(g,0,0,0,p.w,p.h,p.d,W.mat(p.color));for(const side of [-1,1])W.box(g,side*(p.w/2-.4),p.h/2+.025,0,.8,.05,p.d,W.mat('#f5e2a2'));p.mesh=g;p.cables=[];for(const x of [-p.w/2+1,p.w/2-1])for(const z of [-p.d/2+1,p.d/2-1]){const cable=W.box(moving,p.x+x,(roof+p.y)/2,p.z+z,.24,roof-p.y,.24,steel);p.cables.push({mesh:cable,x,z});}}
+  const moving=new T.Group();moving.userData.dynamic=true;scene.add(moving);for(const p of bodies.platforms.filter(p=>!p.seesaw)){const g=new T.Group();g.position.copy(p.p);moving.add(g);W.box(g,0,0,0,p.w,p.h,p.d,W.mat(p.color));for(const side of [-1,1])W.box(g,side*(p.w/2-.4),p.h/2+.025,0,.8,.05,p.d,W.mat('#f5e2a2'));p.mesh=g;p.cables=[];for(const x of [-p.w/2+1,p.w/2-1])for(const z of [-p.d/2+1,p.d/2-1]){const cable=W.box(moving,p.x+x,(roof+p.y)/2,p.z+z,.24,roof-p.y,.24,steel);p.cables.push({mesh:cable,x,z});}}
   label(scene,'SKY SHUTTLES',60/scale,88,-350/scale,210);label(scene,'SKY LIFT',420/scale,64,-300/scale,100);label(scene,'WAVE RUN',460/scale,24,-115/scale,110);
   const fabric=W.textureCanvas(128,(c,s)=>{c.fillStyle='#21344f';c.fillRect(0,0,s,s);c.strokeStyle='#60768d';c.lineWidth=1;for(let i=0;i<s;i+=8){c.beginPath();c.moveTo(i,0);c.lineTo(i,s);c.moveTo(0,i);c.lineTo(s,i);c.stroke();}},4),trampMat=new T.MeshStandardMaterial({map:fabric,roughness:1});
   for(const [i,p]of pads.entries()){const mesh=new T.Mesh(new T.PlaneGeometry(p.w,p.d,8,8),trampMat);mesh.rotation.x=-Math.PI/2;mesh.position.set(p.x,12.16,p.z);mesh.receiveShadow=true;mesh.userData.dynamic=true;scene.add(mesh);p.mesh=mesh;const trim=W.mat(palettes[i%5]);for(const side of [-1,1]){W.box(shell,p.x+side*(p.w/2+1),12.2,p.z,2,.4,p.d+4,trim);W.box(shell,p.x,12.2,p.z+side*(p.d/2+1),p.w,.4,2,trim);}}
@@ -93,38 +93,20 @@
  const reset=W.resetVehicle;W.resetVehicle=(...args)=>{reset(...args);Object.assign(W.vehicle,{playBouncePower:0,playBounceRest:false,playBounceAt:0,playAir:false,playFoamBounceAt:0,playSupport:null});};
  const step=W.stepVehicle;W.stepVehicle=(dt,input,time)=>{const c=W.vehicle;W.stepPlayplaceWorld(dt);bodies.carry(c);const from={x:c.x,y:c.y,z:c.z,vy:c.vy};
   if(c.playAir&&!c.grounded){const angle=(input.steer||0)*1.1*dt,cs=Math.cos(angle),sn=Math.sin(angle),vx=c.vx,vz=c.vz;c.vx=vx*cs+vz*sn;c.vz=vz*cs-vx*sn;c.yaw+=angle;const gas=Math.max(0,Number(input.gas)||0);if(gas&&Math.hypot(c.vx,c.vz)<14){c.vx+=Math.sin(c.yaw)*gas*4*dt;c.vz+=Math.cos(c.yaw)*gas*4*dt;}if(input.brake){const drag=Math.exp(-dt*1.2*input.brake);c.vx*=drag;c.vz*=drag;}}
-  if(!W.stepMakerRoad(dt,input,time))step(dt,input,time);W.sweepMakerRoad(from);W.playBounce(c,from,time);W.playFoamLand(c,from,time);W.collidePlayRopes(c,dt);sports.collideCar(c,W.playplace.clock);
+  if(!W.stepMakerRoad(dt,input,time))step(dt,input,time);W.sweepMakerRoad(from);W.playSync?.contact(c);W.playBounce(c,from,time);W.playFoamLand(c,from,time);W.collidePlayRopes(c,dt);sports.collideCar(c,W.playplace.clock);
   if(c.grounded&&!pads.some(p=>inBox(c,p,-1))){c.playBouncePower=0;c.playBounceRest=false;c.playAir=false;}
   if(W.playPitAt(c.x,c.z)&&c.y<floor+.4){const drag=Math.exp(-dt*(c.y<floor-1?1.2:.4));c.vx*=drag;c.vz*=drag;c.surface='SOFT FOAM';}
   const xlimit=halfX-3,zlimit=halfZ-3;if(Math.abs(c.x)>xlimit){c.x=W.clamp(c.x,-xlimit,xlimit);c.vx*=-.25;}if(Math.abs(c.z)>zlimit){c.z=W.clamp(c.z,-zlimit,zlimit);c.vz*=-.25;}if(c.y>roof-4){c.y=roof-4;c.vy=Math.min(0,-c.vy*.15);}c.lastSafe={...W.spawn};
  };
- W.playRopePosition=r=>new T.Vector3(r.x,49,r.z).addScaledVector(r.dir,r.length);
- const ropeGravity=58;W.playplace.ropeGravity=ropeGravity;
- function integrateRope(r,dt){const gravity=new T.Vector3(0,-ropeGravity,0);gravity.addScaledVector(r.dir,-gravity.dot(r.dir));r.velocity.addScaledVector(gravity,dt).multiplyScalar(Math.exp(-.4*dt));r.dir.addScaledVector(r.velocity,dt/r.length).normalize();r.velocity.addScaledVector(r.dir,-r.velocity.dot(r.dir));r.ax=Math.asin(W.clamp(r.dir.x,-1,1));r.az=Math.asin(W.clamp(r.dir.z,-1,1));}
- function ropeCar(r,c,dt){if(Math.hypot(c.x-r.x,c.z-r.z)>r.length+8||c.y>52)return;
-  for(let pass=0;pass<4;pass++){const car=bodies.shape(c),bob=W.playRopePosition(r),hit=bodies.sphereHit(car,bob,2.4);if(!hit)break;
-   let n=hit.normal;if(Math.abs(n.y)>.75&&c.y<W.height(c.x,c.z)+.5){n=new T.Vector3(c.vx||Math.sin(c.yaw||0),0,c.vz||Math.cos(c.yaw||0)).normalize();let extent=0;for(let j=0;j<3;j++)extent+=Math.abs(n.dot(car.axes[j]))*car.half.getComponent(j);hit.depth=2.4+extent-bob.clone().sub(car.p).dot(n);}const amount=Math.max(0,new T.Vector3(c.vx||0,c.vy||0,c.vz||0).sub(r.velocity).dot(n));
-   if(amount>0){r.velocity.addScaledVector(n,Math.min(42,amount*.88));c.vx=(c.vx||0)-n.x*amount*.10;c.vy=(c.vy||0)-n.y*amount*.10;c.vz=(c.vz||0)-n.z*amount*.10;}
-   const target=bob.addScaledVector(n,hit.depth+.015);r.dir.copy(target.sub(new T.Vector3(r.x,49,r.z))).normalize();
-   const left=bodies.sphereHit(car,W.playRopePosition(r),2.4);if(left){c.x-=left.normal.x*(left.depth+.01);c.y-=left.normal.y*(left.depth+.01);c.z-=left.normal.z*(left.depth+.01);}
-   c.y=Math.max(W.height(c.x,c.z)+.03,c.y);
-  }
-  // Closest point on the thin cord against the full chassis, not just its centre.
-  const car=bodies.shape(c),anchor=new T.Vector3(r.x,49,r.z),end=W.playRopePosition(r),distance=t=>{const p=anchor.clone().lerp(end,t).sub(car.p);let d=0;for(let i=0;i<3;i++){const e=Math.max(0,Math.abs(p.dot(car.axes[i]))-car.half.getComponent(i));d+=e*e;}return d;};
-  let lo=.01,hi=1-2.4/r.length;for(let i=0;i<16;i++){const a=lo+(hi-lo)/3,b=hi-(hi-lo)/3;if(distance(a)<distance(b))hi=b;else lo=a;}
-  const fraction=(lo+hi)/2,point=anchor.clone().lerp(end,fraction),cord=bodies.sphereHit(car,point,.20);if(cord){let n=point.clone().sub(car.p);n.addScaledVector(r.dir,-n.dot(r.dir));if(n.lengthSq()<1e-8)n.set(Math.sin(c.yaw||0),0,Math.cos(c.yaw||0));n.normalize();let extent=0;for(let j=0;j<3;j++)extent+=Math.abs(n.dot(car.axes[j]))*car.half.getComponent(j);const depth=Math.max(0,extent+.21-point.clone().sub(car.p).dot(n));c.x-=n.x*depth;c.y-=n.y*depth;c.z-=n.z*depth;const impact=Math.max(0,(c.vx||0)*n.x+(c.vy||0)*n.y+(c.vz||0)*n.z-r.velocity.dot(n)*fraction);r.velocity.addScaledVector(n,Math.min(28,impact*.65/fraction));c.vx=(c.vx||0)-n.x*impact*.35;c.vy=(c.vy||0)-n.y*impact*.35;c.vz=(c.vz||0)-n.z*impact*.35;}
-  if(r.velocity.length()>45)r.velocity.setLength(45);r.velocity.addScaledVector(r.dir,-r.velocity.dot(r.dir));r.ax=Math.asin(W.clamp(r.dir.x,-1,1));r.az=Math.asin(W.clamp(r.dir.z,-1,1));
- }
- W.collidePlayRopes=(car,dt)=>{for(const r of ropes)ropeCar(r,car,dt);};
- W.swingRope=(r,car,dt)=>{for(let left=dt;left>1e-8;){const h=Math.min(left,1/120);left-=h;integrateRope(r,h);ropeCar(r,car,h);}if(r.mesh)r.mesh.quaternion.setFromUnitVectors(new T.Vector3(0,-1,0),r.dir);};
- W.stepPlayplaceWorld=dt=>{W.playplace.clock+=dt;const online=!!W.net?.active;if(online&&!W.playplace.wasOnline)W.playplace.phaseOffset=Date.now()/1000-W.playplace.clock;W.playplace.wasOnline=online;const clock=W.playplace.clock+(online?W.playplace.phaseOffset:0);bodies.integrate(dt,clock);for(const r of ropes)integrateRope(r,dt);sports.step(dt,W.playplace.clock);
+ const shared=IslaPlayShared(W,T,bodies);W.playplace.shared=shared;
+ W.stepPlayplaceWorld=dt=>{W.playplace.clock+=dt;const online=!!W.net?.active;if(online&&!W.playplace.wasOnline)W.playplace.phaseOffset=Date.now()/1000-W.playplace.clock;W.playplace.wasOnline=online;const clock=W.playplace.clock+(online?W.playplace.phaseOffset:0);bodies.integrate(dt,clock);shared.integrateRopes(dt);sports.step(dt,W.playplace.clock);
   for(const remote of W.net?.remotes?.values()||[]){const c={...remote.target,...remote.current};if(!Number.isFinite(c.x)||!Number.isFinite(c.y))continue;bodies.collideCar(c,c,dt,W.playplace.clock);W.collidePlayRopes(c,dt);sports.collideCar(c,W.playplace.clock);sports.collideCar(c,W.playplace.clock);}
  };
  W.idlePlayplace=dt=>{for(let left=dt;left>1e-8;){const h=Math.min(left,1/120);left-=h;W.stepPlayplaceWorld(h);bodies.carry(W.vehicle);}};
  const dummy=new T.Object3D();W.animateMap=(dt,time)=>{sports.render();
   for(const r of ropes)if(r.mesh)r.mesh.quaternion.setFromUnitVectors(new T.Vector3(0,-1,0),r.dir);
   for(const p of pads)if(p.mesh)p.mesh.position.y=12.16-Math.sin(Math.min(Math.PI,Math.max(0,time-(p.bounced??-10))*8))*.15;
-  for(const p of bodies.platforms)if(p.mesh){p.mesh.position.copy(p.p);for(const c of p.cables){c.mesh.position.set(p.x+c.x,(roof+p.y)/2,p.z+c.z);c.mesh.scale.y=roof-p.y;}}
+  for(const p of bodies.platforms.filter(p=>!p.seesaw))if(p.mesh){p.mesh.position.copy(p.p);for(const c of p.cables){c.mesh.position.set(p.x+c.x,(roof+p.y)/2,p.z+c.z);c.mesh.scale.y=roof-p.y;}}
   const mesh=W.playplace.cubeMesh;if(mesh){for(const q of bodies.foam){dummy.position.copy(q.p);dummy.quaternion.copy(q.q);dummy.scale.set(1,1-q.compression/q.h,1);dummy.updateMatrix();mesh.setMatrixAt(q.index,dummy.matrix);}mesh.instanceMatrix.needsUpdate=true;}
  };
 })();

@@ -1,8 +1,8 @@
 {
   "name": "isla-drive-cloudflare",
-  "version": "1.9.2",
+  "version": "1.9.3",
   "private": true,
-  "description": "ISLA V1.92 — moving playground, solid foam, responsive ropes and Hover propulsion",
+  "description": "ISLA V1.93 - maze, Micro shortcuts, cannons, seesaws, ramps and shared playground physics",
   "engines": {
     "node": ">=22.0.0"
   },

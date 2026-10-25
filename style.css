@@ -95,3 +95,5 @@ body.paused #touchControls,body:not(.playing) #touchControls{display:none!import
  #intro .intro-footer{position:relative;inset:auto;margin-top:25px;font-size:6px}#intro .menu-version{position:fixed}
 }
 @media(max-width:700px) and (orientation:portrait){#intro .menu-version{position:absolute;top:28px;left:100px;right:auto;bottom:auto}}
+
+#cannonStatus{position:fixed;top:18%;left:50%;transform:translateX(-50%);z-index:45;max-width:85vw;padding:14px 22px;border-radius:12px;background:#18323bf2;color:#ffe6a4;font:700 18px system-ui;text-align:center;pointer-events:none}#cannonStatus[hidden]{display:none}@media(max-width:700px){#cannonStatus{top:14%;font-size:13px;padding:10px 12px}}
