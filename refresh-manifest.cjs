@@ -2,6 +2,7 @@
 const fs=require('node:fs'),path=require('node:path'),crypto=require('node:crypto');
 const root=__dirname,file=path.join(root,'isla-v16-upload.json'),manifest=JSON.parse(fs.readFileSync(file,'utf8'));
 const additions={
+ 'menu-music.js':'public/menu-music.js','menu-music.css':'public/menu-music.css','elektronomia-energy.mp3':'public/elektronomia-energy.mp3','menu-music.test.cjs':'test/menu-music.test.cjs','Menu-Music-Notes.md':'Menu-Music-Notes.md',
  'V2.23-Notes.md':'V2.23-Notes.md','v223.test.cjs':'test/v223.test.cjs',
  'V2.22-Notes.md':'V2.22-Notes.md',
  'V2.21-Notes.md':'V2.21-Notes.md',

@@ -224,7 +224,7 @@
     {
       "name": "community.css",
       "destination": "public/community.css",
-      "sha256": "042fe8fb67bc4c43e1b4bee9e5668a841888decbf468605be05ca2ff05b26330"
+      "sha256": "2661f3fc2008733d4150dd22935f6046eb0f1eba07b8839397266fbf27502746"
     },
     {
       "name": "social.css",
@@ -234,7 +234,7 @@
     {
       "name": "index.html",
       "destination": "public/index.html",
-      "sha256": "91752f2b112abeb36629f0743673af57b46ee6ae474353361fb71f8e6a2dae72"
+      "sha256": "f04acf294bddfe7dbf117c5eed125986c44c9caaf97212b5529b4424cf30278c"
     },
     {
       "name": "player-collisions.js",
@@ -274,7 +274,7 @@
     {
       "name": "build-offline.cjs",
       "destination": "scripts/build-offline.cjs",
-      "sha256": "a7eb6da7ccf3fb59962e6f70c6b5cb117dafa408e6e65333154b8095a5f7c368"
+      "sha256": "3f4b7974bcb8e4b8a0c23cef2526f331883c663e647c43264add611d106e11b2"
     },
     {
       "name": "build-world.cjs",
@@ -489,7 +489,7 @@
     {
       "name": "README.txt",
       "destination": "README.txt",
-      "sha256": "651313266d0386b5160b3054c91aa08e4f9e3d192d38532c381fd74de453a0e6"
+      "sha256": "61548a601b72c539ee40684725a9e78e273db3243f8decafc82d676e2a4a417a"
     },
     {
       "name": "v22-shared.js",
@@ -534,7 +534,7 @@
     {
       "name": "refresh-manifest.cjs",
       "destination": "refresh-manifest.cjs",
-      "sha256": "7aff76588fbb21a01c87c4be91468d703366eb70f7c70c05774861f22bf4a0d1"
+      "sha256": "4ec3e7e460d7229fe4f8c4c80def8cb88c86dc2f0f87ce81b929175e772153c5"
     },
     {
       "name": "dev.cjs",
@@ -580,6 +580,31 @@
       "name": "v223.test.cjs",
       "destination": "test/v223.test.cjs",
       "sha256": "0f8b8b940f9394d03f4d8f3f26229be5e99830ef632ded02836f08732e929484"
+    },
+    {
+      "name": "menu-music.js",
+      "destination": "public/menu-music.js",
+      "sha256": "bf8e81ac4e9e55efcf56df5dfbc226fd2820ae54b965f7a35c9419f5261d8888"
+    },
+    {
+      "name": "menu-music.css",
+      "destination": "public/menu-music.css",
+      "sha256": "2833cba3c8511851babdef579c6e2b3a87f81fe4ec6cba343d3f819bcfc256ae"
+    },
+    {
+      "name": "elektronomia-energy.mp3",
+      "destination": "public/elektronomia-energy.mp3",
+      "sha256": "c43a6936f1ff6630e704ad2c2c4d8a1dd2ef98e7a24a9758ba15dcec3f6b84d5"
+    },
+    {
+      "name": "menu-music.test.cjs",
+      "destination": "test/menu-music.test.cjs",
+      "sha256": "1de18c023e99626dfab844e030373aacf70241e3e964e52d6099a67bf1704738"
+    },
+    {
+      "name": "Menu-Music-Notes.md",
+      "destination": "Menu-Music-Notes.md",
+      "sha256": "e9e718b36d31d5f667967249608e22a5433f6711cf1f1d4ac568676bf6ddefe5"
     }
   ]
 }
