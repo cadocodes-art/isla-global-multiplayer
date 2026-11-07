@@ -7,15 +7,15 @@ test('V2.24 charges 25% more for all 38 upgrades, rounds up and preserves existi
  assert.equal(V.coinRespawn,180000);assert.equal(V.prices.flappy,705000);
 });
 function roadNear(c,roads){for(const road of roads)for(let i=0;i<road.samples.length;i++){const p=road.samples[i],q=road.samples[Math.min(i+1,road.samples.length-1)],dx=q.x-p.x,dz=q.z-p.z,t=Math.max(0,Math.min(1,((c.x-p.x)*dx+(c.z-p.z)*dz)/(dx*dx+dz*dz||1)));if(Math.hypot(c.x-p.x-t*dx,c.z-p.z-t*dz)<=(p.width||road.width||8)/2+12)return true;}return false;}
-test('all five main maps have the reduced count and true 40/60 geography, with rare roof/water tens',()=>{
+test('all five main maps have the 50% increased count and true 40/60 geography, with rare roof/water tens',()=>{
  const source=require('../scripts/source-world.cjs'),built=require('../src/world-data.json');
  for(const id of ['islands','city','peaks','playplace','fern']){
-  const {W,buildings,coins}=source(id),max=id==='playplace'?60:120;
+  const {W,buildings,coins}=source(id),max=id==='playplace'?90:180;
   assert.equal(coins.length,max,id);assert.equal(coins.filter(c=>c.nearRoad).length,max*.4,id);
   assert.deepEqual(JSON.parse(JSON.stringify(coins)),(id==='islands'?built:built.maps[id]).coins,id+' client/server equality');
   const rare=coins.filter(c=>c.value===10);assert.equal(rare.length,Math.round(max*.02));
   for(const [i,c]of coins.entries()){
-   assert.equal(roadNear(c,W.roads),c.nearRoad,id+' road classification');assert([1,5,10].includes(c.value));assert(c.id>=224000);
+   assert.equal(roadNear(c,W.roads),c.nearRoad,id+' road classification');assert([1,5,10].includes(c.value));assert(c.id>=231000);
    for(const d of coins.slice(i+1))assert(Math.hypot(c.x-d.x,c.z-d.z)>=32-1e-8,id+' spacing');
    if(c.placement==='roof')assert(buildings.some(b=>Math.hypot(b.x-c.x,b.z-c.z)<.02&&Math.abs(b.y+b.h+.8-c.y)<.02),id+' roof height');
    else if(c.placement==='water'){assert(W.height(c.x,c.z)<-1);assert.equal(c.y,.8);}
@@ -25,12 +25,12 @@ test('all five main maps have the reduced count and true 40/60 geography, with r
  }
 });
 test('approved custom maps get deterministic reachable coins even without roads, buildings or water',()=>{
- const m=M.fresh(),a=M.worldData(m).coins,b=M.worldData(m).coins;assert.deepEqual(a,b);assert.equal(a.length,120);assert(a.every(c=>c.value===10||c.value===1||c.value===5));assert.equal(a.filter(c=>c.value===10).length,2);assert(a.every(c=>Math.abs(c.x)<m.size/2-5&&Math.abs(c.z)<m.size/2-5));
- const empty=V.coins('empty',[],[],()=>-5,{minX:-100,maxX:100,minZ:-100,maxZ:100});assert.equal(empty.length,2);assert(empty.every(c=>c.value===10&&c.placement==='water'));
+ const m=M.fresh(),a=M.worldData(m).coins,b=M.worldData(m).coins;assert.deepEqual(a,b);assert.equal(a.length,180);assert(a.every(c=>c.value===10||c.value===1||c.value===5));assert.equal(a.filter(c=>c.value===10).length,4);assert(a.every(c=>Math.abs(c.x)<m.size/2-5&&Math.abs(c.z)<m.size/2-5));
+ const empty=V.coins('empty',[],[],()=>-5,{minX:-100,maxX:100,minZ:-100,maxZ:100});assert.equal(empty.length,4);assert(empty.every(c=>c.value===10&&c.placement==='water'));
 });
 test('new layout cannot be hidden by old numerical coin IDs and never exceeds its map budget',()=>{
- const road={width:8,samples:Array.from({length:121},(_,i)=>({x:-1800+i*30,z:0,y:1}))},args=['test',[road],[],()=>1,{minX:-2000,maxX:2000,minZ:-2000,maxZ:2000}],a=V.coins(...args);assert.deepEqual(a,V.coins(...args));assert.equal(a.length,120);assert.equal(a.filter(c=>c.nearRoad).length,48);assert.equal(new Set(a.map(c=>c.id)).size,120);assert(a.every(c=>c.id>159));
+ const road={width:8,samples:Array.from({length:241},(_,i)=>({x:-3600+i*30,z:0,y:1}))},args=['test',[road],[],()=>1,{minX:-4000,maxX:4000,minZ:-4000,maxZ:4000}],a=V.coins(...args);assert.deepEqual(a,V.coins(...args));assert.equal(a.length,180);assert.equal(a.filter(c=>c.nearRoad).length,72);assert.equal(new Set(a.map(c=>c.id)).size,180);assert(a.every(c=>c.id>159));
 });
 test('release entry points and offline export have no soundtrack dependency',()=>{
- const root=path.resolve(__dirname,'..'),html=fs.readFileSync(path.join(root,'public/index.html'),'utf8');assert.match(html,/V2\.3/);assert(!/menu-music|elektronomia/.test(html));assert(!/elektronomia/.test(fs.readFileSync(path.join(root,'scripts/build-offline.cjs'),'utf8')));const manifest=JSON.parse(fs.readFileSync(path.join(root,'isla-v16-upload.json')));assert.equal(manifest.version,'2.3');assert(!manifest.files.some(f=>/menu-music|elektronomia|Menu-Music/.test(f.name)));
+ const root=path.resolve(__dirname,'..'),html=fs.readFileSync(path.join(root,'public/index.html'),'utf8');assert.match(html,/V2\.31/);assert(!/menu-music|elektronomia/.test(html));assert(!/elektronomia/.test(fs.readFileSync(path.join(root,'scripts/build-offline.cjs'),'utf8')));const manifest=JSON.parse(fs.readFileSync(path.join(root,'isla-v16-upload.json')));assert.equal(manifest.version,'2.31');assert(!manifest.files.some(f=>/menu-music|elektronomia|Menu-Music/.test(f.name)));
 });

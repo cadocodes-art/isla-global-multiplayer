@@ -4,7 +4,7 @@ const T=require('../public/three.min.js'),V=require('../public/v22-shared.js'),R
 function game(){const paint=new Proxy({createRadialGradient:()=>({addColorStop(){}}),measureText:()=>({width:100})},{get:(o,k)=>o[k]||(()=>{})}),ctx=vm.createContext({THREE:T,console,document:{createElement:()=>({getContext:()=>paint}),getElementById:()=>null},performance:{now:()=>0}});ctx.window=ctx;let water=false;for(const n of ['v22-shared','v20-rules','world','physics','player-rules','garage','aura','cars-v19','utility-cars','specials','launcher-props','cars-v20'])vm.runInContext(fs.readFileSync(path.resolve(__dirname,'../public/'+n+'.js'),'utf8'),ctx,{filename:n});const W=ctx.Isla;W.scene=new T.Scene();W.traffic=[];W.height=W.driveHeight=()=>water?-10:0;W.slope=()=>({x:0,z:0});const road={samples:[{x:0,z:-1},{x:0,z:0},{x:0,z:1}]};W.nearestRoad=(x,z)=>water?{d:Infinity,p:null}:{d:0,p:{x,z,width:12,index:1,road}};W.mapBounds={x:-1000,z:-1000,size:2000};W.buildCollisionIndex();W.awardV22=()=>{};W.v22Notice=()=>{};W.aura=W.createAuraTracker();W.garage.owned=W.carModels.map(m=>m.id);ctx.IslaV22.normalize(W.garage);for(const n of ['v22-gameplay','v22-car-assets'])vm.runInContext(fs.readFileSync(path.resolve(__dirname,'../public/'+n+'.js'),'utf8'),ctx,{filename:n});let time=0;const reset=(id,l=1,kph=100,y=.12)=>{W.garage.selected=id;W.garage.upgrades[id]=3;W.garage.levels[id]=l;W.resetVehicle(true);Object.assign(W.vehicle,{x:0,z:0,y,yaw:0,vx:0,vy:0,vz:kph/3.6,grounded:y<1});};const step=(seconds,input={})=>{for(let i=0;i<Math.round(seconds*120);i++){time+=1/120;W.stepVehicle(1/120,{gas:0,brake:0,handbrake:false,steer:0,boost:false,...input},time);}return W.vehicle;};return {W,ctx,reset,step,water:v=>water=v};}
 test('all 19 cars have three valid levels, unique artwork and the requested Aura prices',()=>{const {W}=game();assert.equal(W.carModels.length,19);for(const b of W.carModels){assert.equal(b.price,V.prices[b.id]);const seen=new Set();for(let l=1;l<=3;l++){const m=V.spec(b,l),car=W.makeCar(m,true),svg=W.carPreview(m);assert(car.root.children.length>0);assert.equal(car.size,m.size);assert(!svg.includes('NaN'));seen.add(svg);for(const k of ['mass','size','boostKph','boostLimit','engine','grip','offroad'])assert(Number.isFinite(m[k])&&m[k]>0,b.id+' '+k);if(l>1){assert(m.boostKph>b.boostKph);assert(V.catalog[b.id][l].cost>0);}}assert.equal(seen.size,3,b.id);}assert.equal(V.prices.flappy,705000);assert.equal(V.flappy.flaps,20);assert.equal(V.flappy.boostKph,268);});
 test('old saves retain cars, Aura and paint; upgrades debit once, save, and switch freely',()=>{const {W}=game(),memory=new Map([['isla-drive-garage-v2',JSON.stringify({balance:4321,earned:9000,owned:['classic','nuker'],selected:'nuker',colors:{nuker:'#123456'}})]]),store={getItem:k=>memory.get(k),setItem:(k,v)=>memory.set(k,v)};let g=W.createGarage(store);assert.equal(g.balance,4321);assert.equal(g.iscoins,0);assert.equal(g.upgrades.nuker,1);assert.equal(g.getColor(),'#123456');g.iscoins=1000;V.purchase(g,'nuker',2);assert.equal(g.iscoins,718);assert.throws(()=>V.purchase(g,'nuker',2));assert.throws(()=>V.purchase(g,'plane',2));V.purchase(g,'nuker',3);for(const l of [1,3,2])V.chooseLevel(g,'nuker',l);assert.equal(g.iscoins,218);g.save();g=W.createGarage(store);assert.equal(g.upgrades.nuker,3);assert.equal(g.levels.nuker,2);assert.equal(g.iscoins,218);assert.equal(g.balance,4321);assert.throws(()=>V.purchase({...g,iscoins:0},'classic',2));});
-test('coin layouts are deterministic, marked 1, 5 or 10, bounded and about one fifth are fives',()=>{let one=0,five=0;for(let n=0;n<20;n++){const args=['test'+n,[],[],()=>1,{minX:-1000,maxX:1000,minZ:-1000,maxZ:1000}],a=V.coins(...args);assert.deepEqual(a,V.coins(...args));assert.equal(a.length,120);for(const c of a){assert(Math.abs(c.x)<995&&Math.abs(c.z)<995);assert([1,5,10].includes(c.value));if(c.value===1)one++;else if(c.value===5)five++;}}assert(five/(one+five)>.17&&five/(one+five)<.23);});
+test('coin layouts are deterministic, marked 1, 5 or 10, bounded and about one fifth are fives',()=>{let one=0,five=0;for(let n=0;n<20;n++){const args=['test'+n,[],[],()=>1,{minX:-1000,maxX:1000,minZ:-1000,maxZ:1000}],a=V.coins(...args);assert.deepEqual(a,V.coins(...args));assert.equal(a.length,180);for(const c of a){assert(Math.abs(c.x)<995&&Math.abs(c.z)<995);assert([1,5,10].includes(c.value));if(c.value===1)one++;else if(c.value===5)five++;}}assert(five/(one+five)>.17&&five/(one+five)<.23);});
 test('Nuker shoots forward at 15/6/5 seconds, adds angled barrels, auto-aims and respects manual cooldown',()=>{const {W,reset}=game(),s={x:0,y:.12,z:0,yaw:0};let base=W.carModels.find(m=>m.id==='nuker');for(const [l,count]of [[1,1],[2,3],[3,3]]){const shots=V.nukeShots(s,V.spec(base,l),[],R.nukeShot);assert.equal(shots.length,count);assert(shots.every(shot=>shot.target.z>30));if(l>1)assert(shots[1].target.x<0&&shots[2].target.x>0);}const aimed=V.nukeShots(s,V.spec(base,3),[{x:12,y:0,z:50,w:8,d:8,h:10}],R.nukeShot);assert(aimed.some(s=>s.target.x===12&&s.target.z===50));let shots=[];W.showNuke=shot=>shots.push(shot);reset('nuker',2,0);for(let i=0;i<719;i++)W.stepWeapons(1/120);assert.equal(shots.length,0);W.stepWeapons(1/120);assert.equal(shots.length,3);shots=[];reset('nuker',3,0);W.garage.manualNukes=true;for(let i=0;i<600;i++)W.stepWeapons(1/120);assert.equal(shots.length,0);assert(W.v22Ability());assert.equal(shots.length,3);assert(!W.v22Ability());W.stepWeapons(4.9);assert(!W.v22Ability());W.stepWeapons(.1);assert(W.v22Ability());});
 test('Flappy uses exactly its flap budget per takeoff and resets on landing; upgraded counts are real',()=>{const {W,reset,step}=game();for(const [l,count]of [[1,20],[2,30],[3,40]]){reset('flappy',l,120,500);for(let i=0;i<count;i++){assert(W.v22Ability(),'flap '+i);step(.25);}assert.equal(W.vehicle.flapsLeft,0);assert(!W.v22Ability());Object.assign(W.vehicle,{y:.12,vy:0,grounded:true});step(.02);assert.equal(W.vehicle.flapsLeft,count);assert(W.v22Ability(),'ground takeoff flap');assert(!W.vehicle.grounded);assert.equal(W.vehicle.flapsLeft,count-1);assert(W.vehicle.vy>0);step(.25);}});
 test('Water Skidder has a 30-second budget, ten seconds on land to refill, and cannot leave map edges',()=>{const {W,reset,step,water}=game();water(true);reset('waterskidder',1,0,.1);step(29.8);assert.equal(W.vehicle.waterMode,'skimming');assert(W.vehicle.boatUsed>29.7);step(.3);assert.equal(W.vehicle.waterMode,'sinking');water(false);W.resetVehicle(true);step(9);assert(W.vehicle.boatUsed>=29.9);step(1.1);assert.equal(W.vehicle.boatUsed,0);water(true);Object.assign(W.vehicle,{x:999,y:.1,vx:30,vz:0});step(.1);assert.equal(W.vehicle.waterMode,'skimming');assert(W.vehicle.x<=997);assert(W.vehicle.vx<=0);assert(W.vehicle.boatUsed<.2);});
@@ -30,4 +30,45 @@ test('colored trails form wide soft-edged mesh ribbons with bounded storage and 
 
 test('a sustained handbrake turn awards one drift and holding HB while stationary awards nothing',()=>{
  const {W,reset,step}=game(),awards=[];W.awardV22=(kind,details)=>awards.push({kind,...details});reset('classic',1,90);step(3.5,{gas:1,handbrake:true,steer:.3});step(2,{gas:1});assert.equal(awards.filter(a=>a.kind==='drift').length,1);const a=awards[0];assert(a.duration>=2&&a.speed>=7);reset('classic',1,0);step(4,{handbrake:true,steer:1});step(1);assert.equal(awards.length,1);
+});
+
+test('V2.31 Flappy accelerates, reverses and changes flight path at every level without flaps or nitro',()=>{
+ const {W,reset,step}=game();
+ for(const level of [1,2,3]){
+  reset('flappy',level,0,500);W.vehicle.flapsLeft=0;
+  step(1,{gas:1});assert(W.vehicle.z>10);assert(W.vehicle.vz>20);assert.equal(W.vehicle.flapsLeft,0);assert(!W.vehicle.grounded);
+  const z=W.vehicle.z;step(2,{brake:1});assert(W.vehicle.vz< -10,'reverse level '+level);const back=W.vehicle.z;step(.3,{brake:1});assert(W.vehicle.z<back);assert(W.vehicle.z<z+20);
+  reset('flappy',level,0,500);step(1,{steer:-1});assert(W.vehicle.yaw<-.7,'turn from rest');assert(Math.hypot(W.vehicle.vx,W.vehicle.vz)<.01);
+  reset('flappy',level,120,500);step(1.5,{gas:1,steer:1});const c=W.vehicle;assert(c.x>15,'flight path turns, not only body');assert(c.yaw>1.3);assert(c.vx>25);assert(Math.abs(Math.atan2(c.vx,c.vz)-c.yaw)<.5);
+  reset('flappy',level,250,500);step(1,{handbrake:true});assert(Math.hypot(W.vehicle.vx,W.vehicle.vz)<2);
+  reset('flappy',level,100,500);step(4,{gas:1,boost:true});assert(Math.hypot(W.vehicle.vx,W.vehicle.vz)<=W.getCarSpec().boostLimit+.001);assert(Math.hypot(W.vehicle.vx,W.vehicle.vz)>W.getCarSpec().boostLimit-1);
+ }
+ reset('classic',1,72,500);step(1,{gas:1,brake:1,steer:1});assert.equal(W.vehicle.vx,0);assert.equal(W.vehicle.vz,20);assert.equal(W.vehicle.yaw,0);
+});
+
+test('V2.31 a ramp departure permits steering and reversing immediately, without pressing FLAP',()=>{
+ const {W,reset,step}=game(),ramp={id:'test-ramp'};
+ W.rampAt=(x,z)=>Math.abs(x)<5&&z>=-20&&z<=0?ramp:null;W.rampHeight=(r,x,z)=>10+(z+20)*.5;W.rampGradient=()=>({x:0,z:.5});
+ for(const level of [1,2,3]){
+  reset('flappy',level,162,20.07);Object.assign(W.vehicle,{z:-.1,vy:22.5,grounded:true,ramp,playAir:false});
+  step(.02,{gas:1});assert(!W.vehicle.grounded);assert.equal(W.vehicle.ramp,null);assert.equal(W.vehicle.playAir,false);
+  step(.7,{gas:1,steer:1});assert(W.vehicle.x>4);assert(W.vehicle.y>25);const yaw=W.vehicle.yaw;
+  step(2,{brake:1});const c=W.vehicle;assert(!c.grounded,'still flying');assert(c.vx*Math.sin(c.yaw)+c.vz*Math.cos(c.yaw)<-8,'reverse after ramp');assert(c.yaw>=yaw);assert(c.flapsLeft>0,'no flap needed for movement');
+ }
+});
+
+test('V2.31 Play Place uses the same Flappy controls for ramp and bounce/flap departures',()=>{
+ const {W}=require('../scripts/source-world.cjs')('playplace');W.buildCollisionIndex();
+ for(const level of [1,2,3]){
+  W.getCarSpec=()=>V.spec(V.flappy,level);const results=[];
+  for(const playAir of [false,true]){
+   W.resetVehicle(true);const c=W.vehicle;Object.assign(c,{x:400,z:400,y:80,yaw:0,vx:0,vz:0,vy:10,grounded:false,playAir});
+   for(let i=0;i<120;i++)W.stepVehicle(1/120,{gas:1,brake:0,steer:1,handbrake:false,boost:false},i/120);
+   assert(c.x>3&&c.z>3);assert(c.yaw>.8);assert(!c.grounded);
+   for(let i=0;i<240;i++)W.stepVehicle(1/120,{gas:0,brake:1,steer:0,handbrake:false,boost:false},1+i/120);
+   assert(c.vx*Math.sin(c.yaw)+c.vz*Math.cos(c.yaw)<-10,'reverse in Play Place');assert(!c.grounded);
+   results.push([c.x,c.z,c.vx,c.vz,c.yaw]);
+  }
+  assert.deepEqual(results[0],results[1],'takeoff source must not change handling');
+ }
 });

@@ -35,8 +35,8 @@
  function buildingKey(b){if(b.rewardKey)return b.rewardKey;if(b.object?.id)return 'object:'+b.object.id;return [b.x,b.y,b.z,b.w,b.d].map(v=>Math.round(v*10)).join(':');}
  // Layouts are deterministic; pickup timers remain personal. New IDs avoid old-layout cooldowns.
  function coins(key,roads,buildings,height,bounds){
-  const rand=random('iscoins-2.24:'+key),result=[],samples=[],segments=new Map(),blocks=new Map();
-  const max=key==='playplace'?60:120,b=bounds||{minX:-900,maxX:900,minZ:-900,maxZ:900};
+  const rand=random('iscoins-2.31:'+key),result=[],samples=[],segments=new Map(),blocks=new Map();
+  const max=key==='playplace'?90:180,b=bounds||{minX:-900,maxX:900,minZ:-900,maxZ:900};
   const cell=(x,z)=>Math.floor(x/64)+','+Math.floor(z/64);
   function index(grid,item,x0,x1,z0,z1){for(let x=Math.floor(x0/64);x<=Math.floor(x1/64);x++)for(let z=Math.floor(z0/64);z<=Math.floor(z1/64);z++){const k=x+','+z;if(!grid.has(k))grid.set(k,[]);grid.get(k).push(item);}}
   for(const r of roads||[]){const ps=(r.samples||[]).filter(p=>Number.isFinite(p.x)&&Number.isFinite(p.z));for(let i=0;i<ps.length;i++){const p=ps[i],q=ps[Math.min(i+1,ps.length-1)],width=Math.max(1,p.width||r.width||8),pad=width/2+12,s={p,q,pad};samples.push(p);index(segments,s,Math.min(p.x,q.x)-pad,Math.max(p.x,q.x)+pad,Math.min(p.z,q.z)-pad,Math.max(p.z,q.z)+pad);}}
@@ -50,7 +50,7 @@
    x=Math.round(x*100)/100;y=Math.round(y*100)/100;z=Math.round(z*100)/100;
    if(![x,y,z].every(Number.isFinite)||x<=b.minX+5||x>=b.maxX-5||z<=b.minZ+5||z>=b.maxZ-5||blocked(x,z,y)||result.some(c=>Math.hypot(c.x-x,c.z-z)<32))return false;
    const near=nearRoad(x,z),bucket=near?'road':'away';if(counts[bucket]>=targets[bucket])return false;
-   result.push({id:224000+result.length,x,y,z,value,nearRoad:near,placement});counts[bucket]++;return true;
+   result.push({id:231000+result.length,x,y,z,value,nearRoad:near,placement});counts[bucket]++;return true;
   }
   const point=()=>({x:b.minX+rand()*(b.maxX-b.minX),z:b.minZ+rand()*(b.maxZ-b.minZ)});
   const rare=Math.max(1,Math.round(max*.02));

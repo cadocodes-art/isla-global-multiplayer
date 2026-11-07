@@ -92,7 +92,7 @@
  W.playFoamLand=(c,from,time)=>bodies.collideCar(c,from,1/120,time);
  const reset=W.resetVehicle;W.resetVehicle=(...args)=>{reset(...args);Object.assign(W.vehicle,{playBouncePower:0,playBounceRest:false,playBounceAt:0,playAir:false,playFoamBounceAt:0,playSupport:null});};
  const step=W.stepVehicle;W.stepVehicle=(dt,input,time)=>{const c=W.vehicle;W.stepPlayplaceWorld(dt);bodies.carry(c);const from={x:c.x,y:c.y,z:c.z,vy:c.vy};
-  if(c.playAir&&!c.grounded){const angle=(input.steer||0)*1.1*dt,cs=Math.cos(angle),sn=Math.sin(angle),vx=c.vx,vz=c.vz;c.vx=vx*cs+vz*sn;c.vz=vz*cs-vx*sn;c.yaw+=angle;const gas=Math.max(0,Number(input.gas)||0);if(gas&&Math.hypot(c.vx,c.vz)<14){c.vx+=Math.sin(c.yaw)*gas*4*dt;c.vz+=Math.cos(c.yaw)*gas*4*dt;}if(input.brake){const drag=Math.exp(-dt*1.2*input.brake);c.vx*=drag;c.vz*=drag;}}
+  if(c.playAir&&!c.grounded&&!W.getCarSpec?.()?.flappy){const angle=(input.steer||0)*1.1*dt,cs=Math.cos(angle),sn=Math.sin(angle),vx=c.vx,vz=c.vz;c.vx=vx*cs+vz*sn;c.vz=vz*cs-vx*sn;c.yaw+=angle;const gas=Math.max(0,Number(input.gas)||0);if(gas&&Math.hypot(c.vx,c.vz)<14){c.vx+=Math.sin(c.yaw)*gas*4*dt;c.vz+=Math.cos(c.yaw)*gas*4*dt;}if(input.brake){const drag=Math.exp(-dt*1.2*input.brake);c.vx*=drag;c.vz*=drag;}}
   if(!W.stepMakerRoad(dt,input,time))step(dt,input,time);W.sweepMakerRoad(from);W.playSync?.contact(c);W.playBounce(c,from,time);W.playFoamLand(c,from,time);W.collidePlayRopes(c,dt);sports.collideCar(c,W.playplace.clock);
   if(c.grounded&&!pads.some(p=>inBox(c,p,-1))){c.playBouncePower=0;c.playBounceRest=false;c.playAir=false;}
   if(W.playPitAt(c.x,c.z)&&c.y<floor+.4){const drag=Math.exp(-dt*(c.y<floor-1?1.2:.4));c.vx*=drag;c.vz*=drag;c.surface='SOFT FOAM';}

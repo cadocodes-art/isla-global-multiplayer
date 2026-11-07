@@ -83,9 +83,20 @@
    if(c.airtime>.27&&W.onLanding)W.onLanding(c.airtime,c.vy);c.airtime=0;
    }else{
    c.vy-=9.81*(spec?.glider?W.nitro.gravityScale:boosting?W.nitro.gravityScale:1)*dt;
+   if(spec?.flappy){
+    // Wings steer actual velocity, including after ramp takeoff or with no flaps left.
+    // Brake/reverse crosses zero instead of endlessly damping forward momentum.
+    const gas=clamp(Number(input.gas)||0,0,1),brake=clamp(Number(input.brake)||0,0,1),drive=boosting&&!brake&&!input.handbrake?1:gas;
+    const target=brake?-13*speedScale*brake:drive?(boosting?spec.boostLimit:spec.boostLimit*.75)*drive:forward;
+    acc=input.handbrake?-forward*4:clamp((target-forward)*3,-20*engine*(spec.airBrake||1)/mass,16*engine/mass);
+    ax=sx*acc-rx*lateral*4;az=sz*acc-rz*lateral*4;
+    c.yawRate=mix(c.yawRate,clamp(Number(input.steer)||0,-1,1)*(.8+(spec.airSteer||.3)),1-Math.exp(-dt*6));
+   }else{
    if(spec?.glider&&absSpeed>18){c.vy=Math.max(c.vy,-(spec.descentLimit||7));c.yawRate=mix(c.yawRate,input.steer*(spec.airSteer||.28),1-Math.exp(-dt*1.5));ax-=rx*lateral*.7;az-=rz*lateral*.7;c.roll=mix(c.roll,-input.steer*.22,1-Math.exp(-dt*2));}
    const airThrust=spec?.glider?(boosting&&!input.brake&&!input.handbrake?spec.airThrust*clamp((spec.airBoostLimit-Math.max(0,forward))/3,0,1):0):thrust*.5;
-   ax+=sx*airThrust;az+=sz*airThrust;c.yawRate*=Math.exp(-dt*(boosting?.45:.7));c.airtime+=dt;c.contact=0;c.pitch-=dt*(spec?.glider?.008:boosting?.015:.05);
+   ax+=sx*airThrust;az+=sz*airThrust;c.yawRate*=Math.exp(-dt*(boosting?.45:.7));
+   }
+   c.airtime+=dt;c.contact=0;c.pitch-=dt*(spec?.glider?.008:boosting?.015:.05);
   }
   c.vx+=ax*dt;c.vz+=az*dt;
   if(boosting&&spec?.boostLimit&&!W.rocketCoasting?.()){const limit=!c.grounded&&c.waterMode==='dry'&&spec.glider?spec.airBoostLimit:spec.boostLimit,v=Math.hypot(c.vx,c.vz);if(v>limit){c.vx*=limit/v;c.vz*=limit/v;}}
