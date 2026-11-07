@@ -7,3 +7,13 @@ body.touch-mode .stick-wrap{transform:translate(18px,-18px)}#driveStick,#stickKn
 body.paused .v22-ability{display:none}
 
 @media(max-width:760px){.upgrade-top{position:relative;padding-right:45px}.upgrade-top>.upgrade-close{position:absolute;top:0;right:0}.upgrade-top>.iscoin-wallet{flex-basis:100%;font-size:17px}.level-selector button{flex:1;padding:10px 4px;font-size:12px}}
+
+/* V2.21: wallets and abilities participate in panel layout instead of overlapping it. */
+#auraPanel .v22-coins-hud{position:static;margin:9px 0 0;padding:7px 0 0;border:0;border-top:1px solid #eab56a55;border-radius:0;background:none;font-size:14px;white-space:normal;overflow-wrap:anywhere}
+.ability-dock{display:flex;flex-direction:column;align-items:flex-end;gap:8px;margin-bottom:12px;pointer-events:auto}
+.speed-panel .v22-ability,.speed-panel #rocketButton{position:static;inset:auto;transform:none;margin:0;min-height:48px;max-width:100%;font-size:12px;padding:10px 12px;pointer-events:auto;touch-action:none;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+.v22-ability[hidden]{display:none!important}
+body.touch-mode .stick-wrap{transform:translate(42px,-42px)}
+@media(max-height:500px){body.touch-mode .stick-wrap{transform:translate(30px,-28px)}body.touch-mode .speed-panel .v22-ability,body.touch-mode .speed-panel #rocketButton{min-height:44px;padding:8px;font-size:11px}}
+body.touch-mode .bottom-left{bottom:230px}
+@media(max-height:500px){body.touch-mode .bottom-left{top:70px;bottom:auto;left:max(180px,calc(env(safe-area-inset-left) + 162px))}}

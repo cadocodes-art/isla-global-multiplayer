@@ -136,6 +136,9 @@
   // Discard unused materials; callers already dispose materials on removed meshes.
   const used=new Set();car.root.traverse(o=>{if(Array.isArray(o.material))o.material.forEach(v=>used.add(v));else if(o.material)used.add(o.material);});
   for(const material of [accent,metal,dark,black,white,light])if(!used.has(material))material.dispose();
+  // Rotate the complete car, including wheel pivots and accessories, for air tricks.
+  // Keep the ground contact shadow outside the rig.
+  const rig=new T.Group();rig.name='air-trick-rig';for(const child of [...car.root.children])if(child!==car.contact)rig.add(child);car.root.add(rig);car.trickRig=rig;
   return car;
  };
  function animate(car,dt,time,state){
