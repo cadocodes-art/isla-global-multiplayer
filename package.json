@@ -1,8 +1,8 @@
 {
   "name": "isla-drive-cloudflare",
-  "version": "2.33.0",
+  "version": "2.34.0",
   "private": true,
-  "description": "ISLA V2.33 \u2014 240 Iscoins and a fresh layout each visit",
+  "description": "ISLA V2.34 \u2014 Islayan Peak, one taller mountain and the original valley town",
   "engines": {
     "node": ">=22.0.0"
   },

@@ -1,31 +1,36 @@
-ISLA V2.33 — 240 COINS AND A FRESH LAYOUT EACH VISIT
+ISLA V2.34 — ISLAYAN PEAK
 
-UPLOAD PATCH — 23 FILES
-1. Extract ISLA-V2.33-Upload-Patch.zip.
-2. Open its ISLA-V2.33-Upload-Patch folder.
-3. Upload the 23 individual files to the ROOT of your existing complete
-   V2.32 repository in ONE batch, replacing matches and adding new files.
-4. Commit that batch. Keep all other files and your existing wrangler.jsonc.
+ONLINE UPDATE FOR YOUR EXISTING COMPLETE V2.33 REPOSITORY
+1. Extract ISLA-V2.34-Online-Update.zip.
+2. Open the ISLA-V2.34-Online-Update folder.
+3. Upload all individual files in that folder to your repository ROOT,
+   replacing matching files, in ONE batch. Commit the batch.
+4. Keep all other repository files and your existing wrangler.jsonc.
 5. Let Cloudflare run your existing build/deploy configuration.
 
-Do not upload the ZIP itself or put the files inside a new repository folder.
+Do not upload the ZIP itself or create a nested folder in the repository.
+This patch requires the complete V2.33 repository; it is not a standalone
+repository. Its manifest checks every required source file before building.
 
 WHAT'S NEW
-- Every main map now has 240 coin slots, including Play Place.
-- Approved custom maps also target 240 wherever safe space permits.
-- Leaving and re-entering a map generates a fresh personal random layout.
-- A page reload starts a new visit; pausing or opening the garage does not.
-- 1- and 5-Iscoin coins have no road quotas; rare tens favor roofs and water.
-- Recently collected coins keep their personal three-minute cooldown across
-  visits, so fewer than 240 may be available until those coins respawn.
-- Both accounts and guests get fresh layouts. Global-room players have their
-  own coins; one player's pickup does not remove another player's coins.
+- Islayan Peaks is now Islayan Peak.
+- The northern mountain stays in its original location; its summit is about
+  616 m, roughly 20% above the old 513 m summit.
+- The other four mountains are low snowy terrain.
+- The map area, coastline, village plots and connected roads are retained.
+- Online players share the new terrain. Older clients must refresh.
+- Existing Aura, Iscoins, cars, upgrades and vault claims are retained.
+- No new Aura farming penalties or reward-rate changes were added.
 
-See V2.33-Notes.md for details and validation.
+OFFLINE EDITION (SEPARATE DOWNLOAD)
+Paste all text from ISLA-V2.34-Offline.txt into an HTML viewer as before.
+It contains the same map remake plus existing password-protected Owner
+Controls and dated History. The password and local save keys are unchanged.
+Use the same browser/viewer to retain an existing offline save. Offline
+progress is separate from online accounts and other devices.
 
 LOCAL CHECKS
 Node.js 22+: npm ci, npm run build, npm run check:worker, npm test.
-For playtesting: npm run dev.
-After editing source files, run node refresh-manifest.cjs before building.
+After editing flat source files, run node refresh-manifest.cjs before building.
 
-This ZIP prepares the release; it has not been pushed or deployed for you.
+The update has not been pushed to GitHub or deployed for you.

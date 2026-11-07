@@ -1,15 +1,10 @@
-/* Islayan Peaks: one deterministic island shared by the browser and server. */
+/* Islayan Peak: one deterministic island shared by the browser and server. */
 'use strict';
 (()=>{
  const W=Isla,T=THREE;if(W.mapId!=='peaks')return;
  const TAU=Math.PI*2,{mix,smooth,clamp}=W,polar=(a,r)=>({x:Math.cos(a)*r,z:Math.sin(a)*r});
- W.peaks=[
-  {name:'Islayan Crown',x:0,z:-1040,r:1040,rise:466},
-  {name:'Silverhorn',x:1000,z:-325,r:1010,rise:377},
-  {name:'Seabreak',x:615,z:875,r:990,rise:326},
-  {name:'Frostfall',x:-650,z:820,r:1030,rise:356},
-  {name:'Northwatch',x:-1030,z:-325,r:1050,rise:408}
- ];
+ // V2.34: retain the northern Crown footprint; summit rises from ~513 m to ~616 m.
+ W.peaks=[{name:'Islayan Peak',x:0,z:-1040,r:1040,rise:570}];
  W.peaksCoastRadius=a=>2080*(1+.065*Math.sin(3*a+.7)+.038*Math.cos(5*a-.4)+.022*Math.sin(8*a));
  W.peaksCoastDistance=(x,z)=>W.peaksCoastRadius(Math.atan2(z,x))-Math.hypot(x,z);
  Object.assign(W,{span:5000,depth:5000,N:401,NZ:401,minX:-2500,minZ:-2500,mapBounds:{x:-2400,z:-2400,size:4800}});
@@ -23,7 +18,7 @@
   const base=44+6*Math.sin(x*.0032)*Math.sin(z*.003)+W.fbm(x*.004,z*.004)*7;
   const crags=(W.fbm(x*.018+3,z*.018+8)-.5)*Math.min(23,mountain*.15)*smooth(40,200,mountain);
   const radius=Math.hypot(x,z),angle=Math.atan2(z,x);let raw=mix(47+W.noise(x*.005,z*.005)*3,base+mountain+crags,smooth(470,830,radius));
-  // Broad, natural saddles between peaks carry the passes, rather than deep road cuts.
+  // Keep the existing gentle valley approaches so the town and road network stay connected.
   for(let i=0;i<5;i++){const a=-Math.PI/2+(i+.5)*TAU/5,d=Math.abs(Math.atan2(Math.sin(angle-a),Math.cos(angle-a)))*radius;
    const valley=49+65*Math.sin(clamp((radius-450)/1500,0,1)*Math.PI),blend=Math.exp(-((d/185)**2))*smooth(450,650,radius);
    raw=mix(raw,Math.min(raw,valley),blend);
@@ -47,7 +42,7 @@
   ring(inner,13,'Islayan Village Loop');ring(outer,12,'Ocean Rim Road');
   for(let i=0;i<5;i++){
    const a=-Math.PI/2+(i+.5)*TAU/5,points=[inner(a),polar(a+.06,650),polar(a-.065,1010),polar(a+.055,1390),outer(a)];
-   W.addRoad(points.map(asArray),12,false,['Crown Pass','Silverhorn Way','Seabreak Pass','Frostfall Road','Northwatch Pass'][i]);
+   W.addRoad(points.map(asArray),12,false,['Crown Pass','East Valley Road','South Shore Road','West Valley Road','North Shore Road'][i]);
   }
   W.addRoad([asArray(inner(Math.PI)),[-190,30],[0,0],[175,-22],asArray(inner(0))],13,false,'Village High Street');
   W.addRoad([asArray(inner(-Math.PI/2)),[25,-180],[0,0],[-25,175],asArray(inner(Math.PI/2))],12,false,'Chapel Lane');
@@ -65,8 +60,10 @@
  };
  W.driveHeight=(x,z)=>{const road=W.peakRoadSurface(x,z);return road&&road.d<=road.width/2+.6?road.y+.21:terrainDrive(x,z,true);};W.trafficHeight=W.driveHeight;
  W.spawn={x:2.35,z:0,yaw:0};W.vehicle.lastSafe={...W.spawn};
- W.placeName=(x,z,y)=>{if(Math.hypot(x,z)<450)return 'ISLAYAN VILLAGE';if(W.peaksCoastDistance(x,z)<350)return 'ISLAYAN · OCEAN RIM';const p=[...W.peaks].sort((a,b)=>Math.hypot(a.x-x,a.z-z)-Math.hypot(b.x-x,b.z-z))[0];return p.name.toUpperCase()+(y>300?' · SUMMIT':' · PASS');};
+ W.placeName=(x,z,y)=>{if(Math.hypot(x,z)<450)return 'ISLAYAN VILLAGE';if(W.peaksCoastDistance(x,z)<350)return 'ISLAYAN · OCEAN RIM';const p=[...W.peaks].sort((a,b)=>Math.hypot(a.x-x,a.z-z)-Math.hypot(b.x-x,b.z-z))[0];if(Math.hypot(x-p.x,z-p.z)>p.r*1.15)return 'ISLAYAN · SNOWFIELDS';return p.name.toUpperCase()+(y>300?' · SUMMIT':' · FOOTHILLS');};
  W.mapPreview=()=>({x:2540,y:2450,z:2650,lookX:-130,lookY:80,lookZ:-180,fov:53});
+ // Preserve the original village plots when the surrounding mountains are removed.
+ const villagePlots=new Set(["-311.9160,30.8209","-301.1178,-14.9219","-257.0997,43.3423","-247.2826,-2.6210","-199.0926,53.1056","-195.4621,6.2461","-138.3366,47.7517","-145.5294,1.3053","-82.8798,38.3977","-91.0927,-7.8791","-36.2562,-17.7334","81.2876,11.8109","74.7062,-34.7260","135.9264,4.6727","130.5746,-42.0216","187.1115,2.0455","190.4441,-44.8362","241.2432,7.8740","247.1370,-38.7550","296.1981,15.2273","302.6472,-31.3282","-17.5141,-331.2214","27.9619,-338.1452","-9.1739,-275.9881","36.3363,-282.6826","-1.6308,-221.0865","44.0277,-226.6817","1.5394,-169.8284","47.4163,-166.4650","-5.0190,-115.9141","40.4988,-109.2708","-13.5701,-60.9596","31.8390,-53.6103","-31.2437,49.4827","14.1459,56.9515","-40.1107,105.0509","5.3722,111.9294","-47.3932,162.1823","-1.5369,165.8148","-42.7135,223.2212","2.7176,216.0086","-32.8417,278.9802","12.3635,270.4660","40.0399,-387.5914","79.2401,-325.6946","97.7825,-368.8823","124.3839,-300.7207","150.3289,-339.9107","165.7759,-268.3854","196.9709,-303.5403","203.7160,-230.5246","238.3237,-262.3257","238.6724,-188.9370","275.5145,-218.1202","270.4733,-145.1120","309.2471,-171.6750","298.4005,-99.0121","339.4662,-121.8727","364.0979,-68.1427","380.3941,-10.7085","338.8254,50.2736","385.8136,49.2215","332.3846,100.4475","314.8391,147.8626","357.6559,167.2462","287.0890,189.9565","324.3317,218.6268","250.7504,225.2993","280.9770,261.2903","207.7202,253.3176","230.6577,294.3404","159.8416,274.2967","176.2806,318.3281","108.7601,289.2440","120.1285,334.8484","55.9781,299.4887","63.6105,345.8649","-51.9402,355.2076","-103.7873,304.7999","-110.4534,351.3247","-154.7030,294.0071","-168.8719,338.8205","-202.7668,274.2765","-224.8400,315.7707","-245.3670,245.1095","-275.1376,281.4785","-279.7699,207.5790","-316.6118,236.7625","-304.3900,163.6771","-346.8141,183.9057","-318.8711,115.3934","-370.5648,65.7964","-366.0751,6.3230","-353.6115,-51.3210","-291.3678,-90.8680","-335.5855,-106.7991","-271.1630,-140.0682","-313.9113,-159.6023","-247.3185,-187.7854","-288.0086,-211.3080","-218.9729,-232.7551","-256.4067,-261.1753","-185.4927,-272.6898","-146.4728,-305.7562","-171.6612,-345.4367","-102.0500,-330.2232","-118.2748,-374.3339","-59.5437,-390.9259","278.3297,-320.1641","245.9773,-352.8646","318.0956,-359.8029","285.4454,-392.2061","357.4634,-400.1950","396.0086,111.2193","423.1772,178.4260","445.1472,138.0117","472.8093,204.9662","17.5759,368.8145","-36.7009,416.8201","8.7162,424.1196","-45.4118,472.2172","0.0646,479.1383","-375.9698,139.8911","-437.6922,101.9175","-431.4170,147.4875","-493.3463,109.9096","-243.7869,-306.4659","-227.1759,-376.9977","-268.4608,-356.7108","-252.1971,-427.2893","-293.2389,-406.5151"]);
  W.peakBuildingPlans=()=>{
   if(W.peakHomes)return W.peakHomes;const plans=[];
   const roads=[...W.roads.slice(7),W.roads[0],...W.roads.slice(2,7)];
@@ -74,10 +71,11 @@
    const p=road.samples[i],prev=road.samples[i-1];distance+=Math.hypot(p.x-prev.x,p.z-prev.z);if(distance<next)continue;next=distance+53;
    if(Math.hypot(p.x,p.z)>780)continue;const q=road.samples[i+1],yaw=Math.atan2(q.x-prev.x,q.z-prev.z),nx=Math.cos(yaw),nz=-Math.sin(yaw);
    for(const side of [-1,1]){const off=road.width/2+17,x=p.x+nx*side*off,z=p.z+nz*side*off,n=W.noise(x*.1+5,z*.1+7),w=10+n*5,d=9+n*3;
+    if(!villagePlots.has(x.toFixed(4)+','+z.toFixed(4)))continue;
     if(plans.some(b=>Math.hypot(b.x-x,b.z-z)<39)||Math.hypot(x,z)<40)continue;
     const a=yaw-side*Math.PI/2,co=Math.cos(a),si=Math.sin(a),corners=[];for(const dx of [-w/2-2,w/2+2])for(const dz of [-d/2-2,d/2+2])corners.push({x:x+co*dx+si*dz,z:z-si*dx+co*dz});
     if(corners.some(c=>{const r=W.nearestRoad(c.x,c.z,2);return r.p&&r.d<r.p.width/2+4;}))continue;
-    const heights=corners.map(c=>W.height(c.x,c.z)),y=Math.min(...heights)-.2,foundation=Math.max(...heights)-y+.25;if(y<15||foundation>3.8)continue;
+    const heights=corners.map(c=>W.height(c.x,c.z)),y=Math.min(...heights)-.2,foundation=Math.max(...heights)-y+.25;if(y<15||foundation>4.2)continue;
     const floors=n>.42?2:1;plans.push({id:plans.length,x,z,y,yaw:a,w,d,h:foundation+floors*3.2+3.1,foundation,floors,variant:plans.length%6,name:(Math.hypot(x,z)<450?'Islayan village house ':'Mountain chalet ')+(plans.length+1)});
    }
   }}W.peakHomes=plans;return plans;
@@ -98,7 +96,7 @@
    W.box(group,0,p.foundation+2.75,p.d/2+1.1,4.2,.28,2.8,snow);
    for(const side of [-1,1])W.box(group,side*1.8,p.foundation+1.4,p.d/2+2,.14,2.8,.14,timber);
   }
-  W.mapInfo.specs=['5 mountain peaks',Math.round(Math.max(...W.peaks.map(p=>W.height(p.x,p.z))))+' m highest summit','Snowfall · valley town'];
+  W.mapInfo.specs=['1 mountain peak',Math.round(Math.max(...W.peaks.map(p=>W.height(p.x,p.z))))+' m highest summit','Snowfall · valley town'];
  };
  W.makeVegetation=scene=>{
   W.grass=new T.Group();scene.add(W.grass);const trees=[];let seed=725318;const random=()=>((seed=(Math.imul(seed,1664525)+1013904223)>>>0)/4294967296);
@@ -118,7 +116,7 @@
    for(let i=20;i<r.samples.length-20;i+=25){const p=r.samples[i],q=r.samples[i+1],a=Math.atan2(q.x-p.x,q.z-p.z);for(const side of [-1,1]){const x=p.x+Math.cos(a)*side*(r.width/2+1.7),z=p.z-Math.sin(a)*side*(r.width/2+1.7),y=W.height(x,z);W.box(details,x,y+.9,z,.12,1.8,.12,pole,false);W.box(details,x,y+1.58,z,.16,.28,.16,yellow,false);}}
   }
   for(const r of [W.roads[0],...W.roads.slice(7)])for(let i=16;i<r.samples.length-10;i+=30){const p=r.samples[i],q=r.samples[i+1],a=Math.atan2(q.x-p.x,q.z-p.z),x=p.x+Math.cos(a)*(r.width/2+3),z=p.z-Math.sin(a)*(r.width/2+3),y=W.height(x,z);W.box(details,x,y+3.2,z,.16,6.4,.16,pole,false);W.box(details,x,y+6.5,z,1.2,.4,1.2,lamp,false);W.box(details,x,y+6.75,z,1.45,.16,1.45,snow,false);}
-  const signTex=W.textureCanvas(512,c=>{c.fillStyle='#203e50';c.fillRect(0,0,512,512);c.strokeStyle='#ccdde2';c.lineWidth=6;c.strokeRect(10,120,492,260);c.fillStyle='#f1ede3';c.textAlign='center';c.font='bold 47px Arial';c.fillText('ISLAYAN',256,228);c.font='24px Arial';c.fillText('FIVE PEAKS · ONE ISLAND',256,292);});signTex.encoding=T.sRGBEncoding;
+  const signTex=W.textureCanvas(512,c=>{c.fillStyle='#203e50';c.fillRect(0,0,512,512);c.strokeStyle='#ccdde2';c.lineWidth=6;c.strokeRect(10,120,492,260);c.fillStyle='#f1ede3';c.textAlign='center';c.font='bold 47px Arial';c.fillText('ISLAYAN',256,228);c.font='24px Arial';c.fillText('ONE PEAK · ONE ISLAND',256,292);});signTex.encoding=T.sRGBEncoding;
   const sign=new T.Mesh(new T.PlaneGeometry(9,4.5),new T.MeshStandardMaterial({map:signTex,side:T.DoubleSide})),signY=W.height(33,32);sign.position.set(33,signY+4.8,32);sign.rotation.y=Math.PI;details.add(sign);for(const side of [-1,1])W.box(details,33+side*3,signY+2.5,32,.2,5,.2,pole);
  };
  W.initCityTraffic=(route,place)=>{

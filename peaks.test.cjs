@@ -2,14 +2,16 @@
 const {test}=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs');
 const createWorld=require('../scripts/source-world.cjs'),manifest=require('../src/world-data.json');
 const {W,buildings,trees}=createWorld('peaks',true);W.initTraffic();W.buildCollisionIndex();
-test('third map is Islayan Peaks, including old obstacle bookmarks, with ordinary solo and global play',()=>{
- assert.equal(W.mapId,'peaks');assert.equal(W.mapInfo.name,'Islayan Peaks');assert(!W.course);assert.equal(W.ramps.length,0);
+test('third map is Islayan Peak, including old obstacle bookmarks, with ordinary solo and global play',()=>{
+ assert.equal(W.mapId,'peaks');assert.equal(W.mapInfo.name,'Islayan Peak');assert(!W.course);assert.equal(W.ramps.length,0);
  const html=fs.readFileSync(require.resolve('../public/index.html'),'utf8'),maps=fs.readFileSync(require.resolve('../public/maps.js'),'utf8');assert(html.includes('peaks.js'));assert(!html.includes('course-client.js'));assert(maps.includes("requested==='obstacle'?'peaks'"));assert(!maps.includes('Void Run'));
  const old=createWorld('obstacle');assert.equal(old.W.mapId,'peaks');assert.deepEqual(old.buildings,buildings);
 });
-test('five separate peaks rise above a valley town, with the tallest over 400 metres',()=>{
- assert.equal(W.peaks.length,5);const heights=W.peaks.map(p=>W.height(p.x,p.z));assert(Math.max(...heights)>400);assert(Math.max(...heights)<600);assert(heights.every(h=>h>350));assert(W.height(0,0)<60);
- for(const p of W.peaks){assert(W.height(p.x,p.z)>W.height(p.x+100,p.z)+20);assert(W.height(p.x,p.z)>W.height(p.x,p.z+100)+20);}
+test('one taller northern peak rises above the original valley town',()=>{
+ assert.equal(W.peaks.length,1);const p=W.peaks[0];assert.equal(p.x,0);assert.equal(p.z,-1040);assert.equal(p.r,1040);
+ const height=W.height(p.x,p.z);assert(Math.abs(height/512.5227416992187-1.2)<.005);assert(W.height(0,0)<60);
+ assert(W.height(p.x,p.z)>W.height(p.x+100,p.z)+20);assert(W.height(p.x,p.z)>W.height(p.x,p.z+100)+20);
+ for(const [x,z] of [[1000,-325],[615,875],[-650,820],[-1030,-325]])assert(W.height(x,z)<80,'former summit is now low snowfield');
  assert.deepEqual(buildings,manifest.maps.peaks.buildings);assert.deepEqual(trees,manifest.maps.peaks.trees);
 });
 test('irregular near-circular coastline has ocean all around and only a narrow sand edge',()=>{
@@ -29,7 +31,7 @@ test('road driving and recovery stay on the surface across every graded route',(
  W.vehicle.lastSafe={x:W.roads[4].samples[50].x,z:W.roads[4].samples[50].z,yaw:0};W.vehicle.y=-100;W.resetVehicle();assert(W.vehicle.y>20);assert.equal(W.vehicle.waterMode,'dry');
 });
 test('131 small houses sit in the valley and all 32 global spawns are clear',()=>{
- assert(buildings.length>=100&&buildings.length<=160);const plans=W.peakBuildingPlans();assert(plans.every(p=>p.h<15&&p.w<16&&p.d<13&&p.foundation<3.8));assert(plans.filter(p=>Math.hypot(p.x,p.z)<500).length>100);
+ assert(buildings.length>=100&&buildings.length<=160);const plans=W.peakBuildingPlans();assert(plans.every(p=>p.h<15&&p.w<16&&p.d<13&&p.foundation<4.2));assert(plans.filter(p=>Math.hypot(p.x,p.z)<500).length>100);
  for(const b of buildings)assert(W.nearestRoad(b.x,b.z).d>15);
  for(const s of manifest.maps.peaks.spawns){assert(Math.abs(s.y-W.driveHeight(s.x,s.z)-.12)<.001);assert(buildings.every(b=>!W.circleOBB(s.x,s.z,2,b)));}
 });
