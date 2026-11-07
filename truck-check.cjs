@@ -12,8 +12,8 @@ reset('classic');const classicMax=step(100,{gas:true});reset('truck');const truc
 console.log('Flat-road cruising: Classic '+(classicMax*3.6).toFixed(1)+' km/h; Truck '+(truckMax*3.6).toFixed(1)+' km/h.');
 reset('truck');step(3,{brake:true});assert(W.vehicle.vz<-.5);reset('truck',15);step(2,{gas:true,steer:1});assert(W.vehicle.yaw>0);assert(Number.isFinite(W.vehicle.y));
 reset('classic',20);const classicBrake=step(1,{brake:true});reset('truck',20);const truckBrake=step(1,{brake:true});assert(truckBrake>classicBrake);
-reset('classic');const damage=W.damageForImpact(20);reset('truck');assert.equal(W.damageForImpact(20),damage*2);assert.equal(W.damageForImpact(12),0);assert(W.damageForImpact(60)<100);
-console.log('PASS: lower acceleration/speed, heavier braking, working steering/reverse and double impact energy without one-hit buildings.');
+reset('classic');const damage=W.damageForImpact(20);reset('truck');assert.equal(W.damageForImpact(20),damage*2);assert.equal(W.damageForImpact(12),0);assert(W.damageForImpact(60)>100);assert(W.damageForImpact(60)>W.damageForImpact(40));
+console.log('PASS: lower acceleration/speed, heavier braking, working steering/reverse and double impact energy with high-speed demolition.');
 function collision(id){reset(id);W.colliders=[{x:1.65,y:0,z:0,yaw:0,w:.5,d:8,h:4,hp:100,lastHit:-10}];W.buildCollisionIndex();step(1/120,{});return W.vehicle.x;}
 assert(Math.abs(collision('classic'))<.01);assert(collision('truck')<-.01);W.colliders=[];W.buildCollisionIndex();
 function trafficImpact(id){reset(id,20);W.traffic=[{x:0,y:.12,z:4,yaw:0,w:1.9,d:4.4,vx:0,vz:0,offsetX:0,offsetZ:0,driftX:0,driftZ:0,speed:0}];W.resolveTraffic();return {retained:W.vehicle.vz,pushed:W.traffic[0].driftZ};}

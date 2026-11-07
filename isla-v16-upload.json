@@ -1,5 +1,5 @@
 {
-  "version": "2.22",
+  "version": "2.23",
   "files": [
     {
       "name": "three.min.js",
@@ -29,7 +29,7 @@
     {
       "name": "physics.js",
       "destination": "public/physics.js",
-      "sha256": "a62a6a0cafc10bb1466df1fa02df457266b4bccdbf670df2490b8df08d552bcd"
+      "sha256": "82e29240301e79350dc7ac9dc4684a5d5692a3ce96c101dc5fc6660d703a1b2e"
     },
     {
       "name": "aura.js",
@@ -234,7 +234,7 @@
     {
       "name": "index.html",
       "destination": "public/index.html",
-      "sha256": "652d0ca020dbc7c72335966588bffce499574226862e1ccc6430048835473eb5"
+      "sha256": "91752f2b112abeb36629f0743673af57b46ee6ae474353361fb71f8e6a2dae72"
     },
     {
       "name": "player-collisions.js",
@@ -249,7 +249,7 @@
     {
       "name": "worker.js",
       "destination": "src/worker.js",
-      "sha256": "06f674da1f2b9e9a658800047b2aa6964e5f782bad96213d42b53ad939c7bc8b"
+      "sha256": "a5472f4496ca26d23d333d177834024883e3dde38d164740342b834f4e0428c5"
     },
     {
       "name": "playground.js",
@@ -424,7 +424,7 @@
     {
       "name": "v21.test.cjs",
       "destination": "test/v21.test.cjs",
-      "sha256": "47035f49ed4c6e55a83a2b40188df0304eb858e4a1433a9dd8acb514136a9ef5"
+      "sha256": "95b8e0f5beaeb2cb72ff069619ee05f1f9312e3661c85c279275791795b2375a"
     },
     {
       "name": "aura-check.cjs",
@@ -464,7 +464,7 @@
     {
       "name": "truck-check.cjs",
       "destination": "test/regression/truck-check.cjs",
-      "sha256": "eb14de4fd222cdeb10c143f7137fdf3b6f806d924c6b2c6a836d218f60a792cb"
+      "sha256": "3046966ac3926102f81e9a395a05bed1aeb87f38e8ac4e7bfe935f1c24ef08f8"
     },
     {
       "name": "water-check.cjs",
@@ -474,22 +474,22 @@
     {
       "name": "package.json",
       "destination": "package.json",
-      "sha256": "2ce38d329ba33ea3b3267f061cc071dd1fd5369753da99a14cdf3fd4cf2934ef"
+      "sha256": "7c9b93245fd21910bab467e2a4aede58547d841205a6e712add217b636ebe48e"
     },
     {
       "name": "package-lock.json",
       "destination": "package-lock.json",
-      "sha256": "b4ec997146644542a871414da81f96337f734357342a16782781c4dac5fa04ab"
+      "sha256": "cb03512fb8521f45074090d5d387b7d5a7494a33905884c071f641deb0c7f1e3"
     },
     {
       "name": "prepare-cloudflare.cjs",
       "destination": "prepare-cloudflare.cjs",
-      "sha256": "fa2536841c9b2a55acc4eeaad21a5ee0e16da5a062188bd2847256efa3efe8f7"
+      "sha256": "2aea9e56c31b5573f4a861fe91cd3108c1b9465d0bfb2c34168b0e99f3755b91"
     },
     {
       "name": "README.txt",
       "destination": "README.txt",
-      "sha256": "3c52e32e69b9a017a4fe77ecf2881ebbd61711acc833abc0d8046f66ab5b4748"
+      "sha256": "651313266d0386b5160b3054c91aa08e4f9e3d192d38532c381fd74de453a0e6"
     },
     {
       "name": "v22-shared.js",
@@ -534,7 +534,7 @@
     {
       "name": "refresh-manifest.cjs",
       "destination": "refresh-manifest.cjs",
-      "sha256": "bee54c9fae91a2a00451692187be71a9479e081756211247504a4fe08c5d896a"
+      "sha256": "7aff76588fbb21a01c87c4be91468d703366eb70f7c70c05774861f22bf4a0d1"
     },
     {
       "name": "dev.cjs",
@@ -570,6 +570,16 @@
       "name": "V2.22-Notes.md",
       "destination": "V2.22-Notes.md",
       "sha256": "7bd145b9a3b2a0d8d90ddf384a04b7d537988c120079c5fa9effbf9b1328ebf9"
+    },
+    {
+      "name": "V2.23-Notes.md",
+      "destination": "V2.23-Notes.md",
+      "sha256": "d1bc9c19381921b2176e91b450820fcaca2e00db199c5a28c48a56f8a9d9fab8"
+    },
+    {
+      "name": "v223.test.cjs",
+      "destination": "test/v223.test.cjs",
+      "sha256": "0f8b8b940f9394d03f4d8f3f26229be5e99830ef632ded02836f08732e929484"
     }
   ]
 }

@@ -1,8 +1,8 @@
 {
   "name": "isla-drive-cloudflare",
-  "version": "2.22.0",
+  "version": "2.23.0",
   "private": true,
-  "description": "ISLA V2.22 — Iscoins, car upgrades, Flappy Car and new ways to play",
+  "description": "ISLA V2.23 — speed-based building ram damage",
   "engines": {
     "node": ">=22.0.0"
   },

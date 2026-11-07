@@ -1,47 +1,35 @@
-ISLA V2.22 — TRAILS & JOYSTICK FOLLOW-UP
+ISLA V2.23 — SPEED-BASED BUILDING DAMAGE
 
 INSTALL ON YOUR EXISTING V2.22 REPOSITORY
-1. Extract ISLA-V2.22-Trails-Controls.zip.
-2. Open the extracted ISLA-V2.22-Trails-Controls folder.
-3. Upload ALL 7 individual files inside to the GitHub repository ROOT,
-   replacing the matching files. They fit in one upload batch.
-4. Click Commit changes after all 7 files are queued.
-5. Let Cloudflare finish deploying, then reload. The menu and /healthz
-   endpoint should show V2.22 / 2.22.
+1. Extract ISLA-V2.23-Patch.zip.
+2. Open the extracted ISLA-V2.23-Patch folder.
+3. Upload all 13 individual files inside to the GitHub repository ROOT,
+   replacing matching files and adding the two new files. Use one batch.
+4. Click Commit changes. Keep all other files and wrangler.jsonc.
+5. Wait for Cloudflare to deploy, then reload. The menu should show V2.23
+   and /healthz should report release 2.23.
 
-Upload the extracted files, not the ZIP or enclosing folder. Keep all other
-existing files and wrangler.jsonc. This is a patch, not a replacement repo.
-If the build reports an incomplete upload, replace the exact file named in
-that error using the file from THIS patch, then commit again.
+Upload the extracted files, not the ZIP or its enclosing folder.
+This is a patch for the complete V2.22 upload, including the trails and
+joystick follow-up. It is not a replacement repository.
 
-NEW IN THIS FOLLOW-UP
-- Colored trails are substantially wider and brighter, with soft edges.
-- They retain the chosen trail color and ten-second fade.
-- Joystick moves 30 pixels up and 40 pixels right from the prior V2.22.
-- Extra touch/gesture suppression on the joystick helps prevent Safari zoom.
-- Nearby phone controls reflow to stay clear of the relocated joystick.
+WHAT CHANGES
+- Faster direct rams deal more building damage, with no old 44-point cap.
+- Standard car examples: about 23 damage at 100 km/h, 65 at 150 km/h,
+  and a full-health building destroyed by a direct 200 km/h impact.
+- Vehicle mass and purchased ramming upgrades still increase damage.
+- Beast keeps its instant-demolition ability.
+- Solo and global multiplayer use the same damage calculation.
+- Sideways scraping and slow pushing remain harmless; the existing
+  per-building contact cooldown and Aura reward rules remain in place.
 
-V2.22 UPGRADES STILL INCLUDED IN YOUR EXISTING GAME
-- Level 2: +25% normal nitro speed and engine power over Level 1.
-- Level 3: +50% normal nitro speed and engine power over Level 1.
-- Most Level 2 cars: 6–8-second nitro, six-second refill.
-- Most Level 3 cars: 8–10-second nitro, five-second refill.
-- Car-specific abilities are stronger across all 19 upgrade paths.
-- Examples: Flappy 30/40 flaps, Nuker Level 2 fires every six seconds,
-  Ultra 10/12-second rocket bursts, and much stronger hops/dashes.
-- Upgrade screens explicitly show speed/engine gain versus Level 1.
-- Small-phone layouts keep camera, recovery, nitro and handbrake clear.
+Your V2.22 upgrades, thicker trails, relocated joystick, balances and saves
+remain intact. No additional test currency is granted by this patch.
+This package has not been uploaded to GitHub or deployed for you.
 
-All Level 1 specifications and purchase prices are unchanged. Previously
-bought upgrades receive the stronger stats automatically. Saves and the
-one-time Cado_Codes test credit remain intact. Water Skidder still has a
-30-second water budget and ten-second land recharge. Nuker Level 3 manual
-fire still has its five-second cooldown.
-
-Read V2.22-Notes.md for exact speeds, abilities, upgrade costs and testing.
-This package has not been uploaded to your GitHub or deployed for you.
+Read V2.23-Notes.md for behavior and validation details.
 
 DEVELOPMENT
-Use Node.js 22+, npm ci, npm test. After source edits, run
-node refresh-manifest.cjs before building. The upload manifest retains its
-historical filename isla-v16-upload.json and declares version 2.22.
+Use Node.js 22+, npm ci, npm test. After changing source files, run
+node refresh-manifest.cjs before building. The upload manifest keeps its
+historical filename isla-v16-upload.json and declares version 2.23.

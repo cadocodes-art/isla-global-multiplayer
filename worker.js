@@ -157,7 +157,7 @@ export class GlobalRoom extends DurableObject {
    if(!Number.isInteger(data.id)||!b||this.hp[b.id]<=0||now-(this.hits[b.id]||0)<700||!numeric(data.speed,s.car==='beast'?4:15,190))return;
    if(Math.hypot(s.x-b.x,s.z-b.z)>Math.hypot(b.w,b.d)/2+10||s.y>b.y+b.h+2||s.y<b.y-3)return;
    const recent=Math.max(Math.hypot(s.vx,s.vz),p.previous?Math.hypot(p.previous.vx,p.previous.vz):0);if(data.speed>recent+12)return;
-   p.lastImpactAt=now;this.hits[b.id]=now;this.hp[b.id]=Math.max(0,this.hp[b.id]-(s.car==='beast'?100:Math.min(44*(modelFor(s).ramFactor||1),(data.speed**2-225)*.043*modelFor(s).mass*(modelFor(s).ramFactor||1))));this.broadcast({type:'building',actor:p.id,id:b.id,hp:this.hp[b.id],speed:data.speed});await this.checkpoint();
+   p.lastImpactAt=now;this.hits[b.id]=now;this.hp[b.id]=Math.max(0,this.hp[b.id]-(s.car==='beast'?100:(data.speed**2-225)*.043*modelFor(s).mass*(modelFor(s).ramFactor||1)));this.broadcast({type:'building',actor:p.id,id:b.id,hp:this.hp[b.id],speed:data.speed});await this.checkpoint();
    }else if(data.type==='treeHit'){
    const t=this.world.trees?.[data.id],s=p.state;if(s.car!=='beast'||!Number.isInteger(data.id)||!t||this.fallenTrees.some(a=>a[0]===data.id)||Math.hypot(s.x-t.x,s.z-t.z)>8||s.y>t.y+t.h||s.y<t.y-3||Math.hypot(s.vx,s.vz)<4||!numeric(data.dx,-1,1)||!numeric(data.dz,-1,1))return;
    this.fallenTrees.push([data.id,data.dx,data.dz]);this.broadcast({type:'treeDown',id:data.id,dx:data.dx,dz:data.dz});await this.checkpoint();
@@ -183,7 +183,7 @@ export default {
  async fetch(request,env){
   const url=new URL(request.url);
   if(url.pathname.startsWith('/api/')){if(!env.COMMUNITY)return Response.json({error:'Complete the V1.6 CommunityHub setup.'},{status:503});return env.COMMUNITY.getByName('isla-community-v16').fetch(request);}
-  if(url.pathname==='/healthz')return Response.json({ok:true,release:'2.22',room:'GLOBAL',capacity:rules.capacity,version:rules.protocol,maps:['islands','city','peaks','playplace','fern']});
+  if(url.pathname==='/healthz')return Response.json({ok:true,release:'2.23',room:'GLOBAL',capacity:rules.capacity,version:rules.protocol,maps:['islands','city','peaks','playplace','fern']});
   if(url.pathname==='/ws'){
    if(url.searchParams.get('map')==='obstacle')return new Response('Void Run has been replaced by Islayan Peaks. Refresh your game.',{status:410});
    if(request.method!=='GET'||request.headers.get('Upgrade')?.toLowerCase()!=='websocket')return new Response('WebSocket required',{status:426});
