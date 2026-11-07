@@ -75,6 +75,7 @@
  }
  const rewards={launch:[1100,1200],drift:[700,1300],nuke:[1000,2000],ram:[1200,1300],spare:[1200,1400],strike:[3000,4000],slide:[600,800],repeat:[100,200]};
  const reward=(kind,event)=>{const r=rewards[kind];return r?r[0]+hash(event)%(r[1]-r[0]+1):0;};
+ function isDrifting(c,input={}){const speed=Math.hypot(c.vx||0,c.vz||0);return !!(c.grounded&&c.waterMode==='dry'&&!c.wall&&speed>7&&(c.slip>2.1&&(input.handbrake||Math.abs(input.steer||0)>.2)||input.handbrake&&Math.abs(c.yawRate||0)>.12&&(Math.abs(input.steer||0)>.15||c.slip>.6)));}
  function nukeShots(state,model,targets,shotFactory){
   const offsets=model.cannons===3?[0,-.48,.48]:[0],size=model.size||1;
   return offsets.map((offset,i)=>{const sx=Math.sin(state.yaw),sz=Math.cos(state.yaw),side=i===1?-1:i===2?1:0,s={...state,x:state.x+sz*side*.9*size,z:state.z-sx*side*.9*size,yaw:state.yaw+offset};
@@ -82,6 +83,6 @@
    return shotFactory(s,size);
   });
  }
- const api={nukeShots,prices,catalog,flappy,level,spec,normalize,purchase,chooseLevel,hash,random,buildingKey,coins,rewards,reward,coinRespawn:180000};
+ const api={isDrifting,nukeShots,prices,catalog,flappy,level,spec,normalize,purchase,chooseLevel,hash,random,buildingKey,coins,rewards,reward,coinRespawn:180000};
  root.IslaV22=api;if(typeof module!=='undefined'&&module.exports)module.exports=api;
 })(typeof globalThis!=='undefined'?globalThis:this);

@@ -1,8 +1,8 @@
 {
   "name": "isla-drive-cloudflare",
-  "version": "2.24.0",
+  "version": "2.3.0",
   "private": true,
-  "description": "ISLA V2.24 — Iscoins and the hidden vault",
+  "description": "ISLA V2.3 — leaderboards, complete NPCs and handbrake drifts",
   "engines": {
     "node": ">=22.0.0"
   },

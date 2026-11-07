@@ -1,0 +1,28 @@
+/* Signed-in community leaderboards and optional profile rank badges. */
+(()=>{'use strict';const C=IslaCommunity,E=C.escape;
+ const labels={aura:'Aura',iscoins:'Iscoins',stars:'Stars'},number=n=>Number(n).toLocaleString('en-US'),rank=n=>n==null?'—':'#'+number(n);
+ C.profileRankPanel=a=>{
+  if(!a.showRanks||!a.ranks)return '';
+  const entries=Object.entries(labels).filter(([key])=>a.ranks[key]!=null&&(key!=='stars'||a.stars>0));
+  return entries.length?`<aside class="v23-profile-ranks" aria-label="Global ranks"><span>GLOBAL RANKS</span>${entries.map(([key,label])=>`<div><span>${label}</span><strong>${rank(a.ranks[key])}</strong></div>`).join('')}</aside>`:'';
+ };
+ C.openLeaderboard=async main=>{
+  let scope=C.query.get('scope')==='friends'?'friends':'top',category=Object.hasOwn(labels,C.query.get('category'))?C.query.get('category'):'aura',page=0,request=0;
+  main.innerHTML='<section class="v23-board"><div class="v23-board-intro"><div><p class="c-kicker">THE DRIVERS SET THE STANDARD</p><h1>Leaderboard.</h1><p>Every drive counts. Every world you build matters.</p></div><span class="v23-board-mark" aria-hidden="true">↗</span></div><nav class="v23-board-scopes" aria-label="Leaderboard group"><button type="button" data-lb-scope="top">Top 100</button><button type="button" data-lb-scope="friends">You &amp; friends</button></nav><div class="v23-board-tools"><nav class="v23-board-categories" aria-label="Rank by"><button type="button" data-lb-category="aura">Aura</button><button type="button" data-lb-category="iscoins">Iscoins</button><button type="button" data-lb-category="stars">Stars</button></nav><button type="button" id="lbRefresh">Refresh ↻</button></div><section id="lbResults" aria-live="polite" aria-busy="true"></section><p class="v23-board-note">Aura uses lifetime earnings. Hidden Aura and Iscoins are excluded from their category. Equal scores share a rank.</p></section>';
+  const result=main.querySelector('#lbResults'),refresh=main.querySelector('#lbRefresh');
+  function controls(){for(const b of main.querySelectorAll('[data-lb-scope]')){const active=b.dataset.lbScope===scope;b.classList.toggle('active',active);b.setAttribute('aria-pressed',String(active));}for(const b of main.querySelectorAll('[data-lb-category]')){const active=b.dataset.lbCategory===category;b.classList.toggle('active',active);b.setAttribute('aria-pressed',String(active));}}
+  async function load(){
+   const seq=++request;controls();refresh.disabled=true;result.setAttribute('aria-busy','true');result.innerHTML='<div class="c-loading">Finding the rankings…</div>';
+   try{
+    const out=await C.api('leaderboard?'+new URLSearchParams({scope,category,page}));if(seq!==request||!main.isConnected)return;page=out.page;
+    const me=out.me,label=category==='aura'?'Lifetime Aura':labels[category],score=v=>category==='stars'&&v===0?'Zero stars':v==null?'Hidden':number(v);
+    result.innerHTML=`<section class="v23-your-rank" aria-label="Your rankings"><div><span>YOUR ${E(label.toUpperCase())}</span><strong>${score(me.score)}</strong><small>${me.excluded?'Hidden · excluded from this category':category==='stars'&&me.score===0?'Earn stars with approved maps.':'Keep driving. Keep creating.'}</small></div><div><span>GLOBAL RANK</span><strong>${rank(me.globalRank)}</strong></div><div><span>FRIEND RANK</span><strong>${rank(me.friendRank)}</strong></div></section><div class="v23-board-caption"><h2>${scope==='top'?'Top 100':'You &amp; friends'}</h2><span>${scope==='top'?Math.min(100,out.total)+' of '+number(out.total)+' ranked players':number(out.total)+' players'} · ${E(label)}</span></div>${out.items.length?`<div class="v23-table-wrap"><table class="v23-rank-table"><thead><tr><th scope="col">Global rank</th><th scope="col">Friend rank</th><th scope="col">Driver</th><th scope="col">${E(label)}</th></tr></thead><tbody>${out.items.map(p=>`<tr class="${p.id===C.account.id?'v23-current':''}"><td>${rank(p.globalRank)}</td><td>${rank(p.friendRank)}</td><th scope="row"><button type="button" data-lb-profile="${E(p.id)}"><span class="v23-rank-avatar ${E(p.mood)}" aria-hidden="true">${E(p.username[0]?.toUpperCase()||'?')}</span><span>${E(p.username)}</span>${p.id===C.account.id?'<small>YOU</small>':''}</button></th><td>${score(p.score)}</td></tr>`).join('')}</tbody></table></div>`:`<div class="c-empty">${category==='stars'?'No players with stars yet.':'No visible players in this category yet.'}</div>`}${scope==='friends'&&out.pages>1?`<div class="c-pages"><button id="lbPrevious" ${out.page===0?'disabled':''}>← Previous</button><span>${out.page+1} / ${out.pages}</span><button id="lbNext" ${out.page+1>=out.pages?'disabled':''}>Next →</button></div>`:''}`;
+    for(const b of result.querySelectorAll('[data-lb-profile]'))b.onclick=()=>C.go({view:'profile',id:b.dataset.lbProfile});
+    const prev=result.querySelector('#lbPrevious'),next=result.querySelector('#lbNext');if(prev)prev.onclick=()=>{page--;load();};if(next)next.onclick=()=>{page++;load();};
+   }catch(e){if(seq===request&&main.isConnected){result.innerHTML=`<div class="c-empty"><h2>Couldn’t load the rankings.</h2><p>${E(e.message)}</p><button id="lbRetry">Try again</button></div>`;result.querySelector('#lbRetry').onclick=load;}}
+   finally{if(seq===request){result.setAttribute('aria-busy','false');refresh.disabled=false;}}
+  }
+  for(const b of main.querySelectorAll('[data-lb-scope]'))b.onclick=()=>{scope=b.dataset.lbScope;page=0;load();};
+  for(const b of main.querySelectorAll('[data-lb-category]'))b.onclick=()=>{category=b.dataset.lbCategory;page=0;load();};refresh.onclick=load;await load();
+ };
+})();

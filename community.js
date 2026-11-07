@@ -1,3 +1,4 @@
+import {installLeaderboard,leaderboard,profileRanks} from './v23-leaderboard.js';
 import {installV22,v22Route,rewardProfile} from './v22-economy.js';
 import {installSocial,socialRoute,socialAffinity,notifyMapPlay} from './social.js';
 import {DurableObject} from 'cloudflare:workers';
@@ -34,7 +35,7 @@ CREATE TABLE IF NOT EXISTS reports(id TEXT PRIMARY KEY,account TEXT,map TEXT,rea
 CREATE TABLE IF NOT EXISTS rewards(id TEXT PRIMARY KEY,account TEXT,map TEXT,revision INTEGER,at INTEGER,last INTEGER,total INTEGER DEFAULT 0);
 CREATE TABLE IF NOT EXISTS reward_events(id TEXT PRIMARY KEY,run TEXT,at INTEGER);
 CREATE INDEX IF NOT EXISTS maps_owner ON maps(owner,deleted);CREATE INDEX IF NOT EXISTS plays_recent ON plays(at);CREATE INDEX IF NOT EXISTS comments_map ON comments(map,at);`);
-  installSocial(this);
+  installSocial(this);installLeaderboard(this);
   this.applyAccountGrants();installV22(this);
   if(!await ctx.storage.getAlarm())await ctx.storage.setAlarm(Date.now()+DAY);
  });}
@@ -107,8 +108,9 @@ CREATE INDEX IF NOT EXISTS maps_owner ON maps(owner,deleted);CREATE INDEX IF NOT
    this.db.exec('DELETE FROM sessions WHERE account=?',a.id);return this.loginWithRecovery(a,true,true);
   }
   if(path==='auth/logout'&&method==='POST'){const token=request.headers.get('Cookie')?.match(/(?:^|;\s*)__Host-isla_session=([^;]+)/)?.[1];if(token)this.db.exec('DELETE FROM sessions WHERE token=?',await digest(token));return json({ok:true},200,{'Set-Cookie':`${COOKIE}=; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=0`});}
-  if(path==='profile'&&method==='GET'){const user=this.one('SELECT * FROM accounts WHERE id=? AND verified=1',url.searchParams.get('id'));if(!user)fail('Account not found.',404);return json({account:this.profile(user,a)});}
-  if(path==='profile'&&method==='POST'){need();if(!['summer','cosmic','snowy'].includes(body.mood)||typeof body.showAura!=='boolean')fail('Choose a valid profile mood.');this.db.exec('UPDATE accounts SET mood=?,show_aura=? WHERE id=?',body.mood,body.showAura?1:0,a.id);if(typeof body.showIscoins==='boolean'){const g=IslaV22.normalize(JSON.parse(a.garage));g.showIscoins=body.showIscoins;this.db.exec('UPDATE accounts SET garage=? WHERE id=?',JSON.stringify(g),a.id);}return json({ok:true});}
+  if(path==='leaderboard'){need();if(method!=='GET')fail('Use a GET request.',405);return json(leaderboard(this,a,url));}
+  if(path==='profile'&&method==='GET'){const user=this.one('SELECT * FROM accounts WHERE id=? AND verified=1',url.searchParams.get('id'));if(!user)fail('Account not found.',404);return json({account:{...this.profile(user,a),...profileRanks(this,user,a)}});}
+  if(path==='profile'&&method==='POST'){need();if(body.showRanks!==undefined&&typeof body.showRanks!=='boolean')fail('Choose whether to show profile ranks.');if(!['summer','cosmic','snowy'].includes(body.mood)||typeof body.showAura!=='boolean')fail('Choose a valid profile mood.');this.db.exec('UPDATE accounts SET mood=?,show_aura=? WHERE id=?',body.mood,body.showAura?1:0,a.id);if(typeof body.showRanks==='boolean')this.db.exec('INSERT OR REPLACE INTO v23_profile_ranks VALUES(?,?)',a.id,body.showRanks?1:0);if(typeof body.showIscoins==='boolean'){const g=IslaV22.normalize(JSON.parse(a.garage));g.showIscoins=body.showIscoins;this.db.exec('UPDATE accounts SET garage=? WHERE id=?',JSON.stringify(g),a.id);}return json({ok:true});}
   if(path==='follow'&&method==='POST'){need();if(body.id===a.id||!this.one('SELECT id FROM accounts WHERE id=? AND verified=1',body.id))fail('Choose another creator.');if(body.follow)this.db.exec('INSERT OR IGNORE INTO follows VALUES(?,?,?)',a.id,body.id,now);else this.db.exec('DELETE FROM follows WHERE account=? AND creator=?',a.id,body.id);return json({ok:true});}
   if(path==='drafts'&&method==='GET'){need();await this.purge();return json({maps:this.rows('SELECT * FROM maps WHERE owner=? ORDER BY updated DESC',a.id).map(m=>this.draftInfo(m))});}
   if(path==='drafts/save'&&method==='POST'){

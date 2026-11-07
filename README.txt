@@ -1,39 +1,35 @@
-ISLA V2.24 — ISCOINS + THE VAULT
+ISLA V2.3 — LEADERBOARDS + NPC AND DRIFT FIXES
 
 UPLOAD PATCH — 23 FILES
-1. Extract ISLA-V2.24-Upload-Patch.zip.
-2. Open the ISLA-V2.24-Upload-Patch folder.
-3. Upload its 23 individual files to the ROOT of your existing repository
-   in ONE batch, replacing matching files and adding the new ones.
-4. Commit that batch. Keep the rest of your repository and wrangler.jsonc.
-5. Let Cloudflare run the existing build/deploy configuration.
+1. Extract ISLA-V2.3-Upload-Patch.zip.
+2. Open the ISLA-V2.3-Upload-Patch folder.
+3. Upload its 23 individual files to the ROOT of your existing complete
+   V2.24 repository in ONE batch, replacing matches and adding new files.
+4. Commit that batch. Keep all other files and your existing wrangler.jsonc.
+5. Let Cloudflare run your existing build/deploy configuration.
 
-Do not upload the ZIP itself or put the files inside a new repository folder.
-This patch works over complete V2.23, with or without the music test patch.
+Do not upload the ZIP itself or put these files inside a new repository folder.
+The server creates the new profile preference table automatically.
 
 WHAT'S NEW
-- Upgrade prices +25%, rounded up to a whole Iscoin; owned levels stay yours.
-- 25% fewer coins: 120 on each main map; 60 in The Playplace.
-- 40% near roads, 60% elsewhere, with greater spacing.
-- Rare purple 10-Iscoin coins, mainly on rooftops and water.
-- Personal collection and three-minute respawns remain unchanged.
-- One hidden vault at the bottom of the driving pause menu.
-- Its textless circle has 40% opacity and requires 1,000,000 lifetime Aura.
-- Vault entry costs nothing. Each of the 15 passcodes rewards an account once.
+- NPC torsos, shirts and sleeves remain visible as people enter view.
+- Sustained handbrake turns count toward drifting rewards.
+- A Leaderboard button on the main menu and community navigation.
+- Account-only Top 100 and You & friends, each with Aura, Iscoins and Stars.
+- Aura uses lifetime earnings. Iscoins use current balances.
+- Hidden Aura/Iscoins are excluded from that category before ranking.
+- Global rank and friend rank are shown. Zero stars displays “Zero stars”
+  and “—” for rank, and does not fill the Top 100 Stars list.
+- Profile corner ranks are enabled by default and can be disabled under
+  Customize profile. Hidden categories remain absent from the panel.
 
-Sign in for vault rewards to persist across devices. See V2.24-Notes.md
-for all passcodes, new upgrade prices, balance details and validation.
-
-NO MUSIC
-V2.24 does not load, package or serve the soundtrack. The patch also excludes
-old music assets from Cloudflare uploads. If you previously uploaded the music
-patch, its unused root files can be removed later: menu-music.js,
-menu-music.css, menu-music.test.cjs, elektronomia-energy.mp3,
-and Menu-Music-Notes.md. Their removal is not required for this build.
+See V2.3-Notes.md for ranking details and validation.
+The existing vault, 40% opacity circle and V2.24 coin balance are retained.
+No music is included.
 
 LOCAL CHECKS
 Node.js 22+: npm ci, npm run build, npm run check:worker, npm test.
-For private playtesting: npm run dev.
+For playtesting: npm run dev.
 After editing source files, run node refresh-manifest.cjs before building.
 
 This ZIP prepares the release; it has not been pushed or deployed for you.
