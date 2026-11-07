@@ -1,17 +1,18 @@
+import {installV22,v22Route,rewardProfile} from './v22-economy.js';
 import {installSocial,socialRoute,socialAffinity,notifyMapPlay} from './social.js';
 import {DurableObject} from 'cloudflare:workers';
 import {scrypt as nodeScrypt, timingSafeEqual} from 'node:crypto';
 import '../public/maker-core.js';
 import '../public/player-rules.js';
 const M=globalThis.IslaMaker,DAY=86400000,COOKIE='__Host-isla_session';
-const prices={classic:0,rally:30000,gt:80000,truck:70000,solstice:180000,moonlight:250000,nuker:275000,plane:330000,firetruck:135000,stick:315000,beast:320000,waterskidder:280000,micro:200000,vespera:340000,cruiser:40000,hover:255000,launcher:290000,ultra:500000};
+const prices=globalThis.IslaV22.prices;
 const json=(v,status=200,headers={})=>Response.json(v,{status,headers:{'Cache-Control':'no-store','X-Content-Type-Options':'nosniff',...headers}});
 const fail=(message,status=400)=>{throw Object.assign(Error(message),{status});};
 const retryLater=seconds=>{const retryAfter=Math.max(1,Math.ceil(seconds));throw Object.assign(Error('Too many attempts. Try again in '+Math.floor(retryAfter/60)+':'+String(retryAfter%60).padStart(2,'0')+'.'),{status:429,retryAfter});};
 const clean=(v,max)=>{if(typeof v!=='string'||v.trim().length<1||v.length>max)fail('Use between 1 and '+max+' characters.');return v.trim();};
 const uid=()=>crypto.randomUUID(),hex=b=>Array.from(new Uint8Array(b),n=>n.toString(16).padStart(2,'0')).join('');
 const digest=async s=>hex(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(s)));
-const emptyGarage=()=>({balance:0,earned:0,bestChain:0,owned:['classic'],selected:'classic',colors:{}});
+const emptyGarage=()=>({balance:0,earned:0,bestChain:0,iscoins:0,upgrades:{},levels:{},trailColor:'#a5d8ef',showIscoins:true,owned:['classic'],selected:'classic',colors:{}});
 export const censor=text=>text.replace(/f[\W_]*u[\W_]*c[\W_]*k(?:ing|ed|er|s)?|s[\W_]*h[\W_]*i[\W_]*t(?:ty|s)?|b[\W_]*i[\W_]*t[\W_]*c[\W_]*h(?:es)?|c[\W_]*u[\W_]*n[\W_]*t|\b(?:asshole|bastard|dick|pussy|cock|nigg\w*|fagg\w*|damn|hell)\b/gi,'****');
 function validatePassword(p){if(typeof p!=='string'||p.length<12||p.length>128)fail('Use a password with 12–128 characters.');}
 export const passwordHash=(password,salt=hex(crypto.getRandomValues(new Uint8Array(16))))=>new Promise((resolve,reject)=>nodeScrypt(password,salt,32,{N:16384,r:8,p:5,maxmem:32*1024*1024},(e,k)=>e?reject(e):resolve(salt+':'+hex(k))));
@@ -34,7 +35,7 @@ CREATE TABLE IF NOT EXISTS rewards(id TEXT PRIMARY KEY,account TEXT,map TEXT,rev
 CREATE TABLE IF NOT EXISTS reward_events(id TEXT PRIMARY KEY,run TEXT,at INTEGER);
 CREATE INDEX IF NOT EXISTS maps_owner ON maps(owner,deleted);CREATE INDEX IF NOT EXISTS plays_recent ON plays(at);CREATE INDEX IF NOT EXISTS comments_map ON comments(map,at);`);
   installSocial(this);
-  this.applyAccountGrants();
+  this.applyAccountGrants();installV22(this);
   if(!await ctx.storage.getAlarm())await ctx.storage.setAlarm(Date.now()+DAY);
  });}
  rows(q,...a){return [...this.db.exec(q,...a)];}one(q,...a){return this.rows(q,...a)[0];}
@@ -58,7 +59,7 @@ CREATE INDEX IF NOT EXISTS maps_owner ON maps(owner,deleted);CREATE INDEX IF NOT
  limit(key,max,period){const now=Date.now(),row=this.one('SELECT * FROM limits WHERE key=?',key);if(!row||now-row.at>=period)this.db.exec('INSERT OR REPLACE INTO limits VALUES(?,?,1)',key,now);else{if(row.count>=max)retryLater((row.at+period-now)/1000);this.db.exec('UPDATE limits SET count=count+1 WHERE key=?',key);}}
  async session(request){const token=request.headers.get('Cookie')?.match(/(?:^|;\s*)__Host-isla_session=([^;]+)/)?.[1];if(!token||token.length>200)return null;const hash=await digest(token);return this.one('SELECT a.* FROM accounts a JOIN sessions s ON s.account=a.id WHERE s.token=? AND s.expires>? AND a.verified=1',hash,Date.now())||null;}
  async login(a,remember=true){const token=uid()+uid();await this.db.exec('INSERT INTO sessions VALUES(?,?,?)',await digest(token),a.id,Date.now()+(remember?30:1)*DAY);return json({account:this.profile(a,a),garage:JSON.parse(a.garage)},200,{'Set-Cookie':`${COOKIE}=${token}; Path=/; HttpOnly; Secure; SameSite=Lax${remember?'; Max-Age=2592000':''}`});}
- profile(a,viewer){if(!a)return null;const own=viewer?.id===a.id,stars=this.count('SELECT COUNT(*) n FROM maps WHERE owner=? AND approved=1 AND published IS NOT NULL AND deleted=0 AND hidden=0',a.id),g=JSON.parse(a.garage);return {id:a.id,username:a.username,stars,mood:a.mood,showAura:!!a.show_aura,aura:a.show_aura||own?g.balance:null,followers:this.count('SELECT COUNT(*) n FROM follows WHERE creator=?',a.id),following:!!viewer&&!!this.one('SELECT 1 FROM follows WHERE account=? AND creator=?',viewer.id,a.id),...(own?{owner:this.owner(a),imported:!!a.imported,recoveryReady:!!this.one('SELECT 1 FROM recovery_keys WHERE account=?',a.id)}:{})};}
+ profile(a,viewer){if(!a)return null;const own=viewer?.id===a.id,stars=this.count('SELECT COUNT(*) n FROM maps WHERE owner=? AND approved=1 AND published IS NOT NULL AND deleted=0 AND hidden=0',a.id),g=JSON.parse(a.garage);return {...rewardProfile(g,own),id:a.id,username:a.username,stars,mood:a.mood,showAura:!!a.show_aura,aura:a.show_aura||own?g.balance:null,followers:this.count('SELECT COUNT(*) n FROM follows WHERE creator=?',a.id),following:!!viewer&&!!this.one('SELECT 1 FROM follows WHERE account=? AND creator=?',viewer.id,a.id),...(own?{owner:this.owner(a),imported:!!a.imported,recoveryReady:!!this.one('SELECT 1 FROM recovery_keys WHERE account=?',a.id)}:{})};}
  mapInfo(m,viewer){const creator=this.one('SELECT * FROM accounts WHERE id=?',m.owner);return {id:m.id,name:m.name,description:m.description,preview:m.published_preview||m.preview,creator:this.profile(creator,viewer),approved:!!m.approved,revision:m.revision,likes:this.count('SELECT COUNT(*) n FROM likes WHERE map=?',m.id),comments:this.count('SELECT COUNT(*) n FROM comments WHERE map=?',m.id),plays:this.count('SELECT COUNT(DISTINCT visitor) n FROM plays WHERE map=?',m.id),liked:!!viewer&&!!this.one('SELECT 1 FROM likes WHERE map=? AND account=?',m.id,viewer.id),source:m.source?{id:m.source,name:m.source_name}:null,at:m.published_at,updated:m.updated};}
  draftInfo(m){return {id:m.id,slot:m.slot,kind:m.kind,name:m.name,description:m.description,document:JSON.parse(m.draft),preview:m.preview,deleted:m.deleted,expires:m.deleted?m.deleted+5*DAY:null,published:!!m.published,approved:!!m.approved,revision:m.revision,updated:m.updated,source:m.source?{id:m.source,name:m.source_name}:null};}
  async fetch(request){const run=()=>this.handle(request).catch(e=>json({error:e.status?e.message:'Something went wrong. Please try again.',...(e.retryAfter?{retryAfter:e.retryAfter}:{})},e.status||500,e.retryAfter?{'Retry-After':String(e.retryAfter)}:{}));const response=this.queue.then(run,run);this.queue=response.then(()=>{});return response;}
@@ -69,6 +70,7 @@ CREATE INDEX IF NOT EXISTS maps_owner ON maps(owner,deleted);CREATE INDEX IF NOT
   this.limit('api:'+ip,240,60000);let body={};if(method==='POST'){const reader=request.body?.getReader();let bytes=0,chunks=[];if(reader)while(true){const {value,done}=await reader.read();if(done)break;bytes+=value.length;if(bytes>1800000){await reader.cancel();fail('This map is too large.',413);}chunks.push(value);}try{body=JSON.parse(new TextDecoder().decode((()=>{const buffer=new Uint8Array(bytes);let offset=0;for(const chunk of chunks){buffer.set(chunk,offset);offset+=chunk.length;}return buffer;})()));}catch{fail('Invalid request.');}}
   if(!body||typeof body!=='object'||Array.isArray(body))fail('Invalid request.');
   const a=await this.session(request),need=()=>{if(!a)fail('Sign in to do that.',401);return a;},admin=()=>{need();if(!this.owner(a))fail('Only the owner can approve and moderate maps.',403);};
+  const v22=await v22Route(this,{path,method,url,body,a,need});if(v22!==null)return json(v22);
   const social=await socialRoute(this,{path,method,url,body,a,need,admin,censor});if(social!==null)return json(social);
   if(path==='me'&&method==='GET')return json({account:this.profile(a,a),garage:a?JSON.parse(a.garage):null,authMode:'password-recovery'});
   if(path==='auth/signup'&&method==='POST'){
@@ -106,7 +108,7 @@ CREATE INDEX IF NOT EXISTS maps_owner ON maps(owner,deleted);CREATE INDEX IF NOT
   }
   if(path==='auth/logout'&&method==='POST'){const token=request.headers.get('Cookie')?.match(/(?:^|;\s*)__Host-isla_session=([^;]+)/)?.[1];if(token)this.db.exec('DELETE FROM sessions WHERE token=?',await digest(token));return json({ok:true},200,{'Set-Cookie':`${COOKIE}=; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=0`});}
   if(path==='profile'&&method==='GET'){const user=this.one('SELECT * FROM accounts WHERE id=? AND verified=1',url.searchParams.get('id'));if(!user)fail('Account not found.',404);return json({account:this.profile(user,a)});}
-  if(path==='profile'&&method==='POST'){need();if(!['summer','cosmic','snowy'].includes(body.mood)||typeof body.showAura!=='boolean')fail('Choose a valid profile mood.');this.db.exec('UPDATE accounts SET mood=?,show_aura=? WHERE id=?',body.mood,body.showAura?1:0,a.id);return json({ok:true});}
+  if(path==='profile'&&method==='POST'){need();if(!['summer','cosmic','snowy'].includes(body.mood)||typeof body.showAura!=='boolean')fail('Choose a valid profile mood.');this.db.exec('UPDATE accounts SET mood=?,show_aura=? WHERE id=?',body.mood,body.showAura?1:0,a.id);if(typeof body.showIscoins==='boolean'){const g=IslaV22.normalize(JSON.parse(a.garage));g.showIscoins=body.showIscoins;this.db.exec('UPDATE accounts SET garage=? WHERE id=?',JSON.stringify(g),a.id);}return json({ok:true});}
   if(path==='follow'&&method==='POST'){need();if(body.id===a.id||!this.one('SELECT id FROM accounts WHERE id=? AND verified=1',body.id))fail('Choose another creator.');if(body.follow)this.db.exec('INSERT OR IGNORE INTO follows VALUES(?,?,?)',a.id,body.id,now);else this.db.exec('DELETE FROM follows WHERE account=? AND creator=?',a.id,body.id);return json({ok:true});}
   if(path==='drafts'&&method==='GET'){need();await this.purge();return json({maps:this.rows('SELECT * FROM maps WHERE owner=? ORDER BY updated DESC',a.id).map(m=>this.draftInfo(m))});}
   if(path==='drafts/save'&&method==='POST'){
@@ -134,7 +136,7 @@ CREATE INDEX IF NOT EXISTS maps_owner ON maps(owner,deleted);CREATE INDEX IF NOT
    if(!a||!eligible)return json({run:null,eligible});const run=uid();this.db.exec('INSERT INTO rewards(id,account,map,revision,at,last,total) VALUES(?,?,?,?,?,?,0)',run,a.id,id,revision,now,now);return json({run,eligible:true});
   }
   if(path==='garage'&&method==='GET'){need();return json({garage:JSON.parse(a.garage)});}
-  if(path==='garage/import'&&method==='POST'){need();if(a.imported)fail('This account already imported a previous garage.',409);const g=this.sanitizeGarage(body.garage);this.db.exec('UPDATE accounts SET garage=?,imported=1 WHERE id=?',JSON.stringify(g),a.id);return json({garage:g});}
+  if(path==='garage/import'&&method==='POST'){need();if(a.imported)fail('This account already imported a previous garage.',409);const g=this.sanitizeGarage(body.garage),prior=IslaV22.normalize(JSON.parse(a.garage));for(const key of ['iscoins','upgrades','levels','trailColor','showIscoins','manualNukes'])g[key]=prior[key];g.owned=[...new Set([...g.owned,...prior.owned])];this.db.exec('UPDATE accounts SET garage=?,imported=1 WHERE id=?',JSON.stringify(g),a.id);return json({garage:g});}
   if(path==='garage/update'&&method==='POST'){need();let g=JSON.parse(a.garage);const selected=body.selected;if(!g.owned.includes(selected))fail('That car is not unlocked.');if(body.colors&&typeof body.colors==='object')for(const [id,c]of Object.entries(body.colors))if(g.owned.includes(id)&&/^#[0-9a-f]{6}$/i.test(c))g.colors[id]=c.toLowerCase();g.selected=selected;this.db.exec('UPDATE accounts SET garage=? WHERE id=?',JSON.stringify(g),a.id);return json({garage:g});}
   if(path==='garage/buy'&&method==='POST'){need();const g=JSON.parse(a.garage),price=Object.hasOwn(prices,body.car)?prices[body.car]:undefined;if(price===undefined)fail('Unknown car.');if(!g.owned.includes(body.car)){if(g.balance<price)fail('Earn more aura to unlock this car.');g.balance-=price;g.owned.push(body.car);}g.selected=body.car;this.db.exec('UPDATE accounts SET garage=? WHERE id=?',JSON.stringify(g),a.id);return json({garage:g});}
   if(path==='garage/earn'&&method==='POST'){
@@ -159,6 +161,7 @@ CREATE INDEX IF NOT EXISTS maps_owner ON maps(owner,deleted);CREATE INDEX IF NOT
   if(q&&!creator)for(const u of creators.values())if(u.username.toLowerCase().includes(q)){const profile=this.profile(u,a);items.push({type:'account',account:profile,rank:profile.followers*5+(stars.get(u.id)||0)*20});}
   items.sort((a,b)=>b.rank-a.rank||(b.at||0)-(a.at||0));return json({items:items.slice(page*9,page*9+9),page,total:items.length,pages:Math.max(1,Math.ceil(items.length/9))});
  }
+ async internalGarage(id){const a=this.one('SELECT garage FROM accounts WHERE id=? AND verified=1',id);return a?IslaV22.normalize(JSON.parse(a.garage)):null;}
  async internalIdentity(cookie){const a=await this.session(new Request("https://internal/",{headers:{Cookie:cookie||""}}));return a?{id:a.id,username:a.username}:null;}
  async internalMap(id){const m=this.publicMap(id);return {document:JSON.parse(m.published),id:m.id,revision:m.revision,approved:!!m.approved,name:m.name};}
  async purge(){const now=Date.now(),expired=this.rows('SELECT id FROM maps WHERE deleted>0 AND deleted<?',now-5*DAY);for(const m of expired){for(const table of ['likes','comments','plays','reports'])this.db.exec('DELETE FROM '+table+' WHERE map=?',m.id);this.db.exec('DELETE FROM maps WHERE id=?',m.id);}this.db.exec('DELETE FROM sessions WHERE expires<?',now);this.db.exec('DELETE FROM codes WHERE expires<?',now);this.db.exec('DELETE FROM limits WHERE at<?',now-DAY);this.db.exec('DELETE FROM rewards WHERE at<?',now-DAY);this.db.exec('DELETE FROM reward_events WHERE at<?',now-DAY);this.db.exec('DELETE FROM accounts WHERE verified=0 AND created<?',now-7*DAY);}

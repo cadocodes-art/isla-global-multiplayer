@@ -1,17 +1,17 @@
 {
   "name": "isla-drive-cloudflare",
-  "version": "2.1.0",
+  "version": "2.2.0",
   "private": true,
-  "description": "ISLA V2.1 - Fern Valley and country Map Maker objects",
+  "description": "ISLA V2.2 — Iscoins, car upgrades, Flappy Car and new ways to play",
   "engines": {
     "node": ">=22.0.0"
   },
   "scripts": {
     "build": "node prepare-cloudflare.cjs && node scripts/build-world.cjs",
-    "dev": "npm run build && wrangler dev",
+    "dev": "npm run build && node dev.cjs",
     "deploy": "npm run build && wrangler deploy",
     "check:worker": "wrangler deploy --dry-run --outdir build",
-    "test": "npm run build && npm run check:worker && node --test test/*.test.cjs",
+    "test": "npm run build && npm run check:worker && node --test --test-concurrency=2 test/*.test.cjs",
     "build:offline": "node scripts/build-offline.cjs"
   },
   "devDependencies": {

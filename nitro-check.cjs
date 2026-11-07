@@ -31,8 +31,8 @@ try{
  setup();step(3,{...idle,boost:true});const chargeBeforeReset=W.vehicle.nitroCharge;W.resetVehicle();assert.equal(W.vehicle.nitroTime,0);assert.equal(W.vehicle.nitroDuration,0);assert.equal(W.vehicle.nitroCharge,chargeBeforeReset);step(1/120,{...idle,boost:true});assert.equal(starts,1);
  console.log('PASS: brakes override thrust, reverse cannot fire nitro, and recovery cannot bypass recharge.');
  W.height=W.driveHeight=x=>x<0?0:-12;W.nearestRoad=()=>({d:Infinity,p:null});setup(160);W.vehicle.x=2;W.vehicle.lastSafe={x:-20,z:0,yaw:0};
- step(3.49,{...idle,boost:true});assert.equal(W.vehicle.waterMode,'skimming');assert(W.vehicle.nitroTime>0);step(.02,{...idle,boost:true});assert.equal(W.vehicle.waterMode,'sinking');assert.equal(W.vehicle.nitroTime,0);
- console.log('PASS: nitro cannot extend the 3.5-second water skim and ends on sinking.');
+ let waterRoll=0;Math.random=()=>waterRoll++===0?1:0;step(5.99,{...idle,boost:true});assert.equal(W.vehicle.waterMode,'skimming');assert(W.vehicle.nitroTime>0);step(.02,{...idle,boost:true});assert.equal(W.vehicle.waterMode,'sinking');assert.equal(W.vehicle.nitroTime,0);
+ console.log('PASS: nitro cannot extend the 6-second water skim and ends on sinking.');
  const source=fs.readFileSync(__dirname+'/../../public/game.js','utf8'),keys=new Set();
  const input=vm.runInNewContext('('+source.match(/function input\(\)\{[^\n]+/)[0]+')',{keys,touchDrive:{gas:0,brake:0,steer:0},touchHeld:()=>false});
  for(const key of ['ShiftLeft','ShiftRight']){keys.clear();keys.add(key);assert(input().boost);}

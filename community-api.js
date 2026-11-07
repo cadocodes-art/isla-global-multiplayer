@@ -13,12 +13,14 @@
  C.renameDraft=async(m,name,description)=>{if(C.account)return C.api('drafts/rename',{id:m.id,name,description});return C.local('put',{...m,name,description,updated:Date.now()});};
  C.copy=async id=>{if(C.account)return C.api('maps/copy',{id});const {map,document}=await C.api('maps/document?id='+encodeURIComponent(id)),maps=await C.drafts();if(maps.filter(m=>m.kind==='copy'&&!m.deleted).length>=50)throw Error('Your Level copies section is full.');const m=await C.saveDraft({name:map.name,description:map.description,preview:map.preview,document,kind:'copy',slot:-1,source:map.source||{id,name:map.creator.username}});return {id:m.id};};
  C.init=async()=>{if(C.ready)return;C.ready=true;if(C.online){try{const d=await C.api('me');C.account=d.account;C.cloudGarage=d.garage;C.authMode=d.authMode;}catch(e){C.connectionError=e.message;}}};
- C.applyGarage=g=>{if(!g)return;for(const k of ['balance','earned','bestChain','owned','selected','colors'])Isla.garage[k]=clone(g[k]);if(Isla.aura){Isla.aura.total=g.earned;Isla.aura.bestChain=g.bestChain;}C.cloudGarage=clone(g);};
+ C.applyGarage=g=>{if(!g)return;g=globalThis.IslaV22?IslaV22.normalize(clone(g)):g;for(const k of ['balance','earned','bestChain','owned','selected','colors','iscoins','upgrades','levels','trailColor','showIscoins','manualNukes'])if(g[k]!==undefined)Isla.garage[k]=clone(g[k]);if(Isla.aura){Isla.aura.total=g.earned;Isla.aura.bestChain=g.bestChain;}C.cloudGarage=clone(g);globalThis.IslaV22?.normalize(Isla.garage);};
  let saveTimer,queue=[],flushPromise=null,run=null,starting=null;
  const queueKey=()=>C.account?'isla-v16-rewards-'+C.account.id:null;
  function saveQueue(){try{localStorage.setItem(queueKey(),JSON.stringify(queue));}catch{C.syncError='Allow browser storage to keep pending aura safe.';}}
  function pendingTotal(){return queue.reduce((sum,item)=>sum+item.points,0);}
+ C.getRun=()=>run;
  function reflect(g){C.applyGarage(g);Isla.garage.balance+=pendingTotal();Isla.garage.earned+=pendingTotal();if(Isla.aura)Isla.aura.total=Isla.garage.earned;}
+ C.reflectGarage=reflect;
  C.startRun=()=>starting||(starting=C.api('play/start',{map:C.custom?.info?.id||Isla.mapId||'islands'}).then(d=>{run=d.run;return d;}).finally(()=>starting=null));
  C.flush=()=>{if(!C.account||!queue.length)return Promise.resolve();if(flushPromise)return flushPromise;flushPromise=(async()=>{while(queue.length){const item=queue[0];try{const d=await C.api('garage/earn',item);queue.shift();saveQueue();reflect(d.garage);C.syncError='';}catch(e){C.syncError=e.message;if([400,403,404,409].includes(e.status)){queue.shift();saveQueue();const d=await C.api('garage');reflect(d.garage);C.toast?.('Some pending aura could not be awarded: '+e.message,true);}break;}}})().finally(()=>flushPromise=null);return flushPromise;};
  C.installGarage=()=>{const W=Isla,g=W.garage,originalEarn=W.onAuraEarn;

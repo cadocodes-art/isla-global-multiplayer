@@ -6,7 +6,7 @@ let mf,url,wsURL;const clients=[];const delay=ms=>new Promise(r=>setTimeout(r,ms
 before(async()=>{mf=new Miniflare(convertV4MiniflareOptions({workers:[{name:'isla-test',modules:true,scriptPath:path.resolve(__dirname,'../build/worker.js'),compatibilityDate:'2026-10-16',durableObjects:{GLOBAL:{className:'GlobalRoom',useSQLite:true}}}],cf:false}));url=await mf.ready;wsURL=new URL('/ws',url).href.replace('http:','ws:');});
 after(async()=>{for(const c of clients)c.ws.terminate();await mf?.dispose();});
 async function client(map='islands'){const ws=new WebSocket(wsURL+'?map='+map),messages=[];ws.on('message',b=>messages.push(JSON.parse(b)));ws.on('error',()=>{});await new Promise((r,j)=>{ws.once('open',r);ws.once('error',j);});const c={ws,messages,send:x=>ws.send(JSON.stringify(x)),wait:async(type,p=()=>true)=>{const end=Date.now()+5000;while(Date.now()<end){const m=messages.find(m=>m.type===type&&p(m));if(m)return m;await delay(10);}throw Error('Timed out: '+type);}};clients.push(c);return c;}
-async function join(name='Coast_Runner.01',map='islands'){const c=await client(map);c.send({type:'join',v:2,name});c.welcome=await c.wait('welcome');return c;}
+async function join(name='Coast_Runner.01',map='islands'){const c=await client(map);c.send({type:'join',v:3,name});c.welcome=await c.wait('welcome');return c;}
 async function leave(c){if(c.ws.readyState===1){c.send({type:'leave'});await c.wait('left');}}
 
 test('utility abilities sync to other drivers, persist wrecks and trees, and water extinguishes shared fires',async()=>{
@@ -37,7 +37,7 @@ test('Worker health, upgrade and cross-origin checks',async()=>{
  const bad=new WebSocket(wsURL,{origin:'https://unrelated.example'});await new Promise(r=>{bad.on('error',r);bad.on('open',()=>assert.fail('cross-origin accepted'));});
 });
 test('server rejects invalid names when browser checks are bypassed',async()=>{
- for(const name of ['ab','Spaces bad','F.u_c.k','Name-with-dash']){const c=await client();c.send({type:'join',v:2,name});assert((await c.wait('error')).message);assert(!c.messages.some(m=>m.type==='welcome'));c.ws.close();}
+ for(const name of ['ab','Spaces bad','F.u_c.k','Name-with-dash']){const c=await client();c.send({type:'join',v:3,name});assert((await c.wait('error')).message);assert(!c.messages.some(m=>m.type==='welcome'));c.ws.close();}
 });
 test('all players share one global room, custom paint, truck, nitro and traffic',async()=>{
  const a=await join('Luz_One'),b=await join('Ruiz.Two');assert.equal(a.welcome.code,b.welcome.code);assert.equal(b.welcome.players.length,2);
@@ -62,12 +62,12 @@ test('hibernation restores players, paint, score, damage and reconnect identity'
  const frame=await b.wait('frame',m=>m.players.some(p=>p.id===a.welcome.id&&p.state.color==='#abcdef'));assert(frame.players.some(p=>p.name==='Sleepy_Truck'));
  const late=await join('After_Sleep');assert(late.welcome.hp[0]<100);assert.equal(late.welcome.players.find(p=>p.id===a.welcome.id).score,1200);
  const token=a.welcome.token;a.ws.close();await b.wait('roster',m=>m.players.some(p=>p.id===a.welcome.id&&!p.connected));
- const c=await client();c.send({type:'resume',v:2,name:'Sleepy_Truck',token});const welcome=await c.wait('welcome');assert.equal(welcome.id,a.welcome.id);assert.equal(welcome.scoreSeq,1);assert.equal(welcome.state.color,'#abcdef');
+ const c=await client();c.send({type:'resume',v:3,name:'Sleepy_Truck',token});const welcome=await c.wait('welcome');assert.equal(welcome.id,a.welcome.id);assert.equal(welcome.scoreSeq,1);assert.equal(welcome.state.color,'#abcdef');
  await leave(c);await leave(b);await leave(late);
 });
 test('32 shared slots accept more than four drivers and reject the 33rd',async()=>{
  const group=[];for(let i=0;i<32;i++)group.push(await join('Driver_'+i));assert.equal(group.at(-1).welcome.players.length,32);
- const extra=await client();extra.send({type:'join',v:2,name:'One_More'});assert.match((await extra.wait('error')).message,/full/);extra.ws.close();
+ const extra=await client();extra.send({type:'join',v:3,name:'One_More'});assert.match((await extra.wait('error')).message,/full/);extra.ws.close();
  for(const c of group)await leave(c);
 });
 test('malformed and oversized messages close safely without taking down the room',async()=>{
@@ -111,7 +111,7 @@ test('maps isolate players, traffic, chat and damage, including after hibernatio
  await mf.unsafeEvictDurableObject('isla-test','GlobalRoom',{name:'isla-global-city-v4',webSockets:'hibernate'});
  a.send({type:'ping',at:54321});await a.wait('pong',m=>m.at===54321);
  const late=await join('City_Late','city');assert.equal(late.welcome.mapId,'city');assert.equal(late.welcome.hp[0],damage.hp);assert.equal(late.welcome.players.length,3);
- const wrong=await client();wrong.send({type:'resume',v:2,name:'City_One',token:a.welcome.token});assert.equal((await wrong.wait('error')).expired,true);wrong.ws.close();
+ const wrong=await client();wrong.send({type:'resume',v:3,name:'City_One',token:a.welcome.token});assert.equal((await wrong.wait('error')).expired,true);wrong.ws.close();
  await leave(late);await leave(a);await leave(b);await leave(island);
 });
 
@@ -121,7 +121,7 @@ test('new cars sync and automatic nukes honor driving time, survive hibernation,
   a.send({type:'state',state:{...a.welcome.state,car,color:'#000000',parked:true}});
   assert((await b.wait('frame',m=>m.players.some(p=>p.id===a.welcome.id&&p.state.car===car))).players.some(p=>p.state.car===car));await delay(120);
  }
- const state={...a.welcome.state,car:'nuker',x:building.x,z:building.z+42,y:building.y+.12,yaw:0};
+ const state={...a.welcome.state,car:'nuker',x:building.x,z:building.z-42,y:building.y+.12,yaw:0};
  a.send({type:'nuke',blast:{x:building.x,y:building.y,z:building.z}});a.send({type:'nukeBlast',buildings:[[building.id,0]]});await delay(250);assert(!b.messages.some(m=>m.type==='nukeLaunch'||m.type==='nukeBlast'));
  const start=Date.now();let hibernated=false;
  while(Date.now()-start<18000&&!b.messages.some(m=>m.type==='nukeLaunch')){
