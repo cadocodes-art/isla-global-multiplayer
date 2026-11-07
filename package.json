@@ -1,8 +1,8 @@
 {
   "name": "isla-drive-cloudflare",
-  "version": "2.32.0",
+  "version": "2.33.0",
   "private": true,
-  "description": "ISLA V2.32 \u2014 randomized Iscoin placement without road quotas",
+  "description": "ISLA V2.33 \u2014 240 Iscoins and a fresh layout each visit",
   "engines": {
     "node": ">=22.0.0"
   },

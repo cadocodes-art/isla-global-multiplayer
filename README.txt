@@ -1,23 +1,27 @@
-ISLA V2.32 — RANDOM ISCOIN PLACEMENT
+ISLA V2.33 — 240 COINS AND A FRESH LAYOUT EACH VISIT
 
-UPLOAD PATCH — 14 FILES
-1. Extract ISLA-V2.32-Upload-Patch.zip.
-2. Open its ISLA-V2.32-Upload-Patch folder.
-3. Upload the 14 individual files to the ROOT of your existing complete
-   V2.31 repository in ONE batch, replacing matches and adding the notes file.
+UPLOAD PATCH — 23 FILES
+1. Extract ISLA-V2.33-Upload-Patch.zip.
+2. Open its ISLA-V2.33-Upload-Patch folder.
+3. Upload the 23 individual files to the ROOT of your existing complete
+   V2.32 repository in ONE batch, replacing matches and adding new files.
 4. Commit that batch. Keep all other files and your existing wrangler.jsonc.
 5. Let Cloudflare run your existing build/deploy configuration.
 
 Do not upload the ZIP itself or put the files inside a new repository folder.
 
 WHAT'S NEW
-- 1- and 5-Iscoin coins spawn at random safe positions, with no road quotas.
-- Spawn totals stay at 180 on main outdoor maps and 90 in Play Place.
-- 5-Iscoin coins remain rarer; rare 10-Iscoin coins favor roofs and water.
-- Personal three-minute respawns, upgrade prices and Flappy Car fixes remain.
-- Layouts stay consistent between visits and agree with the server.
+- Every main map now has 240 coin slots, including Play Place.
+- Approved custom maps also target 240 wherever safe space permits.
+- Leaving and re-entering a map generates a fresh personal random layout.
+- A page reload starts a new visit; pausing or opening the garage does not.
+- 1- and 5-Iscoin coins have no road quotas; rare tens favor roofs and water.
+- Recently collected coins keep their personal three-minute cooldown across
+  visits, so fewer than 240 may be available until those coins respawn.
+- Both accounts and guests get fresh layouts. Global-room players have their
+  own coins; one player's pickup does not remove another player's coins.
 
-See V2.32-Notes.md for details and validation.
+See V2.33-Notes.md for details and validation.
 
 LOCAL CHECKS
 Node.js 22+: npm ci, npm run build, npm run check:worker, npm test.

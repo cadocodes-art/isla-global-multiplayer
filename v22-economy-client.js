@@ -1,6 +1,7 @@
 (()=>{'use strict';const W=Isla,V=IslaV22,C=IslaCommunity,T=THREE;
  let notice=null,noticeUntil=0,coins=[],batches=[],pending=new Set(),queue=[],working=false,retryAt=0;
  const uuid=()=>globalThis.crypto?.randomUUID?.()||'event-'+Date.now()+'-'+Math.random().toString(36).slice(2);
+ const visit=uuid();
  const eligible=()=>!W.auraDisabled&&(!C.custom||!!C.custom.info?.approved);
  const mapKey=()=>C.custom?.info?.id||W.mapId;
  const accountKey=()=>C.account?'isla-v22-actions-'+C.account.id:null;
@@ -14,7 +15,7 @@
   if(C.account){session().then(run=>{if(!run)return;queue.push({...payload,run});persist();flush();}).catch(e=>{C.syncError=e.message;});return;}
   const now=Date.now();g.buildingHistory??={};let which=kind;if(['nuke','ram'].includes(kind)){const b=W.buildings[details.target];if(!b)return;const key=mapKey()+'|'+V.buildingKey(b);which=g.buildingHistory[key]?'repeat':kind;g.buildingHistory[key]=true;}const points=V.reward(which,event);g.credit(points);if(W.aura)W.aura.total=g.earned;W.v22Notice('+'+points.toLocaleString()+' AURA',which==='repeat'?'BUILDING REVISITED':labels[kind]);g.save();
  };
- function localLayout(){if(W.customMap)return IslaMaker.worldData(W.customMap).coins;const bounds=W.mapId==='city'?{minX:-1000,maxX:1000,minZ:-1000,maxZ:1000}:W.mapId==='fern'?{minX:-2000,maxX:2000,minZ:-2000,maxZ:2000}:W.mapId==='playplace'?{minX:-590,maxX:590,minZ:-515,maxZ:515}:{minX:W.mapBounds.x,maxX:W.mapBounds.x+W.mapBounds.size,minZ:W.mapBounds.z,maxZ:W.mapBounds.z+W.mapBounds.size};return V.coins(W.mapId,W.roads,W.buildings,W.height,bounds);}
+ function localLayout(){if(W.customMap)return IslaMaker.worldData(W.customMap,visit).coins;const bounds=W.mapId==='city'?{minX:-1000,maxX:1000,minZ:-1000,maxZ:1000}:W.mapId==='fern'?{minX:-2000,maxX:2000,minZ:-2000,maxZ:2000}:W.mapId==='playplace'?{minX:-590,maxX:590,minZ:-515,maxZ:515}:{minX:W.mapBounds.x,maxX:W.mapBounds.x+W.mapBounds.size,minZ:W.mapBounds.z,maxZ:W.mapBounds.z+W.mapBounds.size};return V.coins(W.mapId,W.roads,W.buildings,W.height,bounds,visit);}
  // Cap UVs use world-up so both numbered faces stay upright as the coin turns.
  W.makeIscoinGeometry=()=>{const r=.68,g=new T.CylinderGeometry(r,r,.16,20);g.rotateX(Math.PI/2);const p=g.attributes.position,n=g.attributes.normal,uv=g.attributes.uv;for(let i=0;i<p.count;i++)if(Math.abs(n.getZ(i))>.9)uv.setXY(i,.5+(n.getZ(i)>0?1:-1)*p.getX(i)/(2*r),.5+p.getY(i)/(2*r));return g;};
  function makeCoins(list,claimed=[]){coins=list.map(c=>({...c,readyAt:0}));const now=Date.now(),history=W.garage.coinHistory||{};for(const coin of coins){const at=C.account?claimed.find(c=>c.coin===coin.id)?.at:history[mapKey()+'|'+coin.id];if(at)coin.readyAt=at+V.coinRespawn;}

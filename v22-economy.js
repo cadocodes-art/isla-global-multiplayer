@@ -19,7 +19,7 @@ export function installV22(h){
   h.db.exec('INSERT INTO v22_grants VALUES(?,?,?,?,?)',id,a.id,5000000,10000,Date.now());
  });
 }
-function context(h,a,runId){const run=h.one('SELECT * FROM rewards WHERE id=? AND account=?',runId,a.id);if(!run||Date.now()-run.at>8*3600000)fail('Start driving again to refresh this session.',409);let data;if(maps.has(run.map))data=run.map==='islands'?world:world.maps[run.map];else{const map=h.publicMap(run.map);if(!map.approved||map.revision!==run.revision)fail('This map revision is not approved for rewards.',403);data=globalThis.IslaMaker.worldData(JSON.parse(map.published));}return {run,data};}
+function context(h,a,runId,withCoins=false){const run=h.one('SELECT * FROM rewards WHERE id=? AND account=?',runId,a.id);if(!run||Date.now()-run.at>8*3600000)fail('Start driving again to refresh this session.',409);let data;if(maps.has(run.map))data=run.map==='islands'?world:world.maps[run.map];else{const map=h.publicMap(run.map);if(!map.approved||map.revision!==run.revision)fail('This map revision is not approved for rewards.',403);data=globalThis.IslaMaker.worldData(JSON.parse(map.published),withCoins?run.id:'');}if(withCoins&&maps.has(run.map)){h.v233Layouts??=new Map();let coins=h.v233Layouts.get(run.id);if(!coins){coins=V.visitCoins(data,run.id);if(h.v233Layouts.size>=24)h.v233Layouts.delete(h.v233Layouts.keys().next().value);h.v233Layouts.set(run.id,coins);}data={...data,coins};}return {run,data};}
 function position(p){return p&&['x','y','z'].every(k=>Number.isFinite(p[k])&&Math.abs(p[k])<20000);}
 export function rewardProfile(garage,own){const g=V.normalize(garage);return {showIscoins:g.showIscoins,iscoins:g.showIscoins||own?g.iscoins:null};}
 export async function v22Route(h,{path,method,body,a,need}){
@@ -52,7 +52,7 @@ export async function v22Route(h,{path,method,body,a,need}){
  }
  if(path==='v22/upgrade'||path==='v22/level')return h.ctx.storage.transactionSync(()=>{const g=fresh();try{if(path.endsWith('/upgrade'))V.purchase(g,body.car,body.level);else V.chooseLevel(g,body.car,body.level);}catch(e){fail(e.message);}save(g);return {garage:g};});
  if(path==='v22/settings'){const g=fresh();if(body.trailColor!==undefined){if(!/^#[0-9a-f]{6}$/i.test(body.trailColor))fail('Choose a six-digit trail color.');g.trailColor=body.trailColor.toLowerCase();}if(typeof body.showIscoins==='boolean')g.showIscoins=body.showIscoins;if(typeof body.manualNukes==='boolean')g.manualNukes=body.manualNukes;save(g);return {garage:g};}
- const {run,data}=context(h,a,body.run);
+ const {run,data}=context(h,a,body.run,path==='v22/map'||path==='v22/collect');
  if(path==='v22/map')return {coins:data.coins||[],claimed:h.rows('SELECT coin,at FROM v22_coins WHERE account=? AND map=? AND at>?',a.id,run.map,now-V.coinRespawn),respawn:V.coinRespawn};
  if(path==='v22/collect'){
   h.limit('coin:'+a.id,12,1000);const coin=data.coins?.find(c=>c.id===body.coin),g=fresh();if(!coin||!position(body.position)||Math.hypot(body.position.x-coin.x,body.position.z-coin.z)>7||Math.abs(body.position.y-coin.y)>6)fail('Drive closer to that coin.');

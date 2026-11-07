@@ -24,5 +24,5 @@ module.exports = function createWorld(mapId = 'islands', includeTrees = false) {
   const bounds=mapId==='city'?{minX:-1000,maxX:1000,minZ:-1000,maxZ:1000}:mapId==='fern'?{minX:-2000,maxX:2000,minZ:-2000,maxZ:2000}:mapId==='playplace'?{minX:-590,maxX:590,minZ:-515,maxZ:515}:{minX:W.mapBounds.x,maxX:W.mapBounds.x+W.mapBounds.size,minZ:W.mapBounds.z,maxZ:W.mapBounds.z+W.mapBounds.size};
   const coins=context.IslaV22.coins(mapId,W.roads,buildings,W.height,bounds);
   W.buildings = []; W.colliders = [];
-  const rocks=Array.from(W.rocks||[],b=>Object.fromEntries(['rockId','x','y','z','r'].map(k=>[k,b[k]])));return { W, buildings, trees, rocks, playground, coins };
+  const rocks=Array.from(W.rocks||[],b=>Object.fromEntries(['rockId','x','y','z','r'].map(k=>[k,b[k]])));return { W, buildings, trees, rocks, playground, coins, bounds, pools:context.IslaV20Layout.pools };
 };

@@ -33,10 +33,10 @@
  function hash(s){let h=2166136261;for(const c of String(s)){h^=c.charCodeAt(0);h=Math.imul(h,16777619);}return h>>>0;}
  function random(seed){let s=hash(seed);return ()=>((s=(Math.imul(s,1664525)+1013904223)>>>0)/4294967296);}
  function buildingKey(b){if(b.rewardKey)return b.rewardKey;if(b.object?.id)return 'object:'+b.object.id;return [b.x,b.y,b.z,b.w,b.d].map(v=>Math.round(v*10)).join(':');}
- // Layouts are deterministic; pickup timers remain personal. New IDs avoid old-layout cooldowns.
- function coins(key,roads,buildings,height,bounds){
-  const rand=random('iscoins-2.32:'+key),result=[],segments=new Map(),blocks=new Map();
-  const max=key==='playplace'?90:180,b=bounds||{minX:-900,maxX:900,minZ:-900,maxZ:900};
+ // A visit seed changes positions; stable slot IDs preserve personal pickup cooldowns.
+ function coins(key,roads,buildings,height,bounds,visit=''){
+  const rand=random('iscoins-2.33:'+key+':'+visit),result=[],segments=new Map(),blocks=new Map();
+  const max=240,b=bounds||{minX:-900,maxX:900,minZ:-900,maxZ:900};
   const cell=(x,z)=>Math.floor(x/64)+','+Math.floor(z/64);
   function index(grid,item,x0,x1,z0,z1){for(let x=Math.floor(x0/64);x<=Math.floor(x1/64);x++)for(let z=Math.floor(z0/64);z<=Math.floor(z1/64);z++){const k=x+','+z;if(!grid.has(k))grid.set(k,[]);grid.get(k).push(item);}}
   for(const r of roads||[]){const ps=(r.samples||[]).filter(p=>Number.isFinite(p.x)&&Number.isFinite(p.z));for(let i=0;i<ps.length;i++){const p=ps[i],q=ps[Math.min(i+1,ps.length-1)],width=Math.max(1,p.width||r.width||8),pad=width/2+12,s={p,q,pad,width};index(segments,s,Math.min(p.x,q.x)-pad,Math.max(p.x,q.x)+pad,Math.min(p.z,q.z)-pad,Math.max(p.z,q.z)+pad);}}
@@ -49,7 +49,7 @@
    // Quantize before validation so clients and the server classify the identical position.
    x=Math.round(x*100)/100;y=Math.round(y*100)/100;z=Math.round(z*100)/100;
    if(![x,y,z].every(Number.isFinite)||x<=b.minX+5||x>=b.maxX-5||z<=b.minZ+5||z>=b.maxZ-5||blocked(x,z,y)||result.some(c=>Math.hypot(c.x-x,c.z-z)<32))return false;
-   result.push({id:232000+result.length,x,y,z,value,nearRoad:nearRoad(x,z),placement});return true;
+   result.push({id:233000+result.length,x,y,z,value,nearRoad:nearRoad(x,z),placement});return true;
   }
   const point=()=>({x:b.minX+rand()*(b.maxX-b.minX),z:b.minZ+rand()*(b.maxZ-b.minZ)});
   const rare=Math.max(1,Math.round(max*.02));
@@ -80,6 +80,13 @@
    return shotFactory(s,size);
   });
  }
- const api={isDrifting,nukeShots,prices,catalog,flappy,level,spec,normalize,purchase,chooseLevel,hash,random,buildingKey,coins,rewards,reward,coinRespawn:180000};
+ const terrainCache=new WeakMap();
+ function coinHeight(g){
+  if(g.kind==='playplace')return (x,z)=>{let y=g.floor;const pit=g.pits.find(p=>Math.abs(x-p.x)<p.w/2&&Math.abs(z-p.z)<p.d/2);if(pit){const edge=Math.min(pit.w/2-Math.abs(x-pit.x),pit.d/2-Math.abs(z-pit.z)),t=clamp(edge/13,0,1);y-=4*t*t*(3-2*t);}for(const p of g.pools){const t=clamp(Math.min(p.w/2-Math.abs(x-p.x),p.d/2-Math.abs(z-p.z))/18,0,1);y=Math.min(y,g.floor-p.depth*t*t*(3-2*t));}return y;};
+  let h=terrainCache.get(g);if(!h){const bytes=atob(g.packed);h=new Int32Array(g.nx*g.nz);let pos=0;for(let i=0;i<h.length;i++){let n=0,shift=0,byte;do{byte=bytes.charCodeAt(pos++);n|=(byte&127)<<shift;shift+=7;}while(byte&128);h[i]=(i%g.nx?h[i-1]:0)+((n>>>1)^-(n&1));}terrainCache.set(g,h);}
+  return (x,z)=>{const fx=clamp((x-g.x)/g.step,0,g.nx-1.001),fz=clamp((z-g.z)/g.step,0,g.nz-1.001),ix=Math.floor(fx),iz=Math.floor(fz),a=fx-ix,b=fz-iz,n=g.nx,mix=(a,b,t)=>a+(b-a)*t;return mix(mix(h[iz*n+ix],h[iz*n+ix+1],a),mix(h[(iz+1)*n+ix],h[(iz+1)*n+ix+1],a),b)*g.scale;};
+ }
+ function visitCoins(data,visit){const w=data.coinWorld;return coins(data.mapId,w.roads,data.buildings,coinHeight(w.terrain),w.bounds,visit);}
+ const api={coinHeight,visitCoins,isDrifting,nukeShots,prices,catalog,flappy,level,spec,normalize,purchase,chooseLevel,hash,random,buildingKey,coins,rewards,reward,coinRespawn:180000};
  root.IslaV22=api;if(typeof module!=='undefined'&&module.exports)module.exports=api;
 })(typeof globalThis!=='undefined'?globalThis:this);
