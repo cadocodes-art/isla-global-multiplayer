@@ -3,7 +3,7 @@
  const clamp=(n,a,b)=>Math.max(a,Math.min(b,n)),own=(o,k)=>Object.prototype.hasOwnProperty.call(o,k);
  const prices={classic:0,rally:60000,gt:160000,truck:140000,solstice:360000,moonlight:500000,nuker:550000,plane:660000,firetruck:270000,stick:630000,beast:640000,waterskidder:560000,micro:400000,vespera:680000,cruiser:80000,launcher:580000,ultra:1000000,hover:510000,flappy:705000};
  const catalog={};
- function add(id,c2,c3,n2,n3,p2,p3,d2,d3){catalog[id]={2:{cost:c2,name:n2,params:p2,description:d2},3:{cost:c3,name:n3,params:{...p2,...p3},description:d3}};}
+ function add(id,c2,c3,n2,n3,p2,p3,d2,d3){catalog[id]={2:{cost:Math.ceil(c2*1.25),name:n2,params:p2,description:d2},3:{cost:Math.ceil(c3*1.25),name:n3,params:{...p2,...p3},description:d3}};}
  add('classic',100,250,'Road Ready','Street Original',{"landingStability":0.6,"brakeFactor":1.35,"driftRecharge":0.08},{"landingStability":0.8,"brakeFactor":1.5,"driftRecharge":0.12},"Strong landing stabilization, 35% stronger brakes and nitro recharge while drifting.","Even stronger stabilization, 50% stronger brakes and faster drift recharge.");
  add('rally',125,300,'Trail Scout','Summit Rally',{"airSteer":0.4,"offroadFactor":1.35,"rampLift":2},{"airSteer":0.6,"offroadFactor":1.65,"rampLift":5},"Responsive air steering, 35% better off-road tires and extra ramp lift.","65% better off-road tires, stronger air steering and big ramp launches.");
  add('gt',150,350,'Drift Edition','Exit Boost',{"driftSteer":1.35,"steerResponse":1.3,"driftRecovery":2.8,"driftExitBoost":3},{"driftSteer":1.5,"steerResponse":1.45,"driftRecovery":3.5,"driftExitBoost":6},"Sharper drifts and a 3 m/s exit boost after a two-second drift; six-second cooldown.","Stronger drift control and a 6 m/s drift-exit boost; six-second cooldown.");
@@ -33,10 +33,46 @@
  function hash(s){let h=2166136261;for(const c of String(s)){h^=c.charCodeAt(0);h=Math.imul(h,16777619);}return h>>>0;}
  function random(seed){let s=hash(seed);return ()=>((s=(Math.imul(s,1664525)+1013904223)>>>0)/4294967296);}
  function buildingKey(b){if(b.rewardKey)return b.rewardKey;if(b.object?.id)return 'object:'+b.object.id;return [b.x,b.y,b.z,b.w,b.d].map(v=>Math.round(v*10)).join(':');}
- // Stable road and ground placements are shared with the server. Value is never supplied by a client.
- function coins(key,roads,buildings,height,bounds){const rand=random('iscoins-2.2:'+key),result=[],samples=[];for(const r of roads||[])for(const p of r.samples||[])if(Number.isFinite(p.x)&&Number.isFinite(p.z))samples.push(p);
-  const max=key==='playplace'?80:160,inside=(x,z)=>!bounds||(x>bounds.minX+5&&x<bounds.maxX-5&&z>bounds.minZ+5&&z<bounds.maxZ-5);
-  for(let k=0;k<max*60&&result.length<max;k++){let x,z,y;if(samples.length&&k%4!==3){const p=samples[Math.floor(rand()*samples.length)];x=p.x;z=p.z;y=Number.isFinite(p.y)?p.y+.8:height(x,z)+.8;}else{const b=bounds||{minX:-900,maxX:900,minZ:-900,maxZ:900};x=b.minX+rand()*(b.maxX-b.minX);z=b.minZ+rand()*(b.maxZ-b.minZ);y=height(x,z)+.8;}if(!inside(x,z)||!Number.isFinite(y)||height(x,z)<0||result.some(c=>Math.hypot(c.x-x,c.z-z)<24)||buildings.some(b=>Math.hypot(b.x-x,b.z-z)<Math.hypot(b.w,b.d)/2+4))continue;result.push({id:result.length,x:Math.round(x*100)/100,y:Math.round(y*100)/100,z:Math.round(z*100)/100,value:rand()<.2?5:1});}return result;}
+ // Layouts are deterministic; pickup timers remain personal. New IDs avoid old-layout cooldowns.
+ function coins(key,roads,buildings,height,bounds){
+  const rand=random('iscoins-2.24:'+key),result=[],samples=[],segments=new Map(),blocks=new Map();
+  const max=key==='playplace'?60:120,b=bounds||{minX:-900,maxX:900,minZ:-900,maxZ:900};
+  const cell=(x,z)=>Math.floor(x/64)+','+Math.floor(z/64);
+  function index(grid,item,x0,x1,z0,z1){for(let x=Math.floor(x0/64);x<=Math.floor(x1/64);x++)for(let z=Math.floor(z0/64);z<=Math.floor(z1/64);z++){const k=x+','+z;if(!grid.has(k))grid.set(k,[]);grid.get(k).push(item);}}
+  for(const r of roads||[]){const ps=(r.samples||[]).filter(p=>Number.isFinite(p.x)&&Number.isFinite(p.z));for(let i=0;i<ps.length;i++){const p=ps[i],q=ps[Math.min(i+1,ps.length-1)],width=Math.max(1,p.width||r.width||8),pad=width/2+12,s={p,q,pad};samples.push(p);index(segments,s,Math.min(p.x,q.x)-pad,Math.max(p.x,q.x)+pad,Math.min(p.z,q.z)-pad,Math.max(p.z,q.z)+pad);}}
+  const roofs=[];
+  for(const building of buildings||[]){const r=Math.hypot(building.w,building.d)/2+4;index(blocks,building,building.x-r,building.x+r,building.z-r,building.z+r);if(!building.obb&&building.w>=5&&building.d>=5&&Number.isFinite(building.y+building.h))roofs.push(building);}
+  function nearRoad(x,z){return (segments.get(cell(x,z))||[]).some(({p,q,pad})=>{const dx=q.x-p.x,dz=q.z-p.z,t=clamp(((x-p.x)*dx+(z-p.z)*dz)/(dx*dx+dz*dz||1),0,1);return Math.hypot(x-p.x-dx*t,z-p.z-dz*t)<=pad;});}
+  function blocked(x,z,y){return (blocks.get(cell(x,z))||[]).some(o=>{const co=Math.cos(o.yaw||0),si=Math.sin(o.yaw||0),dx=x-o.x,dz=z-o.z;return y<o.y+o.h+.6&&y>o.y-2&&Math.abs(dx*co-dz*si)<o.w/2+3&&Math.abs(dx*si+dz*co)<o.d/2+3;});}
+  const targets={road:samples.length?Math.round(max*.4):0,away:samples.length?max-Math.round(max*.4):max},counts={road:0,away:0};
+  function add(x,y,z,value,placement){
+   // Quantize before validation so clients and the server classify the identical position.
+   x=Math.round(x*100)/100;y=Math.round(y*100)/100;z=Math.round(z*100)/100;
+   if(![x,y,z].every(Number.isFinite)||x<=b.minX+5||x>=b.maxX-5||z<=b.minZ+5||z>=b.maxZ-5||blocked(x,z,y)||result.some(c=>Math.hypot(c.x-x,c.z-z)<32))return false;
+   const near=nearRoad(x,z),bucket=near?'road':'away';if(counts[bucket]>=targets[bucket])return false;
+   result.push({id:224000+result.length,x,y,z,value,nearRoad:near,placement});counts[bucket]++;return true;
+  }
+  const point=()=>({x:b.minX+rand()*(b.maxX-b.minX),z:b.minZ+rand()*(b.maxZ-b.minZ)});
+  const rare=Math.max(1,Math.round(max*.02));
+  for(let n=0;n<rare;n++){
+   let placed=false;
+   for(let k=0;k<1800&&!placed;k++){
+    if(roofs.length&&(k%2===n%2)){const roof=roofs[Math.floor(rand()*roofs.length)];placed=add(roof.x,roof.y+roof.h+.8,roof.z,10,'roof');}
+    else{const p=point();if(height(p.x,p.z)<-1)placed=add(p.x,.8,p.z,10,'water');}
+   }
+   // Dry, building-free maps still get a rare collectible on accessible ground.
+   for(let k=0;k<1200&&!placed;k++){const p=point(),y=height(p.x,p.z);if(y>=0&&Math.abs(height(p.x+3,p.z)-y)<4&&Math.abs(height(p.x,p.z+3)-y)<4)placed=add(p.x,y+.8,p.z,10,'ground');}
+  }
+  for(const bucket of ['road','away'])for(let k=0;k<max*100&&counts[bucket]<targets[bucket];k++){
+   let p,y,placement='ground';
+   if(bucket==='road'){if(!samples.length)break;p=samples[Math.floor(rand()*samples.length)];y=Number.isFinite(p.y)?Math.max(p.y,height(p.x,p.z))+.8:height(p.x,p.z)+.8;placement='road';if(y<.8)continue;}
+   else{p=point();y=height(p.x,p.z)+.8;if(y<.8||nearRoad(p.x,p.z)||Math.abs(height(p.x+3,p.z)-y+.8)>4||Math.abs(height(p.x,p.z+3)-y+.8)>4)continue;}
+   add(p.x,y,p.z,rand()<.2?5:1,placement);
+  }
+  // A custom map with too little road may use the remaining safe off-road space.
+  if(counts.road<targets.road){targets.away+=targets.road-counts.road;for(let k=0;k<max*80&&result.length<max;k++){const p=point(),y=height(p.x,p.z);if(y>=0&&!nearRoad(p.x,p.z)&&Math.abs(height(p.x+3,p.z)-y)<4&&Math.abs(height(p.x,p.z+3)-y)<4)add(p.x,y+.8,p.z,rand()<.2?5:1,'ground');}}
+  return result;
+ }
  const rewards={launch:[1100,1200],drift:[700,1300],nuke:[1000,2000],ram:[1200,1300],spare:[1200,1400],strike:[3000,4000],slide:[600,800],repeat:[100,200]};
  const reward=(kind,event)=>{const r=rewards[kind];return r?r[0]+hash(event)%(r[1]-r[0]+1):0;};
  function nukeShots(state,model,targets,shotFactory){

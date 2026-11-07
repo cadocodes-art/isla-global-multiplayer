@@ -1,5 +1,5 @@
 {
-  "version": "2.23",
+  "version": "2.24",
   "files": [
     {
       "name": "three.min.js",
@@ -119,7 +119,7 @@
     {
       "name": "community-ui.js",
       "destination": "public/community-ui.js",
-      "sha256": "8fab8ad167ff8718ffe6bba47e8acbd5c4eb7226e71d5045f9315207222942e2"
+      "sha256": "7f0a56ca20283ab93179c6696a86d3f9cc631ff30f249cbf7b34323d9f0b2607"
     },
     {
       "name": "social-rules.js",
@@ -224,7 +224,7 @@
     {
       "name": "community.css",
       "destination": "public/community.css",
-      "sha256": "2661f3fc2008733d4150dd22935f6046eb0f1eba07b8839397266fbf27502746"
+      "sha256": "042fe8fb67bc4c43e1b4bee9e5668a841888decbf468605be05ca2ff05b26330"
     },
     {
       "name": "social.css",
@@ -234,7 +234,7 @@
     {
       "name": "index.html",
       "destination": "public/index.html",
-      "sha256": "f04acf294bddfe7dbf117c5eed125986c44c9caaf97212b5529b4424cf30278c"
+      "sha256": "9b49dfdb87506a665fe74477eff4fa85dc6cfc13eced9d5edcbb3aeb4bcf1f87"
     },
     {
       "name": "player-collisions.js",
@@ -249,7 +249,7 @@
     {
       "name": "worker.js",
       "destination": "src/worker.js",
-      "sha256": "a5472f4496ca26d23d333d177834024883e3dde38d164740342b834f4e0428c5"
+      "sha256": "eb98b8d3ef2e838a16809c942e4cb629ba1fa9c7506d0dde23247a972e0a868d"
     },
     {
       "name": "playground.js",
@@ -259,7 +259,7 @@
     {
       "name": "community.js",
       "destination": "src/community.js",
-      "sha256": "f4e782feec7ffe3ec7bd0379fda41e20310473d059af52683413fef89a9ff234"
+      "sha256": "f603120dfa5de38edd794b4e5491bea0e3441fc46876e0ac51ae7d389b0339fc"
     },
     {
       "name": "social.js",
@@ -274,7 +274,7 @@
     {
       "name": "build-offline.cjs",
       "destination": "scripts/build-offline.cjs",
-      "sha256": "3f4b7974bcb8e4b8a0c23cef2526f331883c663e647c43264add611d106e11b2"
+      "sha256": "a7eb6da7ccf3fb59962e6f70c6b5cb117dafa408e6e65333154b8095a5f7c368"
     },
     {
       "name": "build-world.cjs",
@@ -424,7 +424,7 @@
     {
       "name": "v21.test.cjs",
       "destination": "test/v21.test.cjs",
-      "sha256": "95b8e0f5beaeb2cb72ff069619ee05f1f9312e3661c85c279275791795b2375a"
+      "sha256": "45ef060e2c54437de0885e265f53b80a028984b5a3fdf06260f0b8d7d01fe336"
     },
     {
       "name": "aura-check.cjs",
@@ -474,27 +474,27 @@
     {
       "name": "package.json",
       "destination": "package.json",
-      "sha256": "7c9b93245fd21910bab467e2a4aede58547d841205a6e712add217b636ebe48e"
+      "sha256": "aeb536f313ba05414f27f2a884344462c913cc8d42556d813c1e15a0e35110a2"
     },
     {
       "name": "package-lock.json",
       "destination": "package-lock.json",
-      "sha256": "cb03512fb8521f45074090d5d387b7d5a7494a33905884c071f641deb0c7f1e3"
+      "sha256": "85cb5f5aeeef9affa5ed50922dd00913da2c3455fe72db4c0b7ba4813776a0f4"
     },
     {
       "name": "prepare-cloudflare.cjs",
       "destination": "prepare-cloudflare.cjs",
-      "sha256": "2aea9e56c31b5573f4a861fe91cd3108c1b9465d0bfb2c34168b0e99f3755b91"
+      "sha256": "0458cf7b84b5fb1602eff5f2bab8658995f7888cea4d06509320d95a73f573cb"
     },
     {
       "name": "README.txt",
       "destination": "README.txt",
-      "sha256": "61548a601b72c539ee40684725a9e78e273db3243f8decafc82d676e2a4a417a"
+      "sha256": "4f2b7a86b5b6319338c09671732fb632d16c3b60e3ad49d4a4e457c4bc06a2cb"
     },
     {
       "name": "v22-shared.js",
       "destination": "public/v22-shared.js",
-      "sha256": "5c150600f104c6144083109114a0fb9e486b77a2841309682dd2cbd43af0bad9"
+      "sha256": "51e6bac4aee91677e569760133f0cb570874bec165ec67205c4491ef4e903d24"
     },
     {
       "name": "v22-garage.js",
@@ -509,7 +509,7 @@
     {
       "name": "v22-economy-client.js",
       "destination": "public/v22-economy-client.js",
-      "sha256": "58ce5c8e045b8ede68c5a4aaf765591f186eb103b22f56239cce7f0b2dbb115e"
+      "sha256": "dc3764cd3c54e02b14f09a280fb0d4f65ef4e689c1d9d4412b8531f8e36de03c"
     },
     {
       "name": "v22-car-assets.js",
@@ -529,12 +529,12 @@
     {
       "name": "v22-economy.js",
       "destination": "src/v22-economy.js",
-      "sha256": "67b7db8f3e7db4131ddd3f5d99c569be5c7ca00611119485c05cefd5a765440c"
+      "sha256": "6e58624b53136619526980b4c6bb9720bf51a8cdd162d64737a198643347d982"
     },
     {
       "name": "refresh-manifest.cjs",
       "destination": "refresh-manifest.cjs",
-      "sha256": "4ec3e7e460d7229fe4f8c4c80def8cb88c86dc2f0f87ce81b929175e772153c5"
+      "sha256": "7ab0e410cb3f9ddf08abc2d4e274257b1131c4601c7494dea10c887420ec20da"
     },
     {
       "name": "dev.cjs",
@@ -544,12 +544,12 @@
     {
       "name": "v22.test.cjs",
       "destination": "test/v22.test.cjs",
-      "sha256": "f8a384dd5b6cd1a27bc7d26097ba7bcdc8fd5686c1c0d395266d09d2af2a4e31"
+      "sha256": "b7b4787fde50ccf9020d3cd4be07ca749a0aefb259e4f7284d321a1b23a560c5"
     },
     {
       "name": "v22-network.test.cjs",
       "destination": "test/v22-network.test.cjs",
-      "sha256": "dc7447200d32ab7738cb0d29e63367dd23e939cccb20683d2cde7f354bcbdbfa"
+      "sha256": "876b7d80e2ae587fbe05994422a4868af2b65a0d40d61fb0df8abd24d894c70b"
     },
     {
       "name": "V2.2-Release-Notes.md",
@@ -579,32 +579,27 @@
     {
       "name": "v223.test.cjs",
       "destination": "test/v223.test.cjs",
-      "sha256": "0f8b8b940f9394d03f4d8f3f26229be5e99830ef632ded02836f08732e929484"
+      "sha256": "26a4e7ef76bab860768c2457b7e730e3f5abe9c3c7327d4cb2d904a192bf3c66"
     },
     {
-      "name": "menu-music.js",
-      "destination": "public/menu-music.js",
-      "sha256": "bf8e81ac4e9e55efcf56df5dfbc226fd2820ae54b965f7a35c9419f5261d8888"
+      "name": "v224-vault.js",
+      "destination": "public/v224-vault.js",
+      "sha256": "80cbc95748da34b8ea4254b5588f87e8c6e71cf62f02f0125d8935fada1285eb"
     },
     {
-      "name": "menu-music.css",
-      "destination": "public/menu-music.css",
-      "sha256": "2833cba3c8511851babdef579c6e2b3a87f81fe4ec6cba343d3f819bcfc256ae"
+      "name": "v224-vault.css",
+      "destination": "public/v224-vault.css",
+      "sha256": "3a795be28295b72f7057ec483f82e73a89f9febc46b89643b0f27334440c0dd0"
     },
     {
-      "name": "elektronomia-energy.mp3",
-      "destination": "public/elektronomia-energy.mp3",
-      "sha256": "c43a6936f1ff6630e704ad2c2c4d8a1dd2ef98e7a24a9758ba15dcec3f6b84d5"
+      "name": "V2.24-Notes.md",
+      "destination": "V2.24-Notes.md",
+      "sha256": "d6520f773a27b4ce3cff3aef188db861a1dd336992d8b94231e7c2161470371c"
     },
     {
-      "name": "menu-music.test.cjs",
-      "destination": "test/menu-music.test.cjs",
-      "sha256": "1de18c023e99626dfab844e030373aacf70241e3e964e52d6099a67bf1704738"
-    },
-    {
-      "name": "Menu-Music-Notes.md",
-      "destination": "Menu-Music-Notes.md",
-      "sha256": "e9e718b36d31d5f667967249608e22a5433f6711cf1f1d4ac568676bf6ddefe5"
+      "name": "v224.test.cjs",
+      "destination": "test/v224.test.cjs",
+      "sha256": "36d76bb31e7b512db3de54dddbf8a5a5bbf5eab73a2e84e6b0dfacb271add365"
     }
   ]
 }

@@ -2,7 +2,7 @@
 const fs=require('node:fs'),path=require('node:path'),crypto=require('node:crypto');
 const root=__dirname,file=path.join(root,'isla-v16-upload.json'),manifest=JSON.parse(fs.readFileSync(file,'utf8'));
 const additions={
- 'menu-music.js':'public/menu-music.js','menu-music.css':'public/menu-music.css','elektronomia-energy.mp3':'public/elektronomia-energy.mp3','menu-music.test.cjs':'test/menu-music.test.cjs','Menu-Music-Notes.md':'Menu-Music-Notes.md',
+ 'v224-vault.js':'public/v224-vault.js','v224-vault.css':'public/v224-vault.css','v224.test.cjs':'test/v224.test.cjs','V2.24-Notes.md':'V2.24-Notes.md',
  'V2.23-Notes.md':'V2.23-Notes.md','v223.test.cjs':'test/v223.test.cjs',
  'V2.22-Notes.md':'V2.22-Notes.md',
  'V2.21-Notes.md':'V2.21-Notes.md',
@@ -15,7 +15,7 @@ const additions={
  'refresh-manifest.cjs':'refresh-manifest.cjs','dev.cjs':'dev.cjs'
 };
 for(const [name,destination] of Object.entries(additions))if(fs.existsSync(path.join(root,name))&&!manifest.files.some(f=>f.name===name))manifest.files.push({name,destination});
-manifest.version='2.23';
+manifest.version='2.24';
 for(const entry of manifest.files){const bytes=fs.readFileSync(path.join(root,entry.name));entry.sha256=crypto.createHash('sha256').update(bytes).digest('hex');if('size' in entry)entry.size=bytes.length;}
 fs.writeFileSync(file,JSON.stringify(manifest,null,2)+'\n');
-console.log('V2.23 manifest: '+manifest.files.length+' verified source files.');
+console.log('V2.24 manifest: '+manifest.files.length+' verified source files.');

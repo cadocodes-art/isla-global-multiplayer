@@ -7,6 +7,7 @@ export function installV22(h){
  CREATE TABLE IF NOT EXISTS v22_coins(account TEXT,map TEXT,coin INTEGER,at INTEGER,PRIMARY KEY(account,map,coin));
  CREATE TABLE IF NOT EXISTS v22_buildings(account TEXT,map TEXT,building TEXT,at INTEGER,PRIMARY KEY(account,map,building));
  CREATE TABLE IF NOT EXISTS v22_events(account TEXT,event TEXT,kind TEXT,map TEXT,target TEXT,amount INTEGER,at INTEGER,PRIMARY KEY(account,event));
+ CREATE TABLE IF NOT EXISTS v224_vault_claims(account TEXT,code TEXT,currency TEXT,amount INTEGER,at INTEGER,PRIMARY KEY(account,code));
  CREATE INDEX IF NOT EXISTS v22_event_recent ON v22_events(account,kind,at);`);
  // One-time migration resolves the already-existing exact account, then pins its ID in the audit record.
  // No public claim endpoint and no guest/player-name match grants any currency.
@@ -22,9 +23,33 @@ function context(h,a,runId){const run=h.one('SELECT * FROM rewards WHERE id=? AN
 function position(p){return p&&['x','y','z'].every(k=>Number.isFinite(p[k])&&Math.abs(p[k])<20000);}
 export function rewardProfile(garage,own){const g=V.normalize(garage);return {showIscoins:g.showIscoins,iscoins:g.showIscoins||own?g.iscoins:null};}
 export async function v22Route(h,{path,method,body,a,need}){
- if(!path.startsWith('v22/'))return null;need();if(method!=='POST')fail('Use a POST request.',405);const now=Date.now();
+ if(!path.startsWith('v22/')&&path!=='v224/vault')return null;need();if(method!=='POST')fail('Use a POST request.',405);const now=Date.now();
  const fresh=()=>V.normalize(JSON.parse(h.one('SELECT garage FROM accounts WHERE id=?',a.id).garage));
  const save=g=>h.db.exec('UPDATE accounts SET garage=? WHERE id=?',JSON.stringify(g),a.id);
+ const vaultRewards=[
+  ['Cado_Codes','iscoins',15],['Fern Valley','aura',5000],['1234','aura',1234],['Supernova','aura',1],
+  ['Mount inferno','iscoins',10],['Drive without limits','aura',2000],['ISLA','aura',5],['Why','iscoins',5],
+  ['Impossible','aura',6000],['The Beast','iscoins',3],['Cats_Are_The_Best','aura',10000],
+  ['Iscoins','aura',1000],['Aura','iscoins',10],['Password','iscoins',1],['Dogs_Are_Kinda_Cool_I_Guess','iscoins',30]
+ ];
+ if(path==='v224/vault'){
+  if(!['status','redeem'].includes(body.action))fail('Unknown vault action.');
+  const remaining=g=>Math.max(0,1000000-(Number.isFinite(g.earned)?g.earned:0));
+  if(body.action==='status'){const g=fresh(),missing=remaining(g);return {garage:g,access:missing===0,remaining:missing};}
+  h.limit('vault:'+a.id,30,10000);
+  if(typeof body.code!=='string'||body.code.length>100)fail('Access denied. Unknown passcode.');
+  const code=body.code.trim().toLowerCase(),reward=vaultRewards.find(r=>r[0].toLowerCase()===code);
+  return h.ctx.storage.transactionSync(()=>{
+   const g=fresh(),missing=remaining(g);
+   if(missing)fail('System Error. Error code: needs '+missing.toLocaleString('en-US')+' amount of aura.',403);
+   if(!reward)fail('Access denied. Unknown passcode.');
+   if(h.one('SELECT 1 FROM v224_vault_claims WHERE account=? AND code=?',a.id,code))fail('This passcode has already been claimed on your account.',409);
+   const [,currency,amount]=reward;
+   if(currency==='aura'){g.balance=Math.min(1e12,g.balance+amount);g.earned=Math.min(1e12,g.earned+amount);}else g.iscoins=Math.min(1e12,g.iscoins+amount);
+   save(g);h.db.exec('INSERT INTO v224_vault_claims VALUES(?,?,?,?,?)',a.id,code,currency,amount,now);
+   return {garage:g,claimed:true,reward:{currency,amount}};
+  });
+ }
  if(path==='v22/upgrade'||path==='v22/level')return h.ctx.storage.transactionSync(()=>{const g=fresh();try{if(path.endsWith('/upgrade'))V.purchase(g,body.car,body.level);else V.chooseLevel(g,body.car,body.level);}catch(e){fail(e.message);}save(g);return {garage:g};});
  if(path==='v22/settings'){const g=fresh();if(body.trailColor!==undefined){if(!/^#[0-9a-f]{6}$/i.test(body.trailColor))fail('Choose a six-digit trail color.');g.trailColor=body.trailColor.toLowerCase();}if(typeof body.showIscoins==='boolean')g.showIscoins=body.showIscoins;if(typeof body.manualNukes==='boolean')g.manualNukes=body.manualNukes;save(g);return {garage:g};}
  const {run,data}=context(h,a,body.run);

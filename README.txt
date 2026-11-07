@@ -1,28 +1,39 @@
-ISLA — MENU MUSIC TEST PATCH (V2.23)
+ISLA V2.24 — ISCOINS + THE VAULT
 
-PRIVATE TESTING
-The supplied Energy MP3 is integrated for testing. Arrange NCS's game-use
-permission before publishing this track publicly. See Menu-Music-Notes.md.
+UPLOAD PATCH — 23 FILES
+1. Extract ISLA-V2.24-Upload-Patch.zip.
+2. Open the ISLA-V2.24-Upload-Patch folder.
+3. Upload its 23 individual files to the ROOT of your existing repository
+   in ONE batch, replacing matching files and adding the new ones.
+4. Commit that batch. Keep the rest of your repository and wrangler.jsonc.
+5. Let Cloudflare run the existing build/deploy configuration.
 
-INSTALL ON A PRIVATE LOCAL COPY OF THE COMPLETE V2.23 REPOSITORY
-1. Extract ISLA-Menu-Music-Test-Patch.zip.
-2. Open the extracted ISLA-Menu-Music-Test-Patch folder.
-3. Copy all 11 individual files into your local repository ROOT,
-   replacing matching files and adding the new ones.
-4. Keep all other files and your existing wrangler.jsonc.
+Do not upload the ZIP itself or put the files inside a new repository folder.
+This patch works over complete V2.23, with or without the music test patch.
 
-For private local testing: Node.js 22+, npm ci, npm run dev.
-Do not deploy this music patch to the public game before permission.
+WHAT'S NEW
+- Upgrade prices +25%, rounded up to a whole Iscoin; owned levels stay yours.
+- 25% fewer coins: 120 on each main map; 60 in The Playplace.
+- 40% near roads, 60% elsewhere, with greater spacing.
+- Rare purple 10-Iscoin coins, mainly on rooftops and water.
+- Personal collection and three-minute respawns remain unchanged.
+- One hidden vault at the bottom of the driving pause menu.
+- Its textless circle has 40% opacity and requires 1,000,000 lifetime Aura.
+- Vault entry costs nothing. Each of the 15 passcodes rewards an account once.
 
-Music loops in the main menu, Map Maker, Search and map details.
-It stops while driving and when the browser tab is hidden.
-Open Music · Energy (or the editor's music-note button) for play/pause,
-volume and credits. Your music preference saves on this device.
-Tap if your browser needs interaction before starting the music.
+Sign in for vault rewards to persist across devices. See V2.24-Notes.md
+for all passcodes, new upgrade prices, balance details and validation.
 
-The MP3 is your supplied file, unchanged. Attribution appears in-game.
-This is a patch, not a full repository. It keeps V2.23's game behavior.
-The planned vault and coin/upgrade pricing changes are not included.
-Nothing has been published or uploaded to GitHub on your behalf.
+NO MUSIC
+V2.24 does not load, package or serve the soundtrack. The patch also excludes
+old music assets from Cloudflare uploads. If you previously uploaded the music
+patch, its unused root files can be removed later: menu-music.js,
+menu-music.css, menu-music.test.cjs, elektronomia-energy.mp3,
+and Menu-Music-Notes.md. Their removal is not required for this build.
 
-After source edits, run node refresh-manifest.cjs before building.
+LOCAL CHECKS
+Node.js 22+: npm ci, npm run build, npm run check:worker, npm test.
+For private playtesting: npm run dev.
+After editing source files, run node refresh-manifest.cjs before building.
+
+This ZIP prepares the release; it has not been pushed or deployed for you.
