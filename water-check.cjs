@@ -13,9 +13,9 @@ function step(seconds,input=idle){for(let i=0;i<Math.round(seconds*120);i++){tim
 for(const kph of [80,139.99,140]){setup(kph);step(1/120);assert.equal(W.vehicle.waterMode,'sinking');assert.equal(starts,0);}
 setup(140.01);step(1/120);assert.equal(W.vehicle.waterMode,'skimming');
 console.log('PASS: skim requires strictly more than 140 km/h at water contact.');
-setup(160);step(3.49,gas);assert.equal(W.vehicle.waterMode,'skimming');assert(W.vehicle.y>.07&&W.vehicle.y<.13);assert(W.vehicle.speed*3.6<140);assert(W.vehicle.x>120);assert.equal(starts,1);assert.equal(recoveries,0);
+Math.random=()=>.5;setup(160);step(6.49,gas);assert.equal(W.vehicle.waterMode,'skimming');assert(W.vehicle.y>.07&&W.vehicle.y<.13);assert(W.vehicle.speed*3.6<140);assert(W.vehicle.x>120);assert.equal(starts,1);assert.equal(recoveries,0);
 step(.02,gas);assert.equal(W.vehicle.waterMode,'sinking');assert.equal(sinks,1);step(.8,gas);assert(W.vehicle.y<-.8);step(.7,gas);assert.equal(recoveries,1);assert.equal(starts,1);assert.equal(W.vehicle.waterMode,'dry');assert(W.vehicle.x<0);assert.equal(W.vehicle.skimTime,0);
-console.log('PASS: 3.5-second skim keeps moving as speed falls; then visible sinking and one recovery. Holding throttle cannot renew it.');
+console.log('PASS: 6.5-second skim keeps moving as speed falls; then visible sinking and one recovery. Holding throttle cannot renew it.');
 setup(180,10);step(.6);assert.equal(starts,0);assert.equal(W.vehicle.skimTime,0);assert.equal(W.vehicle.waterMode,'dry');for(let i=0;i<240&&W.vehicle.waterMode==='dry';i++)step(1/120);assert.equal(W.vehicle.waterMode,'skimming');assert(W.vehicle.skimTime<.02);assert(Math.abs(W.vehicle.y-.1)<.03);
 console.log('PASS: airborne jumps do not consume skim time before touching water.');
 setup(160);step(.5);W.vehicle.x=-2;W.vehicle.vx=-5;step(1/120);assert.equal(W.vehicle.waterMode,'dry');assert.equal(W.vehicle.skimTime,0);assert.equal(recoveries,0);W.vehicle.x=2;W.vehicle.y=.12;W.vehicle.vx=160/3.6;W.vehicle.vy=0;step(1/120);assert.equal(W.vehicle.waterMode,'skimming');assert.equal(starts,2);

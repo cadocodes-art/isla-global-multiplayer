@@ -5,6 +5,7 @@ import '../public/playplace-shared.js';
 import '../public/playplace-state.js';
 import '../public/playplace-v20-shared.js';
 import '../public/v20-rules.js';
+import '../public/v22-shared.js';
 import '../public/maker-core.js';
 // Each global room owns its simulation. Clients send car contacts, never object positions.
 export function createPlayground(plan,cars){
@@ -12,7 +13,7 @@ export function createPlayground(plan,cars){
  const W={clamp,mix,carModels:cars,vehicle:null,colliders:plan.colliders,makerRoadTriangles:[],playplace:{clock:0,halfX:600,halfZ:525,roof:124,ropes:plan.ropes.map(r=>({...r,dir:new T.Vector3(0,-1,0),velocity:new T.Vector3()}))}};
  W.height=(x,z)=>{const pit=plan.pits.find(p=>Math.abs(x-p.x)<p.w/2&&Math.abs(z-p.z)<p.d/2);if(!pit)return 12;const edge=Math.min(pit.w/2-Math.abs(x-pit.x),pit.d/2-Math.abs(z-pit.z)),t=clamp(edge/13,0,1);return 12-4*t*t*(3-2*t);};
  const oldHeight=W.height;W.height=(x,z)=>globalThis.IslaPlayPoolHeight(oldHeight(x,z),x,z);
- W.getCarSpec=()=>cars.find(c=>c.id===W.vehicle?.car)||cars[0];W.hoverHeight=(spec,c)=>spec.hover&&c.grounded&&(c.waterMode||c.water||'dry')==='dry'&&!c.wallMode?Math.min(1,Math.hypot(c.vx,c.vz)/4)*.5:0;
+ W.getCarSpec=()=>globalThis.IslaV22.spec(cars.find(c=>c.id===W.vehicle?.car)||cars[0],W.vehicle?.upgradeLevel);W.hoverHeight=(spec,c)=>spec.hover&&c.grounded&&(c.waterMode||c.water||'dry')==='dry'&&!c.wallMode?Math.min(1,Math.hypot(c.vx,c.vz)/4)*.5:0;
  const triangles=W.makerRoadTriangles;function quad(a,b,c,d,road,blocking=false){for(const points of [[a,c,b],[b,c,d]]){const triangle=new T.Triangle(...points),normal=triangle.getNormal(new T.Vector3());triangles.push({triangle,normal,road,blocking});}}
  for(const r of plan.roads){const corners=globalThis.IslaMaker.roadCorners(r,W.height).map(pair=>pair.map(p=>new T.Vector3(p.x,p.y,p.z)));for(let i=1;i<corners.length;i++){const [a,b]=corners[i-1],[c,d]=corners[i],down=p=>p.clone().add(new T.Vector3(0,-r.thickness,0)),aa=down(a),bb=down(b),cc=down(c),dd=down(d);quad(a,b,c,d,r);quad(bb,aa,dd,cc,r);quad(aa,a,cc,c,r);quad(b,bb,d,dd,r);if(i===1)quad(a,aa,b,bb,r);if(i===corners.length-1)quad(cc,c,dd,d,r);}}
  for(const r of plan.roads)for(const face of r.walls||[]){const [a,b,c,d]=face.map(p=>new T.Vector3(p.x,p.y,p.z));quad(a,b,c,d,r,true);quad(b,a,d,c,r,true);}

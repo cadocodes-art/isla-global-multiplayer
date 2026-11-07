@@ -1,71 +1,61 @@
-ISLA V2.1 — FERN VALLEY
+ISLA V2.2 — ISCOINS & UPGRADES
 
-UPDATE YOUR EXISTING ONLINE GAME
-1. Download ISLA-V2.1-Update.zip and extract it (right-click > Extract All).
-2. Open https://github.com/cadocodes-art/isla-global-multiplayer
-3. Stay on the branch your existing Cloudflare game builds.
-4. On the page listing the repository files, choose Add file > Upload files.
-5. Open the extracted folder and select ALL 99 files inside. Drag those files
-   into GitHub. Upload the individual files, not the ZIP or an enclosing folder.
-   Keep both traffic.js and traffic (1).js. Include isla-v16-upload.json.
-6. Commit the changes. Wait for the connected Cloudflare deployment to finish.
-7. Reload https://isla-global-multiplayer.cadocodes.workers.dev/?menu=1
-   The main menu and community header should show V2.1.
-8. Use the main-menu arrow to reach Fern Valley, the fifth map. Or open:
-   https://isla-global-multiplayer.cadocodes.workers.dev/?map=fern&menu=1
+This is the complete source update for the existing ISLA multiplayer game.
+It has not been uploaded to GitHub or deployed to the live game.
 
-No new Worker or database is required. Keep your existing wrangler.jsonc,
-OWNER_ACCOUNT_ID, database bindings and secrets. This ZIP excludes your Worker
-configuration. Accounts, saved maps, aura and owned cars are preserved.
-This update is prepared for manual upload; it has not been deployed for you.
+UPDATE YOUR EXISTING GAME
+1. Extract ISLA-V2.2-Update.zip and open the ISLA-V2.2-Update folder.
+2. Open https://github.com/cadocodes-art/isla-global-multiplayer and choose
+   the branch your existing Cloudflare game builds from.
+3. Use Add file > Upload files to upload ALL files inside the extracted folder
+   to the repository root. Upload the files, not the ZIP or enclosing folder.
+   If needed, split the files into two upload batches. The build will reject
+   an incomplete batch; finish uploading every file before testing the update.
+4. Keep your existing wrangler.jsonc, Worker name, OWNER_ACCOUNT_ID,
+   database bindings and secrets. This ZIP deliberately excludes that config.
+   Keep both traffic.js and traffic (1).js; both are required.
+5. Commit the upload and let your existing Cloudflare build/deploy finish.
+6. Reload your existing game URL. The menu and community header show V2.2.
+   Sign in as Cado_Codes to test purchases, upgrades and saved balances.
 
-Keep your existing build settings:
-  Build command: npm run build
-  Deploy command: npx wrangler deploy
-  Preview command: npx wrangler versions upload
+EXISTING CLOUDFLARE BUILD SETTINGS
+Build command: npm run build
+Deploy command: npx wrangler deploy
+Preview command: npx wrangler versions upload
+Node.js: 22 or newer
 
-The manifest keeps the filename isla-v16-upload.json, but says version 2.1.
-It checks every file before reconstructing the folders used by the build.
-If a build reports an incomplete upload, upload all files from this ZIP again.
-The two traffic filenames are intentional: traffic.js is for the browser,
-and traffic (1).js is for the server. build-world.cjs is included as well.
+TEST CREDIT FOR CADO_CODES
+The update adds 10,000 Iscoins and 5,000,000 Aura to the existing verified
+Cado_Codes account once, when the updated community server first starts.
+This ADDS to the account's balance; it does not replace the current balance.
+A database record prevents the credit from repeating after restarts or
+redeploys. It is tied to the existing account, never a guest display name.
+The credit has been tested locally, but has NOT been applied to the live game.
+Continue using the existing Worker and account database so the account and
+its credit record are preserved. No new account or database is needed.
 
-FERN VALLEY
-- A fifth main map with its own global room and normal aura earning.
-- 4 km by 4 km of playable countryside: four times Costa Metro's driving area.
-- Invisible borders on all four sides, with terrain and roads continuing beyond.
-- Gentle rolling hills, dry grass, sandy patches, bushes, cactuses and rocks.
-- Fern Town in the north-center: 15 buildings, including two restaurants and
-  two grocery/market buildings. Additional homes and diners are spread sparsely
-  across the countryside. Houses and restaurants remain destructible.
-- Paved highways and town streets, gravel trails and short home/ranch driveways.
-  Gravel has less grip and more rolling resistance than asphalt.
-- Eight traffic cars, including cars on the gravel routes.
-- 18 off-road ramps, each with room for an approach and landing.
-- Three fenced pastures with 24 decorative cows that graze and slowly wander.
-  Cows have no collisions, damage, destruction, or Launcher/Nuker interactions.
-- Road signs, wooden property fences, and a countryside minimap.
+WHAT IS INCLUDED
+- Iscoins, collectible 1/5 coins, account balances and visibility controls.
+- Three upgrade levels for all 19 cars, permanent purchases and free switching.
+- Flappy Car, updated Nuker, Water Skidder limits and rooftop StickCar driving.
+- Doubled existing Aura prices, new Aura activities and permanent building history.
+- Tire-trail colors, air tricks, easier steering and adjusted mobile controls.
+- Themed buildings, walking NPCs, ragdolls and new Map Maker building types.
+- Shared multiplayer visuals, upgrade validation and persistence.
 
-MAP MAKER
-- New objects: Cactus, Restaurant and Wooden fence.
-- Use the existing mobile tap-to-place controls, or drag from the palette.
-- These objects support colors, scaling, all rotation axes, height adjustment,
-  multi-select, group transforms, duplicate, copy/paste, saving and playtesting.
-- Restaurant walls are destructible. Cactuses and fences have solid hitboxes.
-- The existing 50-map limit, online sharing and approval rules remain unchanged.
+Read V2.2-Release-Notes.md for EVERY planned feature, exact car prices,
+upgrade costs, abilities, controls and the chosen balancing details.
+Read V2.2-Validation.md for test coverage and remaining device checks.
 
-LOCAL GAME
-The separate ISLA-Drive.html file contains the updated bundled game for local
-play. The special no-online-features ISLA-Offline.html is a separate edition
-and has not been replaced by this update.
+FOR LOCAL DEVELOPMENT
+Use these files inside a checkout of the existing repository, with its
+wrangler.jsonc preserved. Run npm ci, then npm run dev. Run npm test for
+build, Worker dry-run and the regression suite. Source files are intentionally
+flat: the build reconstructs public/, src/, scripts/ and test/.
+After editing a source file, run node refresh-manifest.cjs before building.
+The upload manifest retains the name isla-v16-upload.json for compatibility;
+its contents are version 2.2. It verifies the complete upload before copying.
 
-AFTER UPDATING
-Ask players to reload to see Fern Valley and the new Maker objects. Existing
-main maps keep their room names and the Playplace retains its current revision.
-No new sign-in or owner setup is needed.
-
-Checks include terrain, roads, ramp launches, borders, cow behavior, Maker
-transforms, multiplayer room separation, traffic and aura eligibility, plus the
-existing game/account regression suite and a 390-pixel mobile browser layout.
-This is not a physical iPad/Safari test. Local test controls and sample accounts
-are not included in the upload ZIP.
+No generated preview fixtures, test accounts, credentials, node_modules or
+local database files are included. A separate offline HTML edition is not
+part of this ZIP. Plane Car aura-farming changes remain deferred to V2.21.

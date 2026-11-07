@@ -15,7 +15,7 @@
   if(!W.getCarSpec()?.sticky||c.wall||c.wallBlocked===b||!c.throttle||approach<2||b.h<5)return false;
   const nx=hit.nx,nz=hit.nz,tx=-nz,tz=nx,co=Math.cos(b.yaw),si=Math.sin(b.yaw),halfNormal=Math.abs(nx*co-nz*si)*b.w/2+Math.abs(nx*si+nz*co)*b.d/2,halfTangent=Math.abs(tx*co-tz*si)*b.w/2+Math.abs(tx*si+tz*co)*b.d/2;
   if(halfTangent<1.4)return false;const along=W.clamp((c.x-b.x)*tx+(c.z-b.z)*tz,-halfTangent+1.2,halfTangent-1.2),size=W.getCarSpec().size||1;
-  c.wall={b,nx,nz,x:b.x+nx*(halfNormal+.12)+tx*along,z:b.z+nz*(halfNormal+.12)+tz*along,left:2+Math.random()*2,age:0,climbSpeed:W.clamp(approach*.35,8,18),floor:Math.max(b.y,W.driveHeight(c.x,c.z,true))+2.4*size};
+  c.wall={b,nx,nz,x:b.x+nx*(halfNormal+.12)+tx*along,z:b.z+nz*(halfNormal+.12)+tz*along,left:Infinity,age:0,climbSpeed:W.clamp(approach*.35,8,18)*(W.getCarSpec().climbFactor||1),floor:Math.max(b.y,W.driveHeight(c.x,c.z,true))+2.4*size};
   c.wallMode='climbing';c.ramp=null;c.grounded=true;c.y=Math.max(c.y,c.wall.floor);c.yaw=Math.atan2(-nx,-nz);c.vx=c.vz=0;c.vy=c.wall.climbSpeed;c.nitroTime=0;return true;
  };
  W.stepWallClimb=(dt,input)=>{
@@ -23,10 +23,10 @@
   if(c.wallBlocked&&(c.wallBlocked.collapsed||Math.hypot(c.x-c.wallBlocked.x,c.z-c.wallBlocked.z)>Math.hypot(c.wallBlocked.w,c.wallBlocked.d)/2+10))c.wallBlocked=null;
   if(!c.wall)return false;const w=c.wall;
   if(!spec.sticky||w.b.collapsed){c.wall=null;c.wallMode='';c.grounded=false;c.pitch=0;return false;}
-  w.age+=dt;w.left=Math.max(0,w.left-dt);if(!input.gas||input.brake||w.left===0)c.wallMode='sliding';
+  w.age+=dt;w.left=Infinity;if(spec.wallHold&&input.brake)c.wallMode='holding';else c.wallMode=input.gas?'climbing':'sliding';if(spec.wallTraverse&&input.steer){const amount=input.steer*spec.wallTraverse*dt;const nx=-w.nz,nz=w.nx;const x=w.x+nx*amount,z=w.z+nz*amount;const co=Math.cos(w.b.yaw),si=Math.sin(w.b.yaw),dx=x-w.b.x,dz=z-w.b.z;if(Math.abs(dx*co-dz*si)<w.b.w/2+1&&Math.abs(dx*si+dz*co)<w.b.d/2+1){w.x=x;w.z=z;}}
   c.x=w.x;c.z=w.z;c.vx=c.vz=0;c.yawRate=0;c.steer=0;c.roll=0;c.pitch=Math.min(Math.PI/2,w.age*7);c.grounded=true;c.contact=1;c.waterMode='dry';c.airtime=0;c.surface=c.wallMode==='sliding'?'WALL SLIDE':'WALL CLIMB';c.nitroTime=0;c.nitroHeld=!!input.boost;c.nitroCharge=Math.min(1,c.nitroCharge+dt/W.nitro.rechargeDuration);
-  c.vy=c.wallMode==='climbing'?w.climbSpeed:Math.max(-12,Math.min(0,c.vy)-7.5*dt);c.y+=c.vy*dt;
-  const top=Math.max(w.floor,w.b.y+w.b.h-2.4*(spec.size||1));if(c.y>=top){c.y=top;if(c.vy>0)c.vy=0;}
+  c.vy=c.wallMode==='holding'?0:c.wallMode==='climbing'?w.climbSpeed:Math.max(-12,Math.min(0,c.vy)-7.5*dt);c.y+=c.vy*dt;
+  const top=w.b.y+w.b.h+.12;if(c.y>=top){c.y=top;c.x-=w.nx*2.8*(spec.size||1);c.z-=w.nz*2.8*(spec.size||1);c.vx=-w.nx*10;c.vz=-w.nz*10;c.vy=0;c.pitch=c.roll=0;c.roof=w.b;c.wallBlocked=w.b;c.wall=null;c.wallMode='';c.grounded=true;return true;}
   c.speed=c.vy;c.rpm=1500+Math.abs(c.vy)*160;c.distance+=Math.abs(c.vy)*dt;
   if(c.wallMode==='sliding'&&c.y<=w.floor){c.wallBlocked=w.b;c.wall=null;c.wallMode='';c.x+=w.nx*3;c.z+=w.nz*3;c.y=W.driveHeight(c.x,c.z,true)+.12;c.vx=w.nx*2;c.vz=w.nz*2;c.vy=0;c.pitch=0;c.speed=-2;}
   return true;
@@ -46,22 +46,23 @@
   if(wetPatches.length>=100){patch=wetPatches.shift();W.scene.remove(patch.mesh);patch.mesh.material.dispose();}
   const material=new T.MeshPhysicalMaterial({map:wetTexture,transparent:true,opacity:.68,roughness:.07,metalness:.15,clearcoat:1,depthWrite:false,polygonOffset:true,polygonOffsetFactor:-2});const mesh=new T.Mesh(wetGeometry,material);mesh.position.set(jet.end.x,jet.end.y,jet.end.z);const normal=new T.Vector3(jet.normal?.x||0,jet.normal?.y??1,jet.normal?.z||0);mesh.quaternion.setFromUnitVectors(new T.Vector3(0,0,1),normal);mesh.position.addScaledVector(normal,.025);mesh.scale.set(jet.car?1.6:jet.building!=null?2.4:4,jet.car?3.7:jet.building!=null?2.8:4,1);W.scene.add(mesh);wetPatches.push({mesh,life:18,target:jet.car,building:jet.building});
  }
- function spray(s,dt){
-  const jets=R.hoseJets(s,W.buildings,(x,z)=>W.driveHeight(x,z,s.y<(W.bridgeSurface?.(x,z)??-Infinity)-.6));
+ function spray(s,dt,spec){
+  const jets=R.hoseJets(s,W.buildings,(x,z)=>W.driveHeight(x,z,s.y<(W.bridgeSurface?.(x,z)??-Infinity)-.6),spec);
   for(const jet of jets){
    for(let i=0;i<12&&streamCount<768;i++){const a=jet.distance*i/12,b=jet.distance*(i+1)/12,p=new T.Vector3(jet.start.x+jet.dx*a,jet.start.y+.10*a-.014*a*a,jet.start.z+jet.dz*a),q=new T.Vector3(jet.start.x+jet.dx*b,jet.start.y+.10*b-.014*b*b,jet.start.z+jet.dz*b),delta=q.clone().sub(p),matrix=new T.Matrix4().compose(p.add(q).multiplyScalar(.5),new T.Quaternion().setFromUnitVectors(new T.Vector3(0,1,0),delta.clone().normalize()),new T.Vector3(1,delta.length(),1));streamMesh.setMatrixAt(streamCount++,matrix);}
  
    for(let i=0;i<10;i++){const t=Math.random(),d=jet.distance*t;waterParticles.push({x:jet.start.x+jet.dx*d+(Math.random()-.5)*.25,y:jet.start.y+.10*d-.014*d*d+(Math.random()-.5)*.25,z:jet.start.z+jet.dz*d+(Math.random()-.5)*.25,vx:jet.dx*19,vy:2-d*.55,vz:jet.dz*19,life:Math.min(.22,(jet.distance-d)/19),span:.22});}
    splash(jet);
-   for(const t of W.traffic){if(!R.inHose(jet,t))continue;t.wetTime=18;t.burning=false;splash({car:t,end:{x:t.x,y:t.y+1.54,z:t.z},normal:{y:1}});}
+   for(const t of W.traffic){if(!R.inHose(jet,t))continue;t.wetTime=18;t.burning=false;if(spec.hosePush&&!W.net?.active){t.driftX=(t.driftX||0)+jet.dx*spec.hosePush*.05;t.driftZ=(t.driftZ||0)+jet.dz*spec.hosePush*.05;}splash({car:t,end:{x:t.x,y:t.y+1.54,z:t.z},normal:{y:1}});}
+   if(spec.hosePush&&!W.net?.active)for(const ball of W.playplace?.sports.balls||[])if(R.inHose(jet,{x:ball.p.x,y:ball.p.y-.8,z:ball.p.z}))ball.velocity.add(new T.Vector3(jet.dx,0,jet.dz).multiplyScalar(spec.hosePush*.05));
    for(const tree of W.trees)if(!tree.collapsed&&R.inHose(jet,tree)){tree.wetTime=18;for(const part of tree.parts||[]){part.mesh.setColorAt(part.index,new T.Color(.55,.72,.75));part.mesh.instanceColor.needsUpdate=true;}}
   }
  }
  W.updateUtilityEffects=(dt,active=true)=>{
   if(!W.scene)return;init();sprayClock+=dt;
   const emit=sprayClock>=.05;if(emit){sprayClock=0;streamCount=0;}
-  const own=W.getCarSpec();if(active&&own.hoses&&W.vehicle.waterMode!=='sinking'&&emit)spray(W.vehicle,dt);
-  for(const r of W.net?.remotes?.values()||[])if(r.car==='firetruck'&&r.connected&&!r.target.parked&&r.target.water!=='sinking'&&emit&&Math.hypot(r.current.x-W.vehicle.x,r.current.z-W.vehicle.z)<160)spray({...r.target,...r.current},dt);
+  const own=W.getCarSpec();if(active&&own.hoses&&W.vehicle.waterMode!=='sinking'&&emit)spray(W.vehicle,dt,own);
+  for(const r of W.net?.remotes?.values()||[])if(r.car==='firetruck'&&r.connected&&!r.target.parked&&r.target.water!=='sinking'&&emit&&Math.hypot(r.current.x-W.vehicle.x,r.current.z-W.vehicle.z)<160)spray({...r.target,...r.current},dt,r.mesh.model||{});
   if(emit){streamMesh.count=streamCount;streamMesh.instanceMatrix.needsUpdate=true;}
   for(const t of W.traffic){t.wetTime=Math.max(0,(t.wetTime||0)-dt);if(t.wrecked&&t.burning&&emit&&Math.hypot(t.x-W.vehicle.x,t.z-W.vehicle.z)<180)for(let i=0;i<4;i++)fireParticles.push({x:t.x+(Math.random()-.5)*1.6,y:t.y+.7,z:t.z+(Math.random()-.5)*3,vx:(Math.random()-.5)*.5,vy:2+Math.random()*2,vz:(Math.random()-.5)*.5,life:.6+Math.random()*.5,span:1.1});}
   for(const tree of W.trees)if(tree.wetTime>0){tree.wetTime-=dt;if(tree.wetTime<=0)for(const part of tree.parts||[]){part.mesh.setColorAt(part.index,new T.Color(1,1,1));part.mesh.instanceColor.needsUpdate=true;}}

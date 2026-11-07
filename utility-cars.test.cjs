@@ -22,11 +22,9 @@ test('all three utility cars reach and respect their nitro speed limits',()=>{
  const {W,context,reset,step}=game();vm.runInContext('Math.random=()=>.999999',context);
  for(const [id,kph]of [['stick',270],['firetruck',202],['beast',240]]){reset(id,100/3.6);step(6.9,{boost:true});const actual=Math.hypot(W.vehicle.vx,W.vehicle.vz)*3.6;console.log(id+' nitro '+actual.toFixed(2));assert(actual>=kph-.1&&actual<=kph+.01);}
 });
-test('StickCar attaches during a real collision, climbs 2–4 seconds then slides to ground without looping',()=>{
- const {W,context,reset,step,building}=game();const b=building();W.buildings=W.colliders=[b];W.buildCollisionIndex();
- for(const random of [0,.5,.99999]){vm.runInContext('Math.random=()=>'+random,context);reset('stick',12);step(.25);assert.equal(W.vehicle.wallMode,'climbing');assert(Math.abs(W.vehicle.wall.left+W.vehicle.wall.age-(2+random*2))<.001);const y=W.vehicle.y;step(1.5);assert(W.vehicle.y>y+10);assert.equal(b.hp,100);assert.equal(W.vehicle.pitch,Math.PI/2);step(W.vehicle.wall.left+.02);assert.equal(W.vehicle.wallMode,'sliding');step(7);assert.equal(W.vehicle.wallMode,'');assert(W.vehicle.y<.5);assert.equal(W.vehicle.wallBlocked,b);}
- reset('classic',12);step(.3);assert.equal(W.vehicle.wallMode,'');
- reset('stick',12);step(.25);step(.1,{gas:0});assert.equal(W.vehicle.wallMode,'sliding');b.collapsed=true;step(.01);assert.equal(W.vehicle.wallMode,'');
+test('StickCar climbs indefinitely, reaches a roof and releases safely',()=>{
+ const {W,reset,step,building}=game(),b=building();W.buildings=W.colliders=[b];W.buildCollisionIndex();reset('stick',12);step(.25);assert.equal(W.vehicle.wallMode,'climbing');assert.equal(W.vehicle.wall.left,Infinity);const y=W.vehicle.y;step(5);assert(W.vehicle.y>y+35);assert.equal(b.hp,100);assert.equal(W.vehicle.pitch,Math.PI/2);for(let i=0;i<100&&W.vehicle.wall;i++)step(.1);assert.equal(W.vehicle.wall,null);assert.equal(W.vehicle.roof,b);assert(W.vehicle.y>=b.y+b.h);assert.equal(W.vehicle.pitch,0);
+ reset('classic',12);step(.3);assert.equal(W.vehicle.wallMode,'');reset('stick',12);step(.25);step(.1,{gas:0});assert.equal(W.vehicle.wallMode,'sliding');b.collapsed=true;step(.01);assert.equal(W.vehicle.wallMode,'');
 });
 test('Beast rams buildings in one hit, crushes traffic and topples trees while keeping momentum',()=>{
  const {W,reset,step,building,THREE}=game(),b=building();W.buildings=W.colliders=[b];W.buildCollisionIndex();reset('beast',20);step(.22);assert.equal(b.hp,0);assert(b.collapsed);assert(W.vehicle.vz>19);

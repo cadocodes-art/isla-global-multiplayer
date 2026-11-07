@@ -7,17 +7,18 @@ import world from './world-data.json';
 import {freshTraffic,place,stepTraffic} from './traffic.js';
 import '../public/maker-core.js';
 export {CommunityHub} from './community.js';
-const V20=globalThis.IslaV20,rules=globalThis.IslaRules,models=new Map(world.cars.map(m=>[m.id,m]));
+const V=globalThis.IslaV22,V20=globalThis.IslaV20,rules=globalThis.IslaRules,models=new Map(world.cars.map(m=>[m.id,m]));
+const modelFor=s=>V.spec(models.get(s.car),s.upgradeLevel);
 const RECONNECT=90000,EMPTY_RESET=600000,MAX_SOCKETS=48;
 const numeric=(n,min,max)=>typeof n==='number'&&Number.isFinite(n)&&n>=min&&n<=max;
 const park=s=>Object.assign(s,{parked:true,nitro:false,vx:0,vy:0,vz:0,speed:0});
-const spawn=(slot,data=world)=>({...data.spawns[slot],vx:0,vy:0,vz:0,pitch:0,roll:0,steer:0,speed:0,car:'classic',color:models.get('classic').color,nitro:false,grounded:true,water:'dry',brake:false,parked:false});
-function validState(s){return s&&models.has(s.car)&&rules.validColor(s.color)&&[['x',-3000,4000],['y',-100,1500],['z',-3000,3000],['yaw',-100000,100000],['vx',-190,190],['vy',-150,150],['vz',-190,190],['pitch',-4,4],['roll',-4,4],['steer',-2,2],['speed',-190,190]].every(([k,a,b])=>numeric(s[k],a,b))&&['dry','skimming','sinking'].includes(s.water);}
+const spawn=(slot,data=world)=>({...data.spawns[slot],vx:0,vy:0,vz:0,pitch:0,roll:0,steer:0,speed:0,car:'classic',upgradeLevel:1,manualNukes:false,flapSerial:0,trickAngle:0,trickSpin:false,color:models.get('classic').color,nitro:false,grounded:true,water:'dry',brake:false,parked:false});
+function validState(s){return s&&models.has(s.car)&&rules.validColor(s.color)&&[['x',-3000,4000],['y',-100,1500],['z',-3000,3000],['yaw',-100000,100000],['vx',-190,190],['vy',-150,150],['vz',-190,190],['pitch',-4,4],['roll',-4,4],['steer',-2,2],['speed',-190,190]].every(([k,a,b])=>numeric(s[k],a,b))&&(s.upgradeLevel===undefined||Number.isInteger(s.upgradeLevel)&&s.upgradeLevel>=1&&s.upgradeLevel<=3)&&(s.flapSerial===undefined||numeric(s.flapSerial,0,1e9))&&(s.trickAngle===undefined||numeric(s.trickAngle,-7,7))&&['dry','skimming','sinking'].includes(s.water);}
 function reply(ws,data){try{ws.send(JSON.stringify(data));return true;}catch{return false;}}
 function serial(p){const {ws,previous,...saved}=p;return saved;}
 export class GlobalRoom extends DurableObject {
  constructor(ctx,env){
-  super(ctx,env);this.ctx=ctx;this.players=new Map();this.meta=new Map();this.attempts=new Map();this.configureMap('islands');this.mapBound=false;this.lastTick=Date.now();this.lastFrame=0;this.emptyAt=Date.now();this.nextAlarm=0;
+  super(ctx,env);this.ctx=ctx;this.env=env;this.players=new Map();this.meta=new Map();this.attempts=new Map();this.configureMap('islands');this.mapBound=false;this.lastTick=Date.now();this.lastFrame=0;this.emptyAt=Date.now();this.nextAlarm=0;
   ctx.blockConcurrencyWhile(async()=>{
 
    const saved=await ctx.storage.get('world-v2');
@@ -83,39 +84,42 @@ export class GlobalRoom extends DurableObject {
   reply(ws,{type:'welcome',props:this.props,rocket:this.rocketState(p,Date.now()),playground:this.playground?.snapshot(true,false),collisionSeq:p.collisionSeq||0,mapId:this.mapId,v:rules.protocol,code:'GLOBAL',id:p.id,token:p.token,resumed,state:p.state,scoreSeq:p.scoreSeq,hp:this.hp,trees:this.fallenTrees,buildings:this.world.buildings.map(b=>[b.id,Math.round(b.x*100),Math.round(b.z*100)]),players:this.roster(),host:null});
   this.announce();await this.schedule();
  }
+ fireNukes(p,s,now){const spec=modelFor(s),targets=[...this.world.buildings.filter(b=>this.hp[b.id]>0),...this.traffic,...[...this.players.values()].filter(q=>q.id!==p.id).map(q=>q.state)];p.nukeCharge=0;for(const shot of V.nukeShots(s,spec,targets,rules.nukeShot)){this.nukes.push({shot,actor:p.id,at:now+rules.nuke.flight*1000});this.broadcast({type:'nukeLaunch',id:p.id,shot,cooldown:spec.nukeCooldown||15});}}
  updateWeapon(p,s,now){
-  if(s.car!=='nuker'||p.state.car!=='nuker'){p.nukeCharge=0;return;}
+  if(s.car!=='nuker'||p.state.car!=='nuker'||V.level(s.upgradeLevel)!==V.level(p.state.upgradeLevel)){p.nukeCharge=0;return;}
   if(s.parked||p.state.parked||s.water==='sinking')return;
-  p.nukeCharge=(p.nukeCharge||0)+Math.max(0,Math.min(250,now-p.lastStateAt));
-  if(p.nukeCharge+1<rules.nuke.cooldown*1000)return;
-  p.nukeCharge=0;const shot=rules.nukeShot(s,1.2);this.nukes.push({shot,at:now+rules.nuke.flight*1000});this.broadcast({type:'nukeLaunch',id:p.id,shot});
+  const spec=modelFor(s),duration=(spec.nukeCooldown||15)*1000;
+  p.nukeCharge=Math.min(duration,(p.nukeCharge||0)+Math.max(0,Math.min(250,now-p.lastStateAt)));
+  if(p.nukeCharge+1>=duration&&!(spec.manualNukes&&s.manualNukes))this.fireNukes(p,s,now);
  }
  detonateNukes(now){
   const ready=this.nukes.filter(n=>n.at<=now);this.nukes=this.nukes.filter(n=>n.at>now);
   for(const n of ready){const blast=n.shot.target,buildings=[];for(const b of this.world.buildings)if(this.hp[b.id]>0&&rules.blastHits(blast,b)){this.hp[b.id]=0;this.hits[b.id]=now;buildings.push([b.id,0]);}
-   for(const t of this.traffic)rules.blastTraffic(blast,t);this.broadcast({type:'nukeBlast',blast,buildings});
+   for(const t of this.traffic)rules.blastTraffic(blast,t);this.broadcast({type:'nukeBlast',actor:n.actor,blast,buildings});
   }
   return ready.length>0;
  }
  collidePlayers(now){
   const list=[...this.players.values()].filter(p=>p.ws&&now>=(p.collisionUntil||0)&&(!p.collisionPending||now-p.collisionPending>800)&&(p.state.parked||now-p.lastStateAt<800));
-  for(let i=0;i<list.length;i++)for(let j=i+1;j<list.length;j++){const a=list[i],b=list[j];if(a.collisionPending||b.collisionPending)continue;const hit=globalThis.IslaPlayerCollisions.collide(a.state,b.state,a.collisionFrom||a.state,b.collisionFrom||b.state,models.get(a.state.car),models.get(b.state.car));if(!hit)continue;
+  for(let i=0;i<list.length;i++)for(let j=i+1;j<list.length;j++){const a=list[i],b=list[j];if(a.collisionPending||b.collisionPending)continue;const hit=globalThis.IslaPlayerCollisions.collide(a.state,b.state,a.collisionFrom||a.state,b.collisionFrom||b.state,modelFor(a.state),modelFor(b.state));if(!hit)continue;a.lastImpactAt=b.lastImpactAt=now;if(hit.b.dvy&&a.state.car==='launcher')reply(a.ws,{type:'activity',kind:'launch',target:'player:'+b.id,speed:Math.hypot(a.state.vx,a.state.vz)});if(hit.a.dvy&&b.state.car==='launcher')reply(b.ws,{type:'activity',kind:'launch',target:'player:'+a.id,speed:Math.hypot(b.state.vx,b.state.vz)});
    for(const [p,d]of [[a,hit.a],[b,hit.b]]){if(d.dvy){p.state.vy=Math.max(0,p.state.vy)+d.dvy;p.state.y+=.4;p.state.grounded=false;}p.state.x+=d.dx;p.state.z+=d.dz;p.state.vx+=d.dvx;p.state.vz+=d.dvz;p.collisionSeq=(p.collisionSeq||0)+1;p.collisionPending=now;p.collisionFrom={...p.state};reply(p.ws,{type:'collision',seq:p.collisionSeq,...d,speed:hit.speed});this.attach(p.ws,p);}
   }
   for(const p of this.players.values()){p.collisionFrom={...p.state};if(p.collisionPending&&now-p.collisionPending>800)p.collisionPending=0;}
  }
- rocketState(p,now){p.rocket??={until:0,readyAt:0,normal:0,nitro:0};const r=p.rocket;if(r.until&&now>=r.until){r.readyAt=r.until+30000+Math.random()*5000;r.until=0;}p.state.rocket=p.state.car==='ultra'&&r.until>now&&!p.state.parked;return {left:Math.max(0,(r.until-now)/1000),cooldown:Math.max(0,(r.readyAt-now)/1000),normal:r.normal,nitro:r.nitro};}
- stopRocket(p,now){if(p.rocket?.until){p.rocket.until=0;p.rocket.readyAt=now+30000+Math.random()*5000;}p.state.rocket=false;}
+ rocketState(p,now){p.rocket??={until:0,readyAt:0,normal:0,nitro:0};const r=p.rocket;if(r.until&&now>=r.until){const s=modelFor(p.state);r.readyAt=r.until+((s.rocketCooldownMin||30)+Math.random()*((s.rocketCooldownMax||35)-(s.rocketCooldownMin||30)))*1000;r.until=0;}p.state.rocket=p.state.car==='ultra'&&r.until>now&&!p.state.parked;return {left:Math.max(0,(r.until-now)/1000),cooldown:Math.max(0,(r.readyAt-now)/1000),normal:r.normal,nitro:r.nitro};}
+ stopRocket(p,now){if(p.rocket?.until){p.rocket.until=0;const s=modelFor(p.state);p.rocket.readyAt=now+((s.rocketCooldownMin||30)+Math.random()*((s.rocketCooldownMax||35)-(s.rocketCooldownMin||30)))*1000;}p.state.rocket=false;}
  frame(){
   const now=Date.now();if(now-this.lastFrame<95)return;
   let remaining=Math.min(.3,(now-this.lastTick)/1000);const obstacles=[...this.players.values()].map(p=>p.state);
+  if(this.playground)this.playground.world.onObjectLaunched=(target,state)=>{const driver=this.players.get(state.driverId);if(driver?.ws)reply(driver.ws,{type:'activity',kind:'launch',target,speed:Math.hypot(state.vx,state.vz)});};
   this.playground?.advance(remaining,[...this.players.values()].filter(p=>p.ws));
   while(remaining>0){const dt=Math.min(1/30,remaining);stepTraffic(this.traffic,obstacles,dt,this.world);for(const p of this.props)V20.stepProp(p,dt,(x,z)=>V20.gridHeight(this.world.ground,x,z));remaining-=dt;}
   this.lastTick=now;this.lastFrame=now;this.collidePlayers(now);
   const liveBuildings=this.world.buildings.filter(b=>this.hp[b.id]>0);
-  for(const p of this.players.values())if(p.ws&&p.state.car==='firetruck'&&!p.state.parked&&p.state.water!=='sinking')for(const jet of rules.hoseJets(p.state,liveBuildings))for(const t of this.traffic)if(rules.inHose(jet,t)){t.wetTime=18;if(t.burning){t.burning=false;this.wetDirty=true;}}
+  for(const p of this.players.values())if(p.ws&&p.state.car==='firetruck'&&!p.state.parked&&p.state.water!=='sinking')for(const jet of rules.hoseJets(p.state,liveBuildings,undefined,modelFor(p.state)))for(const t of this.traffic)if(rules.inHose(jet,t)){t.wetTime=18;const push=modelFor(p.state).hosePush||0;t.driftX=(t.driftX||0)+jet.dx*push*.1;t.driftZ=(t.driftZ||0)+jet.dz*push*.1;if(t.burning){t.burning=false;this.wetDirty=true;}}
  
-  this.broadcast({type:'frame',props:this.props,playground:this.playground?.snapshot(),time:now,players:[...this.players.values()].map(p=>({id:p.id,name:p.name,guest:p.guest!==false,connected:!!p.ws,rocket:this.rocketState(p,now),state:p.state,nukeRemaining:Math.max(0,rules.nuke.cooldown-(p.nukeCharge||0)/1000)})),traffic:this.traffic.map(t=>[t.x,t.y,t.z,t.yaw,t.vx,t.vz,t.speed,t.distance,!!t.wrecked,!!t.burning,t.wetTime||0,t.flightPitch||0])});
+  if(this.playground)for(const p of this.players.values())if(p.ws&&p.state.car==='firetruck'&&!p.state.parked){const spec=modelFor(p.state);if(spec.hosePush)for(const jet of rules.hoseJets(p.state,liveBuildings,undefined,spec))for(const b of this.playground.world.playplace.sports.balls)if(rules.inHose(jet,{x:b.p.x,y:b.p.y-.8,z:b.p.z})){b.velocity.x+=jet.dx*spec.hosePush*.1;b.velocity.z+=jet.dz*spec.hosePush*.1;}}
+  this.broadcast({type:'frame',props:this.props,playground:this.playground?.snapshot(),time:now,players:[...this.players.values()].map(p=>({id:p.id,name:p.name,guest:p.guest!==false,connected:!!p.ws,rocket:this.rocketState(p,now),state:p.state,nukeRemaining:Math.max(0,(modelFor(p.state).nukeCooldown||15)-(p.nukeCharge||0)/1000)})),traffic:this.traffic.map(t=>[t.x,t.y,t.z,t.yaw,t.vx,t.vz,t.speed,t.distance,!!t.wrecked,!!t.burning,t.wetTime||0,t.flightPitch||0])});
  }
  async webSocketMessage(ws,raw){
 
@@ -129,17 +133,19 @@ export class GlobalRoom extends DurableObject {
   if(this.detonateNukes(now))await this.checkpoint();
   if(data.type==='state'&&validState(data.state)){
    if(p.collisionPending&&data.state.collisionAck!==(p.collisionSeq||0)&&now-p.collisionPending<800)return;
-   if(now-p.lastStateAt<40)return;if(data.state.collisionAck===(p.collisionSeq||0))p.collisionPending=0;const s=data.state;if(Math.hypot(s.x-p.state.x,s.z-p.state.z)>35||s.car!==p.state.car){p.collisionUntil=now+3000;p.collisionFrom=null;}const appearance=p.state.car!==s.car||p.state.color!==s.color.toLowerCase();this.updateWeapon(p,s,now);p.previous=p.state;p.lastStateAt=now;
-   p.state=Object.fromEntries(['x','y','z','yaw','vx','vy','vz','pitch','roll','steer','speed','car','water'].map(k=>[k,s[k]]));p.state.color=s.color.toLowerCase();p.state.roadMode=s.roadMode===true;p.state.wallMode=s.car==='stick'&&['climbing','sliding'].includes(s.wallMode)?s.wallMode:'';
+   if(now-p.lastStateAt<40)return;if(data.state.collisionAck===(p.collisionSeq||0))p.collisionPending=0;const s=data.state;s.upgradeLevel=V.level(s.upgradeLevel);if(p.account&&(p.verifiedCar!==s.car||p.verifiedLevel!==s.upgradeLevel)){const garage=await this.env.COMMUNITY.getByName('isla-community-v16').internalGarage(p.account);if(!garage?.owned.includes(s.car)||s.upgradeLevel>(garage.upgrades[s.car]||1))return;p.verifiedCar=s.car;p.verifiedLevel=s.upgradeLevel;}if(Math.hypot(s.x-p.state.x,s.z-p.state.z)>35||s.car!==p.state.car){p.collisionUntil=now+3000;p.collisionFrom=null;}const appearance=p.state.car!==s.car||p.state.upgradeLevel!==s.upgradeLevel||p.state.color!==s.color.toLowerCase();this.updateWeapon(p,s,now);p.previous=p.state;p.lastStateAt=now;
+   p.state=Object.fromEntries(['x','y','z','yaw','vx','vy','vz','pitch','roll','steer','speed','car','water','upgradeLevel'].map(k=>[k,s[k]]));p.state.color=s.color.toLowerCase();p.state.manualNukes=modelFor(s).manualNukes&&s.manualNukes===true;p.state.flapSerial=s.flapSerial||0;p.state.trickAngle=s.trickAngle||0;p.state.trickSpin=s.trickSpin===true;p.state.roadMode=s.roadMode===true;p.state.wallMode=s.car==='stick'&&['climbing','sliding','holding'].includes(s.wallMode)?s.wallMode:'';
    for(const k of ['nitro','grounded','brake','parked'])p.state[k]=s[k]===true;if(p.state.parked)park(p.state);
    if(s.brake||s.parked||s.car!=='ultra')this.stopRocket(p,now);if(appearance)this.announce();this.frame();
   }else if(data.type==='playContact'&&this.playground&&validState(data.state)){
-   const s=data.state;if(now-(p.lastPlayContact||0)<85||s.car!==p.state.car||Math.hypot(s.x-p.state.x,s.y-p.state.y,s.z-p.state.z)>35||Math.hypot(s.vx,s.vy,s.vz)>Math.hypot(p.state.vx,p.state.vy,p.state.vz)+15)return;p.lastPlayContact=now;this.playground.contact({...s,driverId:p.id,driverName:p.name});this.frame();
+   const s=data.state;if(now-(p.lastPlayContact||0)<85||s.car!==p.state.car||Math.hypot(s.x-p.state.x,s.y-p.state.y,s.z-p.state.z)>35||Math.hypot(s.vx,s.vy,s.vz)>Math.hypot(p.state.vx,p.state.vy,p.state.vz)+15)return;p.lastPlayContact=now;this.playground.contact({...s,upgradeLevel:p.state.upgradeLevel,driverId:p.id,driverName:p.name});this.frame();
    }else if(data.type==='rocket'){
-   this.rocketState(p,now);if(data.action==='stop')this.stopRocket(p,now);else if(data.action==='start'&&p.state.car==='ultra'&&!p.state.parked&&p.state.water!=='sinking'&&!p.rocket.until&&now>=p.rocket.readyAt){p.rocket.until=now+8000;p.rocket.normal=(571+Math.random()*12)/3.6;p.rocket.nitro=(613+Math.random()*20)/3.6;}reply(ws,{type:'rocket',rocket:this.rocketState(p,now)});this.attach(ws,p);
+   this.rocketState(p,now);if(data.action==='stop')this.stopRocket(p,now);else if(data.action==='start'&&p.state.car==='ultra'&&!p.state.parked&&p.state.water!=='sinking'&&!p.rocket.until&&now>=p.rocket.readyAt){p.rocket.until=now+(modelFor(p.state).rocketDuration||8)*1000;p.rocket.normal=(571+Math.random()*12)/3.6;p.rocket.nitro=(613+Math.random()*20)/3.6;}reply(ws,{type:'rocket',rocket:this.rocketState(p,now)});this.attach(ws,p);
+  }else if(data.type==='nuke'){const s=p.state,spec=modelFor(s);if(s.car==='nuker'&&spec.manualNukes&&s.manualNukes&&!s.parked&&s.water!=='sinking'&&(p.nukeCharge||0)>=(spec.nukeCooldown||15)*1000-1)this.fireNukes(p,s,now);
+  }else if(data.type==='pulse'){const s=p.state,spec=modelFor(s);if(spec.impactPulse&&!s.parked&&now-(p.lastImpactAt||0)<1200&&now-(p.lastPulse||0)>6000){p.lastPulse=now;for(const t of this.traffic){const d=Math.hypot(t.x-s.x,t.z-s.z);if(d>0&&d<spec.pulseRadius){t.driftX+=(t.x-s.x)/d*spec.impactPulse;t.driftZ+=(t.z-s.z)/d*spec.impactPulse;}}for(const b of this.playground?.world.playplace.sports.balls||[]){const d=Math.hypot(b.p.x-s.x,b.p.z-s.z);if(d>0&&d<spec.pulseRadius){b.velocity.x+=(b.p.x-s.x)/d*spec.impactPulse;b.velocity.z+=(b.p.z-s.z)/d*spec.impactPulse;b.velocity.y+=2;}}}
   }else if(data.type==='propLaunch'){
-   const s=p.state,kind=data.kind,id=data.id,b=kind==='tree'?this.world.trees?.[id]:kind==='rock'?this.world.rocks?.[id]:null;
-   if(!b||!Number.isInteger(id)||s.car!=='launcher'||now-(p.lastPropLaunch||0)<500||this.props.length>=512||this.props.some(p=>p.kind===kind&&p.id===id)||kind==='tree'&&this.fallenTrees.some(t=>t[0]===id)||Math.hypot(s.x-b.x,s.z-b.z)>12||Math.abs(s.y-b.y)>5||!V20.front(s,b,kind==='tree'?V20.treeMinimum:V20.launcherMinimum))return;p.lastPropLaunch=now;if(kind==='tree'&&Math.random()>.72)return;const prop=V20.makeProp(b,kind,id,s);this.props.push(prop);this.broadcast({type:'propLaunch',prop});await this.checkpoint();
+   const s=p.state,spec=modelFor(s),kind=data.kind,id=data.id,b=kind==='tree'?this.world.trees?.[id]:kind==='rock'?this.world.rocks?.[id]:null;
+   if(!b||!Number.isInteger(id)||!(spec.launcher||spec.rockCrusher&&kind==='rock')||now-(p.lastPropLaunch||0)<500||this.props.length>=512||this.props.some(p=>p.kind===kind&&p.id===id)||kind==='tree'&&this.fallenTrees.some(t=>t[0]===id)||Math.hypot(s.x-b.x,s.z-b.z)>12||Math.abs(s.y-b.y)>5||!V20.front(s,b,kind==='tree'?(spec.treeMinimum||V20.treeMinimum):spec.rockCrusher?18:(spec.launchMinimum||V20.launcherMinimum)))return;p.lastPropLaunch=now;if(kind==='tree'&&Math.random()>(spec.treeChance||.72))return;const prop=V20.makeProp(b,kind,id,s,spec);this.props.push(prop);this.broadcast({type:'propLaunch',prop});if(spec.launcher)reply(ws,{type:'activity',kind:'launch',target:kind+':'+id,speed:Math.hypot(s.vx,s.vz)});await this.checkpoint();
   }else if(data.type==='chat'){
    if(!rules.validChat(data.message))return reply(ws,{type:'chatError',message:'Choose one of the preset messages.'});
    const remaining=rules.chatCooldown-(now-(p.lastChatAt||0));
@@ -151,15 +157,15 @@ export class GlobalRoom extends DurableObject {
    if(!Number.isInteger(data.id)||!b||this.hp[b.id]<=0||now-(this.hits[b.id]||0)<700||!numeric(data.speed,s.car==='beast'?4:15,190))return;
    if(Math.hypot(s.x-b.x,s.z-b.z)>Math.hypot(b.w,b.d)/2+10||s.y>b.y+b.h+2||s.y<b.y-3)return;
    const recent=Math.max(Math.hypot(s.vx,s.vz),p.previous?Math.hypot(p.previous.vx,p.previous.vz):0);if(data.speed>recent+12)return;
-   this.hits[b.id]=now;this.hp[b.id]=Math.max(0,this.hp[b.id]-(s.car==='beast'?100:Math.min(44,(data.speed**2-225)*.043*models.get(s.car).mass)));this.broadcast({type:'building',id:b.id,hp:this.hp[b.id],speed:data.speed});await this.checkpoint();
+   p.lastImpactAt=now;this.hits[b.id]=now;this.hp[b.id]=Math.max(0,this.hp[b.id]-(s.car==='beast'?100:Math.min(44*(modelFor(s).ramFactor||1),(data.speed**2-225)*.043*modelFor(s).mass*(modelFor(s).ramFactor||1))));this.broadcast({type:'building',actor:p.id,id:b.id,hp:this.hp[b.id],speed:data.speed});await this.checkpoint();
    }else if(data.type==='treeHit'){
    const t=this.world.trees?.[data.id],s=p.state;if(s.car!=='beast'||!Number.isInteger(data.id)||!t||this.fallenTrees.some(a=>a[0]===data.id)||Math.hypot(s.x-t.x,s.z-t.z)>8||s.y>t.y+t.h||s.y<t.y-3||Math.hypot(s.vx,s.vz)<4||!numeric(data.dx,-1,1)||!numeric(data.dz,-1,1))return;
    this.fallenTrees.push([data.id,data.dx,data.dz]);this.broadcast({type:'treeDown',id:data.id,dx:data.dx,dz:data.dz});await this.checkpoint();
   }else if(data.type==='trafficHit'){
  
    const t=this.traffic[data.id],s=p.state;if(!Number.isInteger(data.id)||!t||now-p.lastTrafficHit<220||Math.hypot(s.x-t.x,s.z-t.z)>12||Math.abs(s.y-t.y)>3||!numeric(data.nx,-1,1)||!numeric(data.nz,-1,1)||!numeric(data.speed,0,190))return;
-   if(s.car==='launcher'&&V20.front(s,t)&&data.speed>12){t.launchX=t.x;t.launchZ=t.z;V20.launchTraffic(t,s);p.lastTrafficHit=now;this.frame();return;}
-   const mass=models.get(s.car).mass,power=Math.min(data.speed,Math.hypot(s.vx-t.vx,s.vz-t.vz)+8)*.6*mass/(mass+1);p.lastTrafficHit=now;t.driftX-=data.nx*power;t.driftZ-=data.nz*power;t.speed*=.45;t.stun=1.6;if(s.car==='beast'&&data.speed>=4&&Math.hypot(s.vx-t.vx,s.vz-t.vz)>=4){t.wrecked=true;t.burning=true;t.speed=0;t.stun=999;await this.checkpoint();}
+   p.lastImpactAt=now;if(s.car==='launcher'&&V20.front(s,t,modelFor(s).launchMinimum||V20.launcherMinimum)&&data.speed>12){t.launchX=t.x;t.launchZ=t.z;if(V20.launchTraffic(t,s,modelFor(s)))reply(ws,{type:'activity',kind:'launch',target:'traffic:'+data.id,speed:Math.hypot(s.vx,s.vz)});p.lastTrafficHit=now;this.frame();return;}
+   const mass=modelFor(s).mass,power=Math.min(data.speed,Math.hypot(s.vx-t.vx,s.vz-t.vz)+8)*.6*mass/(mass+1);p.lastTrafficHit=now;t.driftX-=data.nx*power;t.driftZ-=data.nz*power;t.speed*=.45;t.stun=1.6;if(s.car==='beast'&&data.speed>=4&&Math.hypot(s.vx-t.vx,s.vz-t.vz)>=4){t.wrecked=true;t.burning=true;t.speed=0;t.stun=999;await this.checkpoint();}
   }else if(data.type==='aura'){
    if(!Number.isSafeInteger(data.seq)||data.seq!==p.scoreSeq+1||!Number.isSafeInteger(data.points)||data.points<=0||data.points>25000||now-p.lastScoreAt<100)return;
    p.scoreSeq=data.seq;p.lastScoreAt=now;p.score=Math.min(1e9,p.score+data.points);this.announce();
@@ -177,7 +183,7 @@ export default {
  async fetch(request,env){
   const url=new URL(request.url);
   if(url.pathname.startsWith('/api/')){if(!env.COMMUNITY)return Response.json({error:'Complete the V1.6 CommunityHub setup.'},{status:503});return env.COMMUNITY.getByName('isla-community-v16').fetch(request);}
-  if(url.pathname==='/healthz')return Response.json({ok:true,release:'2.1',room:'GLOBAL',capacity:rules.capacity,version:rules.protocol,maps:['islands','city','peaks','playplace','fern']});
+  if(url.pathname==='/healthz')return Response.json({ok:true,release:'2.2',room:'GLOBAL',capacity:rules.capacity,version:rules.protocol,maps:['islands','city','peaks','playplace','fern']});
   if(url.pathname==='/ws'){
    if(url.searchParams.get('map')==='obstacle')return new Response('Void Run has been replaced by Islayan Peaks. Refresh your game.',{status:410});
    if(request.method!=='GET'||request.headers.get('Upgrade')?.toLowerCase()!=='websocket')return new Response('WebSocket required',{status:426});

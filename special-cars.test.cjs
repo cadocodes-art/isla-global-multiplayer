@@ -26,10 +26,10 @@ test('Plane Car glides without nitro, can steer, accelerates to 290 in the air, 
  W.vehicle.y=.15;W.vehicle.vy=-1;step(.02,{boost:true});assert(W.vehicle.grounded);assert(Math.hypot(W.vehicle.vx,W.vehicle.vz)*3.6<=240.01);
  reset('plane',180,80);step(1,{steer:1});assert(W.vehicle.yaw>.03);assert(W.vehicle.x>0);assert(W.vehicle.y>60);
 });
-test('automatic rear nuke waits 15 seconds and blasts nearby buildings and traffic behind, not ahead',()=>{
+test('automatic forward nuke waits 15 seconds and blasts targets ahead',()=>{
  const {W,c,reset}=game();reset('nuker',0);const shots=[],show=W.showNuke;W.showNuke=(...a)=>{shots.push(a[0]);show(...a);};
- for(let i=0;i<1799;i++)W.stepWeapons(1/120);assert.equal(shots.length,0);W.stepWeapons(1/120);assert.equal(shots.length,1);assert(shots[0].target.z<W.vehicle.z-30);
- const building=(id,z)=>({id,x:0,y:0,z,yaw:0,w:10,d:10,h:8,hp:100,collapsed:false});W.buildings=[building(0,-42),building(1,30),building(2,-100)];W.traffic=[{x:5,y:0,z:-40,speed:10,driftX:0,driftZ:0}];
+ for(let i=0;i<1799;i++)W.stepWeapons(1/120);assert.equal(shots.length,0);W.stepWeapons(1/120);assert.equal(shots.length,1);assert(shots[0].target.z>W.vehicle.z+30);
+ const building=(id,z)=>({id,x:0,y:0,z,yaw:0,w:10,d:10,h:8,hp:100,collapsed:false});W.buildings=[building(0,42),building(1,-30),building(2,100)];W.traffic=[{x:5,y:0,z:40,speed:10,driftX:0,driftZ:0}];
  W.updateWeapons(.74);assert.equal(W.buildings[0].hp,100);W.updateWeapons(.02);assert.equal(W.buildings[0].hp,0);assert.equal(W.buildings[1].hp,100);assert.equal(W.buildings[2].hp,100);assert(W.traffic[0].speed<3);assert(W.traffic[0].driftX>10);
  W.resetVehicle();W.stepWeapons(1/120);assert.equal(shots.length,1,'recover does not immediately fire');W.vehicle.waterMode='sinking';W.stepWeapons(30);assert.equal(shots.length,1);W.garage.selected='classic';W.stepWeapons(30);assert.equal(shots.length,1);
  W.clearWeapons();assert.equal(W.scene.children.length,0,'temporary blast meshes are cleaned up');

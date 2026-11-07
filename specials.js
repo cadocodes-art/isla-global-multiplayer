@@ -18,11 +18,11 @@
   const nose=new T.Mesh(new T.ConeGeometry(.3,.55,12),gold);nose.rotation.x=-Math.PI/2;nose.position.z=-1;root.add(nose);
   for(const side of [-1,1])W.box(root,side*.35,0,.55,.5,.09,.5,gold);
   const flame=new T.Mesh(new T.ConeGeometry(.24,1,10),new T.MeshBasicMaterial({color:0xffab35}));flame.rotation.x=Math.PI/2;flame.position.z=1.2;root.add(flame);
-  root.position.set(shot.x,shot.y,shot.z);root.rotation.y=shot.yaw;W.scene.add(root);nukes.push({shot,root,age:0,local});
+  root.position.set(shot.x,shot.y,shot.z);root.rotation.y=shot.yaw+Math.PI;W.scene.add(root);nukes.push({shot,root,age:0,local});
  };
  function dispose(root){W.scene.remove(root);const geometries=new Set(),materials=new Set();root.traverse(o=>{if(o.geometry&&o.geometry!==W.unitBox)geometries.add(o.geometry);if(o.material)materials.add(o.material);});geometries.forEach(g=>g.dispose());materials.forEach(m=>m.dispose());}
  W.blastDamage=blast=>{
-  for(const b of W.buildings){if(b.collapsed||!R.blastHits(blast,b))continue;b.hp=0;b.collapsed=true;W.onBuildingDamage?.(b,100,0);W.onCollapse?.(b);}
+  for(const b of W.buildings){if(b.collapsed||!R.blastHits(blast,b))continue;b.hp=0;b.collapsed=true;W.onBuildingDamage?.(b,100,0);W.onCollapse?.(b);W.awardV22?.('nuke',{target:b.id});}
   for(const t of W.traffic||[])R.blastTraffic(blast,t);
  };
  W.showNukeBlast=blast=>{
