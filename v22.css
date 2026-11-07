@@ -13,11 +13,14 @@ body.paused .v22-ability{display:none}
 .ability-dock{display:flex;flex-direction:column;align-items:flex-end;gap:8px;margin-bottom:12px;pointer-events:auto}
 .speed-panel .v22-ability,.speed-panel #rocketButton{position:static;inset:auto;transform:none;margin:0;min-height:48px;max-width:100%;font-size:12px;padding:10px 12px;pointer-events:auto;touch-action:none;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
 .v22-ability[hidden]{display:none!important}
-body.touch-mode .stick-wrap{transform:translate(66px,-42px)}
-@media(max-height:500px){body.touch-mode .stick-wrap{transform:translate(54px,-28px)}body.touch-mode .speed-panel .v22-ability,body.touch-mode .speed-panel #rocketButton{min-height:44px;padding:8px;font-size:11px}}
+body.touch-mode .stick-wrap{transform:translate(106px,-72px)}
+@media(max-height:500px){body.touch-mode .stick-wrap{transform:translate(94px,-58px)}body.touch-mode .speed-panel .v22-ability,body.touch-mode .speed-panel #rocketButton{min-height:44px;padding:8px;font-size:11px}}
 body.touch-mode .bottom-left{bottom:230px}
 @media(max-height:500px){body.touch-mode .bottom-left{top:70px;bottom:auto;left:max(180px,calc(env(safe-area-inset-left) + 162px))}}
 /* Keep the farther-right joystick clear of camera/recovery and right-thumb controls. */
 @media(max-width:760px) and (min-height:501px){body.touch-mode .touch-shortcuts{left:0;transform:none}}
 @media(min-width:361px) and (max-width:400px) and (min-height:501px){body.touch-mode #driveStick{width:138px;height:138px}}
-@media(max-width:360px) and (min-height:501px){body.touch-mode .stick-wrap{transform:translate(66px,-96px)}body.touch-mode .speed-panel{top:64px;bottom:auto;width:115px}body.touch-mode .bottom-left{top:254px;bottom:auto}body.touch-mode .map-shell{width:60px;height:60px}body.touch-mode .map-caption{display:none}}
+@media(max-width:360px) and (min-height:501px){body.touch-mode .stick-wrap{transform:translate(106px,-126px)}body.touch-mode .speed-panel{top:64px;bottom:auto;width:115px}body.touch-mode .bottom-left{top:254px;bottom:auto}body.touch-mode .map-shell{width:60px;height:60px}body.touch-mode .map-caption{display:none}}
+
+@media(max-width:760px) and (min-height:501px){body.touch-mode .speed-panel{top:64px;bottom:auto;width:115px}}
+@media(min-width:361px) and (max-width:760px) and (min-height:501px){body.touch-mode .touch-actions{flex-direction:column;align-items:center;gap:10px}}

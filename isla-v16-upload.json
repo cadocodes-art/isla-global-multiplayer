@@ -359,7 +359,7 @@
     {
       "name": "touch.test.cjs",
       "destination": "test/touch.test.cjs",
-      "sha256": "355855faceae3df08badb7ffcbe7a716ea901c2274fecc5fbee258a206270caf"
+      "sha256": "f3cafd1e618bfdcd2e3ce97ca202d5f71f06b2f5c1d8eeb65f65066c98812ee6"
     },
     {
       "name": "units.test.cjs",
@@ -489,7 +489,7 @@
     {
       "name": "README.txt",
       "destination": "README.txt",
-      "sha256": "e9f89bedbcba784d4394d0fbbe1b98ac7e350111032898f9036dceada61b1644"
+      "sha256": "3c52e32e69b9a017a4fe77ecf2881ebbd61711acc833abc0d8046f66ab5b4748"
     },
     {
       "name": "v22-shared.js",
@@ -504,7 +504,7 @@
     {
       "name": "v22-gameplay.js",
       "destination": "public/v22-gameplay.js",
-      "sha256": "07310b4fcf6ce42be34487d0b8d20268b47e486585a6887884ba429b7da092b7"
+      "sha256": "ed90da6b2fadd1199516d200489c8aa79146d8c034d816604193c82bf50cc2d2"
     },
     {
       "name": "v22-economy-client.js",
@@ -524,7 +524,7 @@
     {
       "name": "v22.css",
       "destination": "public/v22.css",
-      "sha256": "542f5b6654cf8d182e0bf9b1757682014d30857aa0281d39a14f87796940d92c"
+      "sha256": "729829baed9a2e6226f9d0bf570da42385fd83c22d09c06cdbdccd027090f924"
     },
     {
       "name": "v22-economy.js",
@@ -544,7 +544,7 @@
     {
       "name": "v22.test.cjs",
       "destination": "test/v22.test.cjs",
-      "sha256": "39e87a65c5349644282e567692c240e225071dd7afc499436142faf9887b6e8e"
+      "sha256": "f8a384dd5b6cd1a27bc7d26097ba7bcdc8fd5686c1c0d395266d09d2af2a4e31"
     },
     {
       "name": "v22-network.test.cjs",
@@ -569,7 +569,7 @@
     {
       "name": "V2.22-Notes.md",
       "destination": "V2.22-Notes.md",
-      "sha256": "ec619e371b44210dcf4bd4853d7413f240d86f0cb41479755732979ad2fbb5bd"
+      "sha256": "7bd145b9a3b2a0d8d90ddf384a04b7d537988c120079c5fa9effbf9b1328ebf9"
     }
   ]
 }
