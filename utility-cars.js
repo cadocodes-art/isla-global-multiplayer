@@ -49,9 +49,9 @@
  function spray(s,dt,spec){
   const jets=R.hoseJets(s,W.buildings,(x,z)=>W.driveHeight(x,z,s.y<(W.bridgeSurface?.(x,z)??-Infinity)-.6),spec);
   for(const jet of jets){
-   for(let i=0;i<12&&streamCount<768;i++){const a=jet.distance*i/12,b=jet.distance*(i+1)/12,p=new T.Vector3(jet.start.x+jet.dx*a,jet.start.y+.10*a-.014*a*a,jet.start.z+jet.dz*a),q=new T.Vector3(jet.start.x+jet.dx*b,jet.start.y+.10*b-.014*b*b,jet.start.z+jet.dz*b),delta=q.clone().sub(p),matrix=new T.Matrix4().compose(p.add(q).multiplyScalar(.5),new T.Quaternion().setFromUnitVectors(new T.Vector3(0,1,0),delta.clone().normalize()),new T.Vector3(1,delta.length(),1));streamMesh.setMatrixAt(streamCount++,matrix);}
+   for(let i=0;i<12&&streamCount<768;i++){const a=jet.distance*i/12,b=jet.distance*(i+1)/12,p=new T.Vector3(jet.start.x+jet.dx*a,R.hoseY(jet,a),jet.start.z+jet.dz*a),q=new T.Vector3(jet.start.x+jet.dx*b,R.hoseY(jet,b),jet.start.z+jet.dz*b),delta=q.clone().sub(p),matrix=new T.Matrix4().compose(p.add(q).multiplyScalar(.5),new T.Quaternion().setFromUnitVectors(new T.Vector3(0,1,0),delta.clone().normalize()),new T.Vector3(1,delta.length(),1));streamMesh.setMatrixAt(streamCount++,matrix);}
  
-   for(let i=0;i<10;i++){const t=Math.random(),d=jet.distance*t;waterParticles.push({x:jet.start.x+jet.dx*d+(Math.random()-.5)*.25,y:jet.start.y+.10*d-.014*d*d+(Math.random()-.5)*.25,z:jet.start.z+jet.dz*d+(Math.random()-.5)*.25,vx:jet.dx*19,vy:2-d*.55,vz:jet.dz*19,life:Math.min(.22,(jet.distance-d)/19),span:.22});}
+   for(let i=0;i<10;i++){const t=Math.random(),d=jet.distance*t;waterParticles.push({x:jet.start.x+jet.dx*d+(Math.random()-.5)*.25,y:R.hoseY(jet,d)+(Math.random()-.5)*.25,z:jet.start.z+jet.dz*d+(Math.random()-.5)*.25,vx:jet.dx*19,vy:19*(.10-2*(jet.drop??.014)*d),vz:jet.dz*19,life:Math.min(.22,(jet.distance-d)/19),span:.22});}
    splash(jet);
    for(const t of W.traffic){if(!R.inHose(jet,t))continue;t.wetTime=18;t.burning=false;if(spec.hosePush&&!W.net?.active){t.driftX=(t.driftX||0)+jet.dx*spec.hosePush*.05;t.driftZ=(t.driftZ||0)+jet.dz*spec.hosePush*.05;}splash({car:t,end:{x:t.x,y:t.y+1.54,z:t.z},normal:{y:1}});}
    if(spec.hosePush&&!W.net?.active)for(const ball of W.playplace?.sports.balls||[])if(R.inHose(jet,{x:ball.p.x,y:ball.p.y-.8,z:ball.p.z}))ball.velocity.add(new T.Vector3(jet.dx,0,jet.dz).multiplyScalar(spec.hosePush*.05));

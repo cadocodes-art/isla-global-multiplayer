@@ -28,18 +28,19 @@
 
  function hoseJets(s,buildings=[],ground,spec={}){
   const sx=Math.sin(s.yaw),sz=Math.cos(s.yaw),near=buildings.filter(b=>!b.collapsed&&Math.hypot(b.x-s.x,b.z-s.z)<Math.hypot(b.w,b.d)/2+(spec.hoseRange||18)+4),jets=[];
-  for(const side of spec.roofHose?[-1,1,0]:[-1,1]){const aim=s.yaw+(s.steer||0)*.7,dx=side?sz*side:Math.sin(aim),dz=side?-sx*side:Math.cos(aim),start={x:s.x+dx*(side?1.71:2)-sx*.49,y:s.y+(side?2.03:2.7),z:s.z+dz*(side?1.71:2)-sz*.49};let end={...start},distance=spec.hoseRange||18,normal={x:0,y:1,z:0},building;
-   search:for(let d=.5;d<=(spec.hoseRange||18);d+=.5){const p={x:start.x+dx*d,y:start.y+.10*d-.014*d*d,z:start.z+dz*d};
+  for(const side of spec.roofHose?[-1,1,0]:[-1,1]){const aim=s.yaw+(s.steer||0)*.7,dx=side?sz*side:Math.sin(aim),dz=side?-sx*side:Math.cos(aim),start={x:s.x+dx*(side?1.71:2)-sx*.49,y:s.y+(side?2.03:2.7),z:s.z+dz*(side?1.71:2)-sz*.49};let end={...start},distance=spec.hoseRange||18,normal={x:0,y:1,z:0},building;const drop=distance>18?(start.y-s.y+.12+.10*distance)/(distance*distance):.014;
+   search:for(let d=.5;d<=(spec.hoseRange||18);d+=.5){const p={x:start.x+dx*d,y:start.y+.10*d-drop*d*d,z:start.z+dz*d};
     for(const b of near){const co=Math.cos(b.yaw),si=Math.sin(b.yaw),xx=p.x-b.x,zz=p.z-b.z,lx=xx*co-zz*si,lz=xx*si+zz*co;
-     if(Math.abs(lx)<b.w/2&&Math.abs(lz)<b.d/2&&p.y>b.y&&p.y<b.y+b.h){const nx=b.w/2-Math.abs(lx)<b.d/2-Math.abs(lz)?Math.sign(lx):0,nz=nx?0:Math.sign(lz);normal={x:nx*co+nz*si,y:0,z:-nx*si+nz*co};building=b.id;let lo=d-.5,hi=d;for(let n=0;n<8;n++){const mid=(lo+hi)/2,xx=start.x+dx*mid-b.x,zz=start.z+dz*mid-b.z;if(Math.abs(xx*co-zz*si)<b.w/2&&Math.abs(xx*si+zz*co)<b.d/2)hi=mid;else lo=mid;}distance=lo;end={x:start.x+dx*lo,y:start.y+.10*lo-.014*lo*lo,z:start.z+dz*lo};break search;}
+     if(Math.abs(lx)<b.w/2&&Math.abs(lz)<b.d/2&&p.y>b.y&&p.y<b.y+b.h){const nx=b.w/2-Math.abs(lx)<b.d/2-Math.abs(lz)?Math.sign(lx):0,nz=nx?0:Math.sign(lz);normal={x:nx*co+nz*si,y:0,z:-nx*si+nz*co};building=b.id;let lo=d-.5,hi=d;for(let n=0;n<8;n++){const mid=(lo+hi)/2,xx=start.x+dx*mid-b.x,zz=start.z+dz*mid-b.z;if(Math.abs(xx*co-zz*si)<b.w/2&&Math.abs(xx*si+zz*co)<b.d/2)hi=mid;else lo=mid;}distance=lo;end={x:start.x+dx*lo,y:start.y+.10*lo-drop*lo*lo,z:start.z+dz*lo};break search;}
     }
     end=p;if(ground&&p.y<=ground(p.x,p.z)+.035){end.y=ground(p.x,p.z)+.035;distance=d;break;}
    }
-   jets.push({start,end,dx,dz,distance,normal,building});
+   jets.push({start,end,dx,dz,distance,normal,building,drop});
   }return jets;
  }
- function inHose(jet,t){const dx=t.x-jet.start.x,dz=t.z-jet.start.z,d=dx*jet.dx+dz*jet.dz,cross=dx*jet.dz-dz*jet.dx,y=jet.start.y+.10*d-.014*d*d;return d>=-1&&d<=jet.distance+1&&Math.abs(cross)<2.6&&Math.abs(t.y+.8-y)<2.5;}
- const rules=Object.freeze({hoseJets,inHose,nuke,nukeShot,blastHits,blastTraffic,validateName,validColor,protocol:3,capacity:32,quickChat,validChat,chatDuration:6000,chatCooldown:3000});
+ function hoseY(jet,d){return jet.start.y+.10*d-(jet.drop??.014)*d*d;}
+ function inHose(jet,t){const dx=t.x-jet.start.x,dz=t.z-jet.start.z,d=dx*jet.dx+dz*jet.dz,cross=dx*jet.dz-dz*jet.dx,y=hoseY(jet,d);return d>=-1&&d<=jet.distance+1&&Math.abs(cross)<2.6&&Math.abs(t.y+.8-y)<2.5;}
+ const rules=Object.freeze({hoseJets,hoseY,inHose,nuke,nukeShot,blastHits,blastTraffic,validateName,validColor,protocol:3,capacity:32,quickChat,validChat,chatDuration:6000,chatCooldown:3000});
  globalThis.IslaRules=rules;
  if(typeof module!=='undefined'&&module.exports)module.exports=rules;
 })();

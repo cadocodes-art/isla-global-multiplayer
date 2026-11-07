@@ -42,7 +42,7 @@ export async function v22Route(h,{path,method,body,a,need}){
    b=data.buildings.find(b=>b.id===body.target);if(!b)fail('That building is not in this map.');if(kind==='nuke'&&body.car!=='nuker')fail('Use Nuker for this activity.');
    const distance=Math.hypot(body.position.x-b.x,body.position.z-b.z);if(distance>Math.hypot(b.w,b.d)/2+(kind==='nuke'?160:20))fail('Drive closer to that building.');target=V.buildingKey(b);category='building';
   }else if(kind==='drift'){if(!(body.duration>=2&&body.duration<=120&&body.speed>=7&&body.speed<=200))fail('Complete a controlled drift first.');}
-  else if(kind==='launch'){if(body.car!=='launcher'||!body.target||!(body.speed>=115/3.6&&body.speed<=200))fail('Launch an object with Launcher first.');}
+  else if(kind==='launch'){if(body.car!=='launcher'||!body.target||!(body.speed>=(V.catalog.launcher[g.levels.launcher]?.params.launchMinimum??150/3.6)&&body.speed<=200))fail('Launch an object with Launcher first.');}
   else if(['strike','spare','slide'].includes(kind)){if(run.map!=='playplace')fail('This activity is in The Playplace.');if(kind==='slide'&&!(body.duration>=2&&body.duration<=120))fail('Complete the waterslide first.');if(kind!=='slide'&&body.pins!==10)fail('Complete the bowling roll first.');}
   const previous=h.one('SELECT at FROM v22_events WHERE account=? AND kind=? AND map=? AND target=? ORDER BY at DESC LIMIT 1',a.id,category,run.map,target);
   const wait=category==='building'?8000:kind==='drift'?2500:kind==='launch'?750:kind==='slide'?8000:8000;

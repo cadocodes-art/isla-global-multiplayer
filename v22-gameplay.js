@@ -14,7 +14,7 @@
   if(s.airDash&&airborne(c)&&!c.airAbilityUsed){c.vx+=Math.sin(c.yaw)*s.airDash;c.vz+=Math.cos(c.yaw)*s.airDash;c.airAbilityUsed=true;cap(c,s.boostLimit);return true;}
   if(s.airLift&&airborne(c)&&!c.airAbilityUsed){c.vy=Math.min(12,Math.max(c.vy,-1)+s.airLift);c.airAbilityUsed=true;return true;}
   if(s.hop&&c.grounded&&!c.wall&&c.waterMode==='dry'){launch(c,s.hop);cooldowns[key]=clock+s.hopCooldown;return true;}
-  if(s.waterBurst&&c.waterMode==='skimming'){c.waterBurstLeft=1.5;cooldowns[key]=clock+12;return true;}
+  if(s.waterBurst&&c.waterMode==='skimming'){c.waterBurstLeft=s.waterBurstDuration||1.5;cooldowns[key]=clock+(s.waterBurstCooldown||12);return true;}
   if(s.cruise&&c.grounded){c.cruiseSpeed=c.cruiseSpeed?0:Math.min(s.cruise/3.6,Math.max(8,Math.hypot(c.vx,c.vz)));W.v22Notice(c.cruiseSpeed?'CRUISE ON':'CRUISE OFF',c.cruiseSpeed?W.units.speedKph(c.cruiseSpeed*3.6)+' '+W.units.speedUnit:'',1.5);return true;}return false;
  };
  function cap(c,limit){const n=Math.hypot(c.vx,c.vz);if(n>limit){c.vx*=limit/n;c.vz*=limit/n;}}
@@ -29,7 +29,7 @@
  const step=W.stepVehicle;W.stepVehicle=(dt,input,time)=>{clock=time;lastInput=input;const c=W.vehicle,s=W.getCarSpec(),wasGrounded=c.grounded,wasRamp=c.ramp;
   if(c.roof&&(c.roof.collapsed||!inside(c.roof,c.x,c.z,.15))){c.roof=null;c.grounded=false;}
   if(c.cruiseSpeed){if(input.brake||input.handbrake||!s.cruise)c.cruiseSpeed=0;else{const ahead=s.adaptiveCruise&&nearAhead(c,35),target=ahead?Math.min(c.cruiseSpeed,Math.max(0,Math.hypot(ahead.x-c.x,ahead.z-c.z)-8)):c.cruiseSpeed;input={...input,gas:Math.hypot(c.vx,c.vz)<target?1:0,brake:Math.hypot(c.vx,c.vz)>target+1?.55:0};}}
-  if(s.slipstream&&c.grounded&&input.gas&&nearAhead(c)){const add=s.engine*.4*dt;c.vx+=Math.sin(c.yaw)*add;c.vz+=Math.cos(c.yaw)*add;if(s.slipstreamRecharge&&c.nitroTime<=0)c.nitroCharge=Math.min(1,c.nitroCharge+s.slipstreamRecharge*dt);}
+  if(s.slipstream&&c.grounded&&input.gas&&nearAhead(c)){const add=s.engine*(s.slipstreamPower||.4)*dt;c.vx+=Math.sin(c.yaw)*add;c.vz+=Math.cos(c.yaw)*add;if(s.slipstreamRecharge&&c.nitroTime<=0)c.nitroCharge=Math.min(1,c.nitroCharge+s.slipstreamRecharge*dt);}
   step(dt,input,time);
   if(s.amphibious&&c.grounded&&c.waterMode==='dry'&&(c.boatUsed||0)>0){c.boatLandTime=(c.boatLandTime||0)+dt;if(c.boatLandTime>=10){c.boatUsed=0;c.boatLandTime=0;}}
   if(s.amphibious&&c.waterMode!=='dry'){const bounds=W.customMap?{minX:-W.customMap.size/2,maxX:W.customMap.size/2,minZ:-W.customMap.size/2,maxZ:W.customMap.size/2}:W.mapId==='playplace'?{minX:-597,maxX:597,minZ:-522,maxZ:522}:W.mapId==='city'?W.cityLimits:{minX:W.mapBounds.x,maxX:W.mapBounds.x+W.mapBounds.size,minZ:W.mapBounds.z,maxZ:W.mapBounds.z+W.mapBounds.size};for(const axis of ['x','z']){const min=bounds[axis==='x'?'minX':'minZ']+3,max=bounds[axis==='x'?'maxX':'maxZ']-3;if(c[axis]<min){c[axis]=min;c['v'+axis]=Math.max(0,c['v'+axis]);}if(c[axis]>max){c[axis]=max;c['v'+axis]=Math.min(0,c['v'+axis]);}}}
@@ -37,7 +37,7 @@
   if(wasRamp&&!c.ramp&&!c.grounded&&s.rampLift&&Math.hypot(c.vx,c.vz)>20)c.vy+=s.rampLift;
   if(airborne(c)){if(s.airSteer&&!s.glider){const turn=(input.steer||0)*s.airSteer*dt;c.yaw+=turn;}if(s.descentLimit&&!s.glider)c.vy=Math.max(c.vy,-s.descentLimit);if(s.airBrake&&input.brake){c.vx*=Math.exp(-s.airBrake*dt);c.vz*=Math.exp(-s.airBrake*dt);c.yawRate*=Math.exp(-4*dt);}}
   if(s.waterPivot&&c.waterMode==='skimming'&&Math.hypot(c.vx,c.vz)<8)c.yaw+=(input.steer||0)*s.waterPivot*dt;
-  if(c.waterBurstLeft>0){c.waterBurstLeft=Math.max(0,c.waterBurstLeft-dt);if(c.waterMode==='skimming'){c.vx+=Math.sin(c.yaw)*12*dt;c.vz+=Math.cos(c.yaw)*12*dt;cap(c,s.boostLimit);}}
+  if(c.waterBurstLeft>0){c.waterBurstLeft=Math.max(0,c.waterBurstLeft-dt);if(c.waterMode==='skimming'){c.vx+=Math.sin(c.yaw)*(s.waterBurstAcceleration||12)*dt;c.vz+=Math.cos(c.yaw)*(s.waterBurstAcceleration||12)*dt;cap(c,s.boostLimit);}}
   const drifting=c.grounded&&c.waterMode==='dry'&&Math.hypot(c.vx,c.vz)>7&&c.slip>2.1&&(input.handbrake||Math.abs(input.steer)>.2);
   if(drifting){drift+=dt;if(s.driftRecharge&&c.nitroTime<=0)c.nitroCharge=Math.min(1,c.nitroCharge+s.driftRecharge*dt);}else{if(drift>=2&&time-lastDrift>3){W.awardV22('drift',{duration:Math.min(120,drift),speed:Math.max(7,Math.hypot(c.vx,c.vz)),target:'drift'});if(s.driftExitBoost&&time>(cooldowns.driftExit||0)){c.vx+=Math.sin(c.yaw)*s.driftExitBoost;c.vz+=Math.cos(c.yaw)*s.driftExitBoost;cap(c,s.boostLimit);cooldowns.driftExit=time+6;}lastDrift=time;}drift=0;if(s.driftRecovery&&c.grounded&&!input.handbrake){const sx=Math.sin(c.yaw),sz=Math.cos(c.yaw),lat=c.vx*sz-c.vz*sx,f=1-Math.exp(-s.driftRecovery*dt);c.vx-=sz*lat*f;c.vz+=sx*lat*f;}}
   if(trick){trick.age+=dt;if(!airborne(c)){trick=null;}else if(trick.age>=.65){if(W.aura?.flight&&!W.aura.flight.trickBonus)W.aura.flight.trickBonus=.03+Math.random()*.01;trick=null;}}
