@@ -35,22 +35,21 @@
  function buildingKey(b){if(b.rewardKey)return b.rewardKey;if(b.object?.id)return 'object:'+b.object.id;return [b.x,b.y,b.z,b.w,b.d].map(v=>Math.round(v*10)).join(':');}
  // Layouts are deterministic; pickup timers remain personal. New IDs avoid old-layout cooldowns.
  function coins(key,roads,buildings,height,bounds){
-  const rand=random('iscoins-2.31:'+key),result=[],samples=[],segments=new Map(),blocks=new Map();
+  const rand=random('iscoins-2.32:'+key),result=[],segments=new Map(),blocks=new Map();
   const max=key==='playplace'?90:180,b=bounds||{minX:-900,maxX:900,minZ:-900,maxZ:900};
   const cell=(x,z)=>Math.floor(x/64)+','+Math.floor(z/64);
   function index(grid,item,x0,x1,z0,z1){for(let x=Math.floor(x0/64);x<=Math.floor(x1/64);x++)for(let z=Math.floor(z0/64);z<=Math.floor(z1/64);z++){const k=x+','+z;if(!grid.has(k))grid.set(k,[]);grid.get(k).push(item);}}
-  for(const r of roads||[]){const ps=(r.samples||[]).filter(p=>Number.isFinite(p.x)&&Number.isFinite(p.z));for(let i=0;i<ps.length;i++){const p=ps[i],q=ps[Math.min(i+1,ps.length-1)],width=Math.max(1,p.width||r.width||8),pad=width/2+12,s={p,q,pad};samples.push(p);index(segments,s,Math.min(p.x,q.x)-pad,Math.max(p.x,q.x)+pad,Math.min(p.z,q.z)-pad,Math.max(p.z,q.z)+pad);}}
+  for(const r of roads||[]){const ps=(r.samples||[]).filter(p=>Number.isFinite(p.x)&&Number.isFinite(p.z));for(let i=0;i<ps.length;i++){const p=ps[i],q=ps[Math.min(i+1,ps.length-1)],width=Math.max(1,p.width||r.width||8),pad=width/2+12,s={p,q,pad,width};index(segments,s,Math.min(p.x,q.x)-pad,Math.max(p.x,q.x)+pad,Math.min(p.z,q.z)-pad,Math.max(p.z,q.z)+pad);}}
   const roofs=[];
   for(const building of buildings||[]){const r=Math.hypot(building.w,building.d)/2+4;index(blocks,building,building.x-r,building.x+r,building.z-r,building.z+r);if(!building.obb&&building.w>=5&&building.d>=5&&Number.isFinite(building.y+building.h))roofs.push(building);}
   function nearRoad(x,z){return (segments.get(cell(x,z))||[]).some(({p,q,pad})=>{const dx=q.x-p.x,dz=q.z-p.z,t=clamp(((x-p.x)*dx+(z-p.z)*dz)/(dx*dx+dz*dz||1),0,1);return Math.hypot(x-p.x-dx*t,z-p.z-dz*t)<=pad;});}
   function blocked(x,z,y){return (blocks.get(cell(x,z))||[]).some(o=>{const co=Math.cos(o.yaw||0),si=Math.sin(o.yaw||0),dx=x-o.x,dz=z-o.z;return y<o.y+o.h+.6&&y>o.y-2&&Math.abs(dx*co-dz*si)<o.w/2+3&&Math.abs(dx*si+dz*co)<o.d/2+3;});}
-  const targets={road:samples.length?Math.round(max*.4):0,away:samples.length?max-Math.round(max*.4):max},counts={road:0,away:0};
+  function surfaceAt(x,z){let y=height(x,z),placement='ground';for(const {p,q,width} of segments.get(cell(x,z))||[]){const dx=q.x-p.x,dz=q.z-p.z,t=clamp(((x-p.x)*dx+(z-p.z)*dz)/(dx*dx+dz*dz||1),0,1);if(Math.hypot(x-p.x-dx*t,z-p.z-dz*t)>width/2||!Number.isFinite(p.y)||!Number.isFinite(q.y))continue;const deck=p.y+(q.y-p.y)*t;if(deck>=y){y=deck;placement='road';}}return {y,placement};}
   function add(x,y,z,value,placement){
    // Quantize before validation so clients and the server classify the identical position.
    x=Math.round(x*100)/100;y=Math.round(y*100)/100;z=Math.round(z*100)/100;
    if(![x,y,z].every(Number.isFinite)||x<=b.minX+5||x>=b.maxX-5||z<=b.minZ+5||z>=b.maxZ-5||blocked(x,z,y)||result.some(c=>Math.hypot(c.x-x,c.z-z)<32))return false;
-   const near=nearRoad(x,z),bucket=near?'road':'away';if(counts[bucket]>=targets[bucket])return false;
-   result.push({id:231000+result.length,x,y,z,value,nearRoad:near,placement});counts[bucket]++;return true;
+   result.push({id:232000+result.length,x,y,z,value,nearRoad:nearRoad(x,z),placement});return true;
   }
   const point=()=>({x:b.minX+rand()*(b.maxX-b.minX),z:b.minZ+rand()*(b.maxZ-b.minZ)});
   const rare=Math.max(1,Math.round(max*.02));
@@ -63,14 +62,12 @@
    // Dry, building-free maps still get a rare collectible on accessible ground.
    for(let k=0;k<1200&&!placed;k++){const p=point(),y=height(p.x,p.z);if(y>=0&&Math.abs(height(p.x+3,p.z)-y)<4&&Math.abs(height(p.x,p.z+3)-y)<4)placed=add(p.x,y+.8,p.z,10,'ground');}
   }
-  for(const bucket of ['road','away'])for(let k=0;k<max*100&&counts[bucket]<targets[bucket];k++){
-   let p,y,placement='ground';
-   if(bucket==='road'){if(!samples.length)break;p=samples[Math.floor(rand()*samples.length)];y=Number.isFinite(p.y)?Math.max(p.y,height(p.x,p.z))+.8:height(p.x,p.z)+.8;placement='road';if(y<.8)continue;}
-   else{p=point();y=height(p.x,p.z)+.8;if(y<.8||nearRoad(p.x,p.z)||Math.abs(height(p.x+3,p.z)-y+.8)>4||Math.abs(height(p.x,p.z+3)-y+.8)>4)continue;}
-   add(p.x,y,p.z,rand()<.2?5:1,placement);
+  // Sample the entire map uniformly; roads describe the surface, never a quota.
+  for(let k=0;k<max*200&&result.length<max;k++){
+   const p=point(),{y,placement}=surfaceAt(p.x,p.z);
+   if(y<0||Math.abs(surfaceAt(p.x+3,p.z).y-y)>4||Math.abs(surfaceAt(p.x,p.z+3).y-y)>4)continue;
+   add(p.x,y+.8,p.z,rand()<.2?5:1,placement);
   }
-  // A custom map with too little road may use the remaining safe off-road space.
-  if(counts.road<targets.road){targets.away+=targets.road-counts.road;for(let k=0;k<max*80&&result.length<max;k++){const p=point(),y=height(p.x,p.z);if(y>=0&&!nearRoad(p.x,p.z)&&Math.abs(height(p.x+3,p.z)-y)<4&&Math.abs(height(p.x,p.z+3)-y)<4)add(p.x,y+.8,p.z,rand()<.2?5:1,'ground');}}
   return result;
  }
  const rewards={launch:[1100,1200],drift:[700,1300],nuke:[1000,2000],ram:[1200,1300],spare:[1200,1400],strike:[3000,4000],slide:[600,800],repeat:[100,200]};
