@@ -5,8 +5,9 @@
  const TAU=Math.PI*2,{mix,smooth,clamp}=W,polar=(a,r)=>({x:Math.cos(a)*r,z:Math.sin(a)*r});
  // V2.34: retain the northern Crown footprint; summit rises from ~513 m to ~616 m.
  W.peaks=[{name:'Islayan Peak',x:0,z:-1040,r:1040,rise:570}];
- // A low, flat plateau on the southern side of the map, opposite the northern mountain.
- W.peakPlateau={x:0,z:1400,rx:450,rz:200,height:154};
+ // V2.35: the former southeast summit, between East Valley and South Shore roads.
+ // 111 m is 18% of the ~616 m northern summit, more than 2 km away.
+ W.peakPlateau={x:615,z:875,rx:450,rz:350,height:111};
  W.peaksCoastRadius=a=>2080*(1+.065*Math.sin(3*a+.7)+.038*Math.cos(5*a-.4)+.022*Math.sin(8*a));
  W.peaksCoastDistance=(x,z)=>W.peaksCoastRadius(Math.atan2(z,x))-Math.hypot(x,z);
  Object.assign(W,{span:5000,depth:5000,N:401,NZ:401,minX:-2500,minZ:-2500,mapBounds:{x:-2400,z:-2400,size:4800}});

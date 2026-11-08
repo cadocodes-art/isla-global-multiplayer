@@ -1,39 +1,33 @@
-ISLA V2.34 — ISLAYAN PEAK
+ISLA V2.35 — SKIN TONES AND PLATEAU
 
 ONLINE UPDATE FOR YOUR EXISTING COMPLETE V2.33 OR V2.34 REPOSITORY
-1. Extract ISLA-V2.34-SOUTH-PLATEAU-AND-ROOF-FIX.zip.
-2. Open the ISLA-V2.34-SOUTH-PLATEAU-AND-ROOF-FIX folder.
-3. Upload all individual files in that folder to your repository ROOT,
-   replacing matching files, in ONE batch. Commit the batch.
+1. Extract ISLA-V2.35-ONLINE-SKIN-TONES-AND-PLATEAU.zip.
+2. Open the ISLA-V2.35-ONLINE-SKIN-TONES-AND-PLATEAU folder.
+3. Upload all 23 individual files inside to your repository ROOT, replacing
+   matching files, in ONE batch. Commit the batch.
 4. Keep all other repository files and your existing wrangler.jsonc.
 5. Let Cloudflare run your existing build/deploy configuration.
 
 Do not upload the ZIP itself or create a nested folder in the repository.
-This patch requires the complete V2.33 or V2.34 repository; it is not a standalone
-repository. Its manifest checks every required source file before building.
+This cumulative patch includes the V2.34 changes. It requires your complete
+V2.33 or V2.34 repository; every required source is checked before building.
 
-WHAT'S NEW
-- Islayan Peaks is now Islayan Peak.
-- The northern mountain stays in its original location; its summit is about
-  616 m, roughly 20% above the old 513 m summit.
-- The other four mountains are low snowy terrain.
-- A flat snowy plateau on the southern side of the map, opposite the northern
-  mountain, reaches 154 m (about one quarter of the summit height).
-- Chalet roof faces are corrected so roofs render above the upright walls.
-- The map area, coastline, village plots and connected roads are retained.
-- Online players share the new terrain. Older clients must refresh.
+WHAT'S NEW IN V2.35
+- Ten NPC skin tones from light to deep brown, with matching faces and hands.
+- The plateau moves to the old southeast mountain site, between East Valley
+  Road and South Shore Road, more than 2 km from the remaining mountain.
+- Its flat top is now 111 m high: about 18% of the 616 m mountain summit.
+- The old southern plateau is removed. Town plots and roads are preserved.
+- The taller northern mountain and V2.34 chalet roof fixes are retained.
+- Older online clients must refresh to join the new terrain revision.
 - Existing Aura, Iscoins, cars, upgrades and vault claims are retained.
-- No new Aura farming penalties or reward-rate changes were added.
 
 OFFLINE EDITION (SEPARATE DOWNLOAD)
-Paste all text from ISLA-V2.34-Offline.txt into an HTML viewer as before.
-It contains the same map remake plus existing password-protected Owner
-Controls and dated History. The password and local save keys are unchanged.
-Use the same browser/viewer to retain an existing offline save. Offline
-progress is separate from online accounts and other devices.
+Paste all text from ISLA-V2.35-Offline.txt into an HTML viewer as before.
+It contains the same changes plus existing Owner Controls and dated History.
+The password verifier and save keys are unchanged. Use the same browser/viewer
+to retain an existing offline save. Offline progress is separate from online
+accounts and other devices.
 
-LOCAL CHECKS
-Node.js 22+: npm ci, npm run build, npm run check:worker, npm test.
 After editing flat source files, run node refresh-manifest.cjs before building.
-
 The update has not been pushed to GitHub or deployed for you.

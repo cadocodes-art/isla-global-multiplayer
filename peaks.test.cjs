@@ -11,7 +11,8 @@ test('one taller northern peak rises above the original valley town',()=>{
  assert.equal(W.peaks.length,1);const p=W.peaks[0];assert.equal(p.x,0);assert.equal(p.z,-1040);assert.equal(p.r,1040);
  const height=W.height(p.x,p.z);assert(Math.abs(height/512.5227416992187-1.2)<.005);assert(W.height(0,0)<60);
  assert(W.height(p.x,p.z)>W.height(p.x+100,p.z)+20);assert(W.height(p.x,p.z)>W.height(p.x,p.z+100)+20);
- for(const [x,z] of [[1000,-325],[615,875],[-650,820],[-1030,-325]])assert(W.height(x,z)<80,'former summit is now low snowfield');
+ for(const [x,z] of [[1000,-325],[-650,820],[-1030,-325]])assert(W.height(x,z)<80,'former summit is now low snowfield');
+ assert(Math.abs(W.height(615,875)/height-.18)<.001,'former southeast summit is the lower plateau');
  assert.deepEqual(buildings,manifest.maps.peaks.buildings);assert.deepEqual(trees,manifest.maps.peaks.trees);
 });
 test('irregular near-circular coastline has ocean all around and only a narrow sand edge',()=>{

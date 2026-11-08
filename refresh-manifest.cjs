@@ -2,7 +2,7 @@
 const fs=require('node:fs'),path=require('node:path'),crypto=require('node:crypto');
 const root=__dirname,file=path.join(root,'isla-v16-upload.json'),manifest=JSON.parse(fs.readFileSync(file,'utf8'));
 const additions={
- 'v234.test.cjs':'test/v234.test.cjs','v233.test.cjs':'test/v233.test.cjs','V2.34-Notes.md':'V2.34-Notes.md',
+ 'v235.test.cjs':'test/v235.test.cjs','V2.35-Notes.md':'V2.35-Notes.md','v234.test.cjs':'test/v234.test.cjs','v233.test.cjs':'test/v233.test.cjs','V2.34-Notes.md':'V2.34-Notes.md',
  'V2.32-Notes.md':'V2.32-Notes.md',
  'v23-leaderboard.js':'src/v23-leaderboard.js','v23-leaderboard-ui.js':'public/v23-leaderboard-ui.js','v23-leaderboard.css':'public/v23-leaderboard.css','v23.test.cjs':'test/v23.test.cjs','v23-network.test.cjs':'test/v23-network.test.cjs','V2.3-Notes.md':'V2.3-Notes.md','V2.31-Notes.md':'V2.31-Notes.md',
  'v224-vault.js':'public/v224-vault.js','v224-vault.css':'public/v224-vault.css','v224.test.cjs':'test/v224.test.cjs','V2.24-Notes.md':'V2.24-Notes.md',
@@ -18,7 +18,7 @@ const additions={
  'refresh-manifest.cjs':'refresh-manifest.cjs','dev.cjs':'dev.cjs'
 };
 for(const [name,destination] of Object.entries(additions))if(fs.existsSync(path.join(root,name))&&!manifest.files.some(f=>f.name===name))manifest.files.push({name,destination});
-manifest.version='2.34';
+manifest.version='2.35';
 for(const entry of manifest.files){const bytes=fs.readFileSync(path.join(root,entry.name));entry.sha256=crypto.createHash('sha256').update(bytes).digest('hex');if('size' in entry)entry.size=bytes.length;}
 fs.writeFileSync(file,JSON.stringify(manifest,null,2)+'\n');
-console.log('V2.34 manifest: '+manifest.files.length+' verified source files.');
+console.log('V2.35 manifest: '+manifest.files.length+' verified source files.');

@@ -65,7 +65,7 @@ async function join(name){
  c.send({type:'join',v:3,name});c.welcome=await c.wait('welcome');return c;
 }
 test('global multiplayer applies the same speed damage, validates hits, and preserves it for late joiners',async()=>{
- assert.equal((await (await fetch(new URL('/healthz',url))).json()).release,'2.34');
+ assert.equal((await (await fetch(new URL('/healthz',url))).json()).release,'2.35');
  const driver=await join('Ram_Tester'),viewer=await join('Ram_Viewer');
  const cases=[['classic',1,100/3.6],['classic',1,150/3.6],['classic',1,200/3.6],['truck',2,100/3.6],['truck',3,80/3.6],['nuker',2,35],['beast',1,4]];
  const expected=[];

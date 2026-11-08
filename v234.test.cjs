@@ -25,24 +25,13 @@ test('V2.34 preserves the original map area, spawn, central town plots and build
  assert.equal(W.spawn.x,2.35);assert.equal(W.spawn.z,0);assert.equal(W.height(0,0),47.02817916870117);
  const hash=crypto.createHash('sha256').update(JSON.stringify(buildings.map(b=>[b.id,b.x,b.z]))).digest('hex');assert.equal(hash,'27aaedaea1ec5f8af7c4b3809bd477307dae2aea17786d3eed60c96fb6096204');
 });
-test('V2.34 high ground forms one northern mountain; the four former mountains stay low',()=>{
+test('V2.34 high ground forms one northern mountain; the former mountains stay below the new plateau height',()=>{
  assert.equal(W.peaks.length,1);assert(Math.abs(W.height(0,-1040)/512.5227416992187-1.2)<.005);
  for(let z=-2200;z<=2200;z+=50)for(let x=-2200;x<=2200;x+=50){const h=W.height(x,z);if(h>200){assert(z<-400);assert(Math.hypot(x,z+1040)<850);}}
- for(const [x,z]of [[1000,-325],[615,875],[-650,820],[-1030,-325]])for(let dz=-100;dz<=100;dz+=50)for(let dx=-100;dx<=100;dx+=50)assert(W.height(x+dx,z+dz)<80);
+ for(const [x,z]of [[1000,-325],[615,875],[-650,820],[-1030,-325]])for(let dz=-100;dz<=100;dz+=50)for(let dx=-100;dx<=100;dx+=50)assert(W.height(x+dx,z+dz)<=111.01);
 });
 test('V2.34 server height and 240 personal coins agree with the remade map',()=>{
  const data=world.maps.peaks,height=V.coinHeight(data.coinWorld.terrain),coins=V.visitCoins(data,'v234-map-remake');assert.equal(coins.length,240);
  for(const [x,z]of [[0,-1040],[0,1400],[-200,1330],[200,1470],[0,-1775],[0,0],[1000,-325],[615,875],[-650,820],[-1030,-325]])assert(Math.abs(height(x,z)-W.height(x,z))<.026);
  for(const coin of coins){assert(coin.x>=-2400&&coin.x<=2400&&coin.z>=-2400&&coin.z<=2400);assert(coin.y>=height(coin.x,coin.z)+.76);}
-});
-test('V2.34 plateau has a broad flat top on the opposite side of the map from the mountain at one quarter of its height',()=>{
- assert(W.peaks[0].z<0&&W.peakPlateau.z>1000);assert.equal(W.peakPlateau.x,0);assert(Math.abs(W.height(0,1400)/W.height(0,-1040)-.25)<.001);
- let flat=0;for(const x of [-200,-100,0,100,200])for(const z of [1330,1365,1400,1435,1470]){
-  // Existing roads retain their gentle grades where they cross the plateau.
-  if(W.nearestRoad(x,z,2).d<35)continue;flat++;assert(Math.abs(W.height(x,z)-154)<.02,'flat shelf at '+x+','+z);
- }assert(flat>=20);
- assert(W.height(0,-1775)<120,'the misplaced northern plateau is removed');assert(W.height(0,1750)<80);assert(W.height(0,-1450)>250);assert.equal(W.placeName(0,1400,154),'ISLAYAN · PLATEAU');
- W.getCarSpec=()=>W.carModels[0];W.buildCollisionIndex();W.resetVehicle(true);Object.assign(W.vehicle,{x:0,z:1400,y:154.12,yaw:Math.PI,vx:0,vy:0,vz:0,grounded:true});
- for(let i=0;i<180;i++)W.stepVehicle(1/120,{gas:1,steer:0,brake:0},i/120);
- assert(W.vehicle.z<1395);assert(W.vehicle.grounded);assert(Math.abs(W.vehicle.y-154.12)<.05);
 });
