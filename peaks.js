@@ -5,6 +5,8 @@
  const TAU=Math.PI*2,{mix,smooth,clamp}=W,polar=(a,r)=>({x:Math.cos(a)*r,z:Math.sin(a)*r});
  // V2.34: retain the northern Crown footprint; summit rises from ~513 m to ~616 m.
  W.peaks=[{name:'Islayan Peak',x:0,z:-1040,r:1040,rise:570}];
+ // A low, flat plateau on the southern side of the map, opposite the northern mountain.
+ W.peakPlateau={x:0,z:1400,rx:450,rz:200,height:154};
  W.peaksCoastRadius=a=>2080*(1+.065*Math.sin(3*a+.7)+.038*Math.cos(5*a-.4)+.022*Math.sin(8*a));
  W.peaksCoastDistance=(x,z)=>W.peaksCoastRadius(Math.atan2(z,x))-Math.hypot(x,z);
  Object.assign(W,{span:5000,depth:5000,N:401,NZ:401,minX:-2500,minZ:-2500,mapBounds:{x:-2400,z:-2400,size:4800}});
@@ -23,6 +25,8 @@
    const valley=49+65*Math.sin(clamp((radius-450)/1500,0,1)*Math.PI),blend=Math.exp(-((d/185)**2))*smooth(450,650,radius);
    raw=mix(raw,Math.min(raw,valley),blend);
   }
+  const p=W.peakPlateau,shelf=Math.hypot((x-p.x)/p.rx,(z-p.z)/p.rz);
+  raw=mix(raw,p.height,1-smooth(.6,1,shelf));
   // Only the first five metres are sand; steep snowy slopes meet the water.
   return coast<5?coast*.18:mix(.9,raw,smooth(5,100,coast));
  };
@@ -60,7 +64,7 @@
  };
  W.driveHeight=(x,z)=>{const road=W.peakRoadSurface(x,z);return road&&road.d<=road.width/2+.6?road.y+.21:terrainDrive(x,z,true);};W.trafficHeight=W.driveHeight;
  W.spawn={x:2.35,z:0,yaw:0};W.vehicle.lastSafe={...W.spawn};
- W.placeName=(x,z,y)=>{if(Math.hypot(x,z)<450)return 'ISLAYAN VILLAGE';if(W.peaksCoastDistance(x,z)<350)return 'ISLAYAN · OCEAN RIM';const p=[...W.peaks].sort((a,b)=>Math.hypot(a.x-x,a.z-z)-Math.hypot(b.x-x,b.z-z))[0];if(Math.hypot(x-p.x,z-p.z)>p.r*1.15)return 'ISLAYAN · SNOWFIELDS';return p.name.toUpperCase()+(y>300?' · SUMMIT':' · FOOTHILLS');};
+ W.placeName=(x,z,y)=>{if(Math.hypot(x,z)<450)return 'ISLAYAN VILLAGE';if(Math.hypot((x-W.peakPlateau.x)/W.peakPlateau.rx,(z-W.peakPlateau.z)/W.peakPlateau.rz)<.6)return 'ISLAYAN · PLATEAU';if(W.peaksCoastDistance(x,z)<350)return 'ISLAYAN · OCEAN RIM';const p=[...W.peaks].sort((a,b)=>Math.hypot(a.x-x,a.z-z)-Math.hypot(b.x-x,b.z-z))[0];if(Math.hypot(x-p.x,z-p.z)>p.r*1.15)return 'ISLAYAN · SNOWFIELDS';return p.name.toUpperCase()+(y>300?' · SUMMIT':' · FOOTHILLS');};
  W.mapPreview=()=>({x:2540,y:2450,z:2650,lookX:-130,lookY:80,lookZ:-180,fov:53});
  // Preserve the original village plots when the surrounding mountains are removed.
  const villagePlots=new Set(["-311.9160,30.8209","-301.1178,-14.9219","-257.0997,43.3423","-247.2826,-2.6210","-199.0926,53.1056","-195.4621,6.2461","-138.3366,47.7517","-145.5294,1.3053","-82.8798,38.3977","-91.0927,-7.8791","-36.2562,-17.7334","81.2876,11.8109","74.7062,-34.7260","135.9264,4.6727","130.5746,-42.0216","187.1115,2.0455","190.4441,-44.8362","241.2432,7.8740","247.1370,-38.7550","296.1981,15.2273","302.6472,-31.3282","-17.5141,-331.2214","27.9619,-338.1452","-9.1739,-275.9881","36.3363,-282.6826","-1.6308,-221.0865","44.0277,-226.6817","1.5394,-169.8284","47.4163,-166.4650","-5.0190,-115.9141","40.4988,-109.2708","-13.5701,-60.9596","31.8390,-53.6103","-31.2437,49.4827","14.1459,56.9515","-40.1107,105.0509","5.3722,111.9294","-47.3932,162.1823","-1.5369,165.8148","-42.7135,223.2212","2.7176,216.0086","-32.8417,278.9802","12.3635,270.4660","40.0399,-387.5914","79.2401,-325.6946","97.7825,-368.8823","124.3839,-300.7207","150.3289,-339.9107","165.7759,-268.3854","196.9709,-303.5403","203.7160,-230.5246","238.3237,-262.3257","238.6724,-188.9370","275.5145,-218.1202","270.4733,-145.1120","309.2471,-171.6750","298.4005,-99.0121","339.4662,-121.8727","364.0979,-68.1427","380.3941,-10.7085","338.8254,50.2736","385.8136,49.2215","332.3846,100.4475","314.8391,147.8626","357.6559,167.2462","287.0890,189.9565","324.3317,218.6268","250.7504,225.2993","280.9770,261.2903","207.7202,253.3176","230.6577,294.3404","159.8416,274.2967","176.2806,318.3281","108.7601,289.2440","120.1285,334.8484","55.9781,299.4887","63.6105,345.8649","-51.9402,355.2076","-103.7873,304.7999","-110.4534,351.3247","-154.7030,294.0071","-168.8719,338.8205","-202.7668,274.2765","-224.8400,315.7707","-245.3670,245.1095","-275.1376,281.4785","-279.7699,207.5790","-316.6118,236.7625","-304.3900,163.6771","-346.8141,183.9057","-318.8711,115.3934","-370.5648,65.7964","-366.0751,6.3230","-353.6115,-51.3210","-291.3678,-90.8680","-335.5855,-106.7991","-271.1630,-140.0682","-313.9113,-159.6023","-247.3185,-187.7854","-288.0086,-211.3080","-218.9729,-232.7551","-256.4067,-261.1753","-185.4927,-272.6898","-146.4728,-305.7562","-171.6612,-345.4367","-102.0500,-330.2232","-118.2748,-374.3339","-59.5437,-390.9259","278.3297,-320.1641","245.9773,-352.8646","318.0956,-359.8029","285.4454,-392.2061","357.4634,-400.1950","396.0086,111.2193","423.1772,178.4260","445.1472,138.0117","472.8093,204.9662","17.5759,368.8145","-36.7009,416.8201","8.7162,424.1196","-45.4118,472.2172","0.0646,479.1383","-375.9698,139.8911","-437.6922,101.9175","-431.4170,147.4875","-493.3463,109.9096","-243.7869,-306.4659","-227.1759,-376.9977","-268.4608,-356.7108","-252.1971,-427.2893","-293.2389,-406.5151"]);
@@ -80,7 +84,12 @@
    }
   }}W.peakHomes=plans;return plans;
  };
- function roofGeometry(){const g=new T.BufferGeometry();g.setAttribute('position',new T.Float32BufferAttribute([-.5,0,-.5,.5,0,-.5,0,1,-.5,-.5,0,.5,.5,0,.5,0,1,.5],3));g.setIndex([0,2,3,3,2,5,2,1,5,5,1,4,0,1,2,3,5,4]);g.computeVertexNormals();return g;}
+ function roofGeometry(){
+  const g=new T.BufferGeometry();g.setAttribute('position',new T.Float32BufferAttribute([-.5,0,-.5,.5,0,-.5,0,1,-.5,-.5,0,.5,.5,0,.5,0,1,.5],3));
+  // Outward winding: upward roof slopes, outward gables, and a closed underside.
+  g.setIndex([0,3,2,3,5,2,2,5,1,5,4,1,0,2,1,3,4,5,0,1,3,3,1,4]);
+  const solid=g.toNonIndexed();g.dispose();solid.computeVertexNormals();return solid;
+ }
  W.makeBuildings=scene=>{
   const snow=W.mat('#edf4f4'),stone=W.mat('#7a8790'),timber=W.mat('#495358'),roofGeo=roofGeometry();
   const colors=['#a55d42','#6c8d91','#b6a889','#778b78','#b8bfc2','#626f83'];

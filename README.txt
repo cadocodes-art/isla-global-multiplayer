@@ -1,15 +1,15 @@
 ISLA V2.34 — ISLAYAN PEAK
 
-ONLINE UPDATE FOR YOUR EXISTING COMPLETE V2.33 REPOSITORY
-1. Extract ISLA-V2.34-Online-Update.zip.
-2. Open the ISLA-V2.34-Online-Update folder.
+ONLINE UPDATE FOR YOUR EXISTING COMPLETE V2.33 OR V2.34 REPOSITORY
+1. Extract ISLA-V2.34-SOUTH-PLATEAU-AND-ROOF-FIX.zip.
+2. Open the ISLA-V2.34-SOUTH-PLATEAU-AND-ROOF-FIX folder.
 3. Upload all individual files in that folder to your repository ROOT,
    replacing matching files, in ONE batch. Commit the batch.
 4. Keep all other repository files and your existing wrangler.jsonc.
 5. Let Cloudflare run your existing build/deploy configuration.
 
 Do not upload the ZIP itself or create a nested folder in the repository.
-This patch requires the complete V2.33 repository; it is not a standalone
+This patch requires the complete V2.33 or V2.34 repository; it is not a standalone
 repository. Its manifest checks every required source file before building.
 
 WHAT'S NEW
@@ -17,6 +17,9 @@ WHAT'S NEW
 - The northern mountain stays in its original location; its summit is about
   616 m, roughly 20% above the old 513 m summit.
 - The other four mountains are low snowy terrain.
+- A flat snowy plateau on the southern side of the map, opposite the northern
+  mountain, reaches 154 m (about one quarter of the summit height).
+- Chalet roof faces are corrected so roofs render above the upright walls.
 - The map area, coastline, village plots and connected roads are retained.
 - Online players share the new terrain. Older clients must refresh.
 - Existing Aura, Iscoins, cars, upgrades and vault claims are retained.

@@ -4,7 +4,7 @@
  const safeRead=(storage,key)=>{try{return storage.getItem(key)}catch{return null}};
  const safeWrite=(storage,key,value)=>{try{if(value===null)storage.removeItem(key);else storage.setItem(key,value)}catch{}};
  let local,session;try{local=localStorage;session=sessionStorage}catch{}
- let sessionKey=W.mapId==='peaks'?'isla-global-peaks-v2':W.mapId==='city'?'isla-global-city-v4':'isla-global-v2';
+ let sessionKey=W.mapId==='peaks'?'isla-global-peaks-v4':W.mapId==='city'?'isla-global-city-v4':'isla-global-v2';
  const net=W.net={collisionSeq:0,active:false,connected:false,code:'GLOBAL',id:'',host:'',players:[],remotes:new Map(),latency:0};
  let socket=null,identity=null,intent=null,connecting=false,leaving=false,retry=null,connectTimeout=null,attempt=0,lastSend=0,lastPing=0,lastAura=0,pendingAura=0,scoreSeq=0,trafficTargets=null,ui=null,open=false;
  let chatOpen=false,chatResume=false,chatCategory='Vibes',chatReadyAt=0,chatPendingUntil=0,lastChatHint='';
@@ -105,7 +105,7 @@
   const ws=new WebSocket((location.protocol==='https:'?'wss://':'ws://')+location.host+'/ws?map='+encodeURIComponent(W.mapId)+(W.customMap?'&revision='+IslaCommunity.custom.info.revision:''));socket=ws;
   status(identity?'Reconnecting to the global room…':'Connecting to the global room…');
   connectTimeout=setTimeout(()=>{if(socket===ws&&!net.connected){status('The server is taking a while. Retrying…');ws.close();}},70000);
-  ws.onopen=()=>{if(socket!==ws)return;send({...identity?{type:'resume',v:IslaRules.protocol,name:identity.name,token:identity.token}:intent,...W.mapId==='playplace'?{playplaceRevision:6}:{},...W.mapId==='peaks'?{peaksRevision:2}:{}});};
+  ws.onopen=()=>{if(socket!==ws)return;send({...identity?{type:'resume',v:IslaRules.protocol,name:identity.name,token:identity.token}:intent,...W.mapId==='playplace'?{playplaceRevision:6}:{},...W.mapId==='peaks'?{peaksRevision:4}:{}});};
   ws.onmessage=e=>{if(socket!==ws)return;let data;try{data=JSON.parse(e.data)}catch{return;}
    if(data.type==='welcome'){
     const expected=W.buildings.map(b=>[b.id,Math.round(b.x*100),Math.round(b.z*100)]);

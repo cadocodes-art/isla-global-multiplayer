@@ -64,7 +64,7 @@
     {
       "name": "peaks.js",
       "destination": "public/peaks.js",
-      "sha256": "9daf5cdfdcbf58579fbcfbd3fbc020cda6854a15c0bc00d96a0812cadf1c17af"
+      "sha256": "130a9913da2f72f712d01629a7b969fd4fbd070d82f3203c6fe1081a51e9c0b5"
     },
     {
       "name": "specials.js",
@@ -79,7 +79,7 @@
     {
       "name": "multiplayer.js",
       "destination": "public/multiplayer.js",
-      "sha256": "00d42f07f90cef170d883895ad98835764979611bc9ba34d6261c6af4257c4cc"
+      "sha256": "d42eb1041906b985930e7a1dd612c51320d863dd4beacfc4320c8460b5816bdc"
     },
     {
       "name": "maker-core.js",
@@ -249,7 +249,7 @@
     {
       "name": "worker.js",
       "destination": "src/worker.js",
-      "sha256": "1915f66c5ace3b8ef5aed0266365ab03e1f8066c98bf66f29ad447c0e14dda6f"
+      "sha256": "e97c7e862d7e70f7879f49e9ca7932512a206ad795471cdb17a17a6e566d8af5"
     },
     {
       "name": "playground.js",
@@ -334,7 +334,7 @@
     {
       "name": "peaks-network.test.cjs",
       "destination": "test/peaks-network.test.cjs",
-      "sha256": "022e5c266a875b31db98645f0f9a6e5aab7b465b4bed3d15dbd0a558dff1bb60"
+      "sha256": "13fc8cec6c1e178e799c4b216986c47ff867459cdf282ef7c0dbdb5598e765c3"
     },
     {
       "name": "peaks.test.cjs",
@@ -489,7 +489,7 @@
     {
       "name": "README.txt",
       "destination": "README.txt",
-      "sha256": "1173bf1d28980c311fb3e88d5205d457f3b5157aceb2659d5731dfeaf138b426"
+      "sha256": "e1dcf2e8ab4303a9da6efbcb6996d0cbfa8dd7e044b46866650aad73c13c71d0"
     },
     {
       "name": "v22-shared.js",
@@ -654,12 +654,12 @@
     {
       "name": "V2.34-Notes.md",
       "destination": "V2.34-Notes.md",
-      "sha256": "d75a03057c0fbf0eb8a93af88f1ced04582773b16aaa03808e886be71ad44871"
+      "sha256": "d9d6de6ed34dec816532a3873d4553c3cf4c0ec84d98630e07b8cf7d02f2226e"
     },
     {
       "name": "v234.test.cjs",
       "destination": "test/v234.test.cjs",
-      "sha256": "1166b71cb9e594c143a1c8df5b8b24313e43d8021af557f695599c04e1875f4b"
+      "sha256": "8ca52c8250ba956c3dedf5eea2f4cc1cdbf5fee803a7106fedf8f2d11885bc0f"
     }
   ]
 }

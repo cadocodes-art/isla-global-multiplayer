@@ -67,7 +67,7 @@ export class GlobalRoom extends DurableObject {
  async join(ws,data){
   if(this.playerFor(ws))return reply(ws,{type:'error',message:'You are already in the global room.'});
   if(this.mapId==='playplace'&&data.playplaceRevision!==6)return reply(ws,{type:'error',message:'Refresh the game to load the updated Playplace.'});
-  if(this.mapId==='peaks'&&data.peaksRevision!==2)return reply(ws,{type:'error',message:'Refresh the game to load Islayan Peak V2.34.'});
+  if(this.mapId==='peaks'&&data.peaksRevision!==4)return reply(ws,{type:'error',message:'Refresh the game to load Islayan Peak V2.34.'});
   if(data.v!==rules.protocol)return reply(ws,{type:'error',message:'Refresh the game to join this version.'});
   const account=this.meta.get(ws)?.account;if(account)data.name=account.username;
   const error=rules.validateName(data.name);if(error)return reply(ws,{type:'error',message:error});
@@ -193,7 +193,7 @@ export default {
    const hub=env.COMMUNITY?.getByName('isla-community-v16');if(hub){const account=await hub.internalIdentity(request.headers.get('Cookie'));if(account)headers.set('X-Isla-Account',JSON.stringify(account));}
    const mapId=url.searchParams.get('map');let room;
    if(mapId?.startsWith('custom:')){if(!hub)return new Response('Community maps are unavailable',{status:503});try{const info=await hub.internalMap(mapId.slice(7));if(Number(url.searchParams.get('revision'))!==info.revision)return new Response('A new version of this map is available. Refresh before joining.',{status:409});room=env.GLOBAL.getByName('custom-'+info.id+'-r'+info.revision);await room.prepareCustom(info);}catch{return new Response('This map is not available. Refresh the map page.',{status:404});}}
-   else room=env.GLOBAL.getByName(mapId==='fern'?'isla-global-fern-v1':mapId==='playplace'?'isla-global-playplace-v6':mapId==='peaks'?'isla-global-peaks-v2':mapId==='city'?'isla-global-city-v4':'isla-global-v2');
+   else room=env.GLOBAL.getByName(mapId==='fern'?'isla-global-fern-v1':mapId==='playplace'?'isla-global-playplace-v6':mapId==='peaks'?'isla-global-peaks-v4':mapId==='city'?'isla-global-city-v4':'isla-global-v2');
    return room.fetch(new Request(request,{headers}));
   }
   return env.ASSETS?env.ASSETS.fetch(request):new Response('Not found',{status:404});
