@@ -72,25 +72,32 @@ test('V2.37 rotated and scaled Map Maker houses and themed buildings use their o
  }
 });
 
-test('V2.37 Costa Metro triples building residents and fills its parks with safe, bounded, reusable crowds',()=>{
+test('V2.37 distributes three times the city population across walkable land, instead of cloning building groups',()=>{
  const {W}=create('city'),scene=new T.Scene();W.makeBuildings(scene);W.makeVegetation(scene);W.scene=scene;W.traffic=[];
  Object.assign(W.vehicle,{x:1e7,y:0,z:1e7,vx:0,vz:0});W.v22People.install(scene);const P=W.v22People,head=P.head.instanceMatrix.array,colors=P.shirt.instanceColor.array;
- assert.equal(P.density,3);assert.equal(P.maxPeople,216);assert.equal(P.visibleCount,0);assert.equal(P.batches.length,6);
- const ids=new Set();for(const r of P.records){assert.equal(r.residents.length,6);assert.equal(r.residents.filter(n=>n.inside).length,3);for(const n of r.residents){assert(!ids.has(n.id));ids.add(n.id);}}
- assert.equal(P.parks.length,3);for(const park of P.parks){assert.equal(park.people.length,12);for(const n of park.people){assert(!ids.has(n.id));ids.add(n.id);}}
- const focus=(x,z)=>{Object.assign(W.vehicle,{x,y:W.height(x,z),z,vx:0,vz:0});P.refresh=0;P.update(0,P.clock);};
- const near=P.records.find(r=>r.b.house).b;focus(near.x,near.z);assert.equal(P.activePark.length,0);assert.equal(P.visibleCount,3*(P.active.length+P.active.filter(r=>r.path).length),'three times the original visible building residents');
- const unique=new Set();for(const r of P.active)for(const n of r.residents){assert(Number.isFinite(n.x));unique.add(n.x.toFixed(3)+','+n.z.toFixed(3));}assert(unique.size>P.visibleCount*.9,'extra people are distributed along their routes');
- for(const park of P.parks){focus(park.center.x,park.center.z);assert(P.visibleParkCount>=12);
-  for(let seconds=0;seconds<=300;seconds+=5){P.clock=seconds;P.update(0,seconds);assert(P.visibleCount<=216);assert.equal(P.head.count,P.visibleCount);assert.equal(P.shirt.count,P.visibleCount*3);
-   for(const n of P.activePark){const p=W.cityLocal(n.x,n.z),u=p.u-n.block.u,v=p.v-n.block.v,road=W.nearestRoad(n.x,n.z,2);assert(u>20&&u<140&&v>20&&v<140);assert(Math.abs(u-80)>14||Math.abs(v-80)>14,'walkers avoid the fountain');assert(!road.p||road.d>road.p.width/2+1,'park walkers never enter traffic');assert(Math.abs(n.y-W.driveHeight(n.x,n.z,true)-.02)<.001);for(const t of W.trees)assert(Math.hypot(n.x-t.x,n.z-t.z)>(t.r||.4)+.6,'walkers avoid trunks');}
-   for(const r of P.active)if(r.path)for(const n of r.residents.filter(n=>!n.inside)){assert(P.footprintDistance(r.b,n.x,n.z)<=5);const road=W.nearestRoad(n.x,n.z,2);assert(!road.p||road.d>road.p.width/2+1);assert(Math.abs(n.y-W.driveHeight(n.x,n.z,true)-.02)<.03,'ground samples follow the raised city surface');}
+ assert.equal(P.maxPeople,216);assert.equal(P.visibleCount,0);assert.equal(P.batches.length,6);assert(P.records.length>600);
+ const ids=new Set();for(const r of P.records){assert.equal(r.residents.length,1);assert(r.residents[0].inside);assert.equal(r.outside,null);assert(!ids.has(r.inside.id));ids.add(r.inside.id);}
+ assert.equal(P.cityPeople.length+P.records.length,P.records.length*2*3,'same tripled overall population, redistributed');
+ const bins=new Map(),tiles=new Set(),quadrants=new Set();let far=0;
+ for(const n of P.cityPeople){assert(!ids.has(n.id));ids.add(n.id);const {x,z}=n.anchor,cx=Math.floor(x/32),cz=Math.floor(z/32);tiles.add(Math.floor((x+1000)/200)+','+Math.floor((z+1000)/200));quadrants.add(Math.sign(x)+','+Math.sign(z));
+  for(let ix=cx-1;ix<=cx+1;ix++)for(let iz=cz-1;iz<=cz+1;iz++)for(const other of bins.get(ix+','+iz)||[])assert(Math.hypot(x-other.x,z-other.z)>=P.citySpacing-3.61,'one independent route per spaced location');
+  const k=cx+','+cz;if(!bins.has(k))bins.set(k,[]);bins.get(k).push(n.anchor);
+  if(!W.buildings.some(b=>P.footprintDistance(b,x,z)<5))far++;
+  // Check endpoints and the spaces between stored samples, against real road and building collision geometry.
+  for(let i=0;i<n.points.length-1;i++)for(const t of [0,.5,1]){const a=n.points[i],b=n.points[i+1],p={x:a.x+(b.x-a.x)*t,z:a.z+(b.z-a.z)*t},road=W.nearestRoad(p.x,p.z,2);assert(Math.abs(p.x)<998&&Math.abs(p.z)<998);assert(W.height(p.x,p.z)>.3);assert(!road.p||road.d>road.p.width/2+.8,'never walks in traffic');
+   for(const b of W.buildings)if(Math.abs(p.x-b.x)<b.w+b.d&&Math.abs(p.z-b.z)<b.w+b.d)assert(!W.circleOBB(p.x,p.z,.35,b),'never walks through a building');
+   for(const tree of W.trees)assert(Math.hypot(p.x-tree.x,p.z-tree.z)>(tree.r||.4)+.45,'avoids tree trunks');
+   for(const park of P.parks){const q=W.cityLocal(p.x,p.z);assert(Math.abs(q.u-park.block.u-80)>12.4||Math.abs(q.v-park.block.v-80)>12.4,'avoids fountains');}
   }
  }
- const park=P.parks[1];focus(park.center.x,park.center.z);const n=P.activePark[0];Object.assign(W.vehicle,{x:n.x,y:n.y,z:n.z,vx:0,vz:10,yaw:0});P.previousCars.clear();P.update(.01,301);assert(n.tumble>2.9,'park walkers use the same ragdoll reaction');
- Object.assign(W.vehicle,{x:n.x+20,z:n.z+20,vx:0,vz:0});for(let i=0;i<62;i++)P.update(.05,301+i*.05);assert.equal(n.tumble,0);assert(n.immune>0);
- focus(1e7,1e7);assert.equal(P.visibleCount,0);focus(park.center.x,park.center.z);assert(P.visibleParkCount>=12);assert.strictEqual(P.head.instanceMatrix.array,head);assert.strictEqual(P.shirt.instanceColor.array,colors);assert.equal(P.shirt.instanceColor.count,648);assert.equal(P.hands.instanceColor.count,432);
- P.install(scene);assert.equal(P.batches.length,6,'reinstalling does not duplicate crowds');
+ assert(tiles.size>=75,'people reach the city edges and less built-up areas');assert.equal(quadrants.size,4);assert(far>P.cityPeople.length*.6,'most extra people are away from the former house clusters');
+ assert.equal(P.parks.length,3);for(const p of P.parks){assert(p.people.length>=20);const xs=p.people.map(n=>W.cityLocal(n.anchor.x,n.anchor.z).u),zs=p.people.map(n=>W.cityLocal(n.anchor.x,n.anchor.z).v);assert(Math.max(...xs)-Math.min(...xs)>100);assert(Math.max(...zs)-Math.min(...zs)>100,'park walkers cover the park rather than one fountain ring');}
+ const focus=(x,z)=>{Object.assign(W.vehicle,{x,y:W.height(x,z),z,vx:0,vz:0});P.refresh=0;P.update(0,P.clock);};
+ for(const pos of [W.cityDowntown,P.records.find(r=>r.b.house).b,...P.parks.map(p=>p.center)]){focus(pos.x,pos.z);assert(P.visibleCityCount>50);for(let time=0;time<=60;time+=2){P.clock=time;P.update(0,time);assert(P.visibleCount<=216);assert.equal(P.head.count,P.visibleCount);assert.equal(P.shirt.count,P.visibleCount*3);for(const n of P.activeCity){assert(Math.hypot(n.x-n.anchor.x,n.z-n.anchor.z)<=2.401);assert(Math.abs(n.y-W.driveHeight(n.x,n.z,true)-.02)<.04,'feet stay on the ground');}}}
+ const park=P.parks[1];focus(park.center.x,park.center.z);assert(P.visibleParkCount>=20);const n=P.activePark.find(n=>n.park===park.block.key);Object.assign(W.vehicle,{x:n.x,y:n.y,z:n.z,vx:0,vz:10,yaw:0});P.previousCars.clear();P.update(.01,61);assert(n.tumble>2.9);
+ Object.assign(W.vehicle,{x:n.x+20,z:n.z+20,vx:0,vz:0});for(let i=0;i<62;i++)P.update(.05,61+i*.05);assert.equal(n.tumble,0);assert(n.immune>0);
+ focus(1e7,1e7);assert.equal(P.visibleCount,0);focus(park.center.x,park.center.z);assert(P.visibleParkCount>=20);assert.strictEqual(P.head.instanceMatrix.array,head);assert.strictEqual(P.shirt.instanceColor.array,colors);assert.equal(P.shirt.instanceColor.count,648);assert.equal(P.hands.instanceColor.count,432);
+ P.install(scene);assert.equal(P.batches.length,6);
 });
 
 test('V2.37 other maps keep their original population and have no city park walkers',()=>{

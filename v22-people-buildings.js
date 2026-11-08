@@ -51,25 +51,42 @@
 
  function clearOfRoad(x,z){const near=W.nearestRoad(x,z,2);return !near.p||near.d>near.p.width/2+1.25;}
  function safe(b,x,z){if(footprintDistance(b,x,z)>4.8||!clearOfRoad(x,z))return false;const y=W.height(x,z);if(!Number.isFinite(y)||y<.3)return false;for(const other of W.buildings){if(other===b||other.collapsed||Math.hypot(x-other.x,z-other.z)>Math.hypot(other.w,other.d)/2+1)continue;const q=local(other,x,z);if(Math.abs(q.x)<other.w/2+.45&&Math.abs(q.z)<other.d/2+.45)return false;}return true;}
- // City routes are static and validated every half metre once; reuse their ground samples for the larger crowd.
- function outsidePath(b){for(let k=0;k<4;k++){const side=(k+b.id)%4,front=side%2===0,sign=side<2?1:-1,span=Math.min(3,(front?b.w:b.d)/2-.6),offset=(front?b.d:b.w)/2+2.2,points=[];let min=Infinity,max=-Infinity,ok=true;for(let i=0;i<=12;i++){const along=-span+2*span*i/12,p=point(b,front?along:sign*offset,front?sign*offset:along);if(!safe(b,p.x,p.z)){ok=false;break;}p.y=(P.density===3?W.driveHeight(p.x,p.z,true):W.height(p.x,p.z))+.02;min=Math.min(min,p.y);max=Math.max(max,p.y);points.push(p);}if(ok&&max-min<1.3)return {points,span,front,sign,offset};}return null;}
+ // Building-bound pedestrians on other maps retain their original short routes.
+ function outsidePath(b){for(let k=0;k<4;k++){const side=(k+b.id)%4,front=side%2===0,sign=side<2?1:-1,span=Math.min(3,(front?b.w:b.d)/2-.6),offset=(front?b.d:b.w)/2+2.2,points=[];let min=Infinity,max=-Infinity,ok=true;for(let i=0;i<=12;i++){const along=-span+2*span*i/12,p=point(b,front?along:sign*offset,front?sign*offset:along);if(!safe(b,p.x,p.z)){ok=false;break;}p.y=W.height(p.x,p.z)+.02;min=Math.min(min,p.y);max=Math.max(max,p.y);points.push(p);}if(ok&&max-min<1.3)return {points,span,front,sign,offset};}return null;}
  function makeBatch(scene,geo,color,count,colored=false){const mesh=new T.InstancedMesh(geo,mat(color),count);mesh.instanceMatrix.setUsage(T.DynamicDrawUsage);if(colored)mesh.instanceColor=new T.InstancedBufferAttribute(new Float32Array(count*3).fill(1),3).setUsage(T.DynamicDrawUsage);mesh.frustumCulled=false;mesh.castShadow=mesh.receiveShadow=true;mesh.count=0;mesh.userData.dynamic=true;scene.add(mesh);P.batches.push(mesh);return mesh;}
- // Costa Metro has three residents of each kind per building; other maps keep their original pair.
+ // City pedestrians get independent, evenly spaced routes across walkable land.
+ // Indoor residents keep their original identities; no building gets cloned groups.
  const person=(id,phase,inside=false)=>({id,phase,inside,tumble:0,immune:0});
- function parkPoint(n,angle){const u=n.block.u+80+Math.cos(angle)*n.radius,v=n.block.v+80+Math.sin(angle)*n.radius;return {...W.cityToWorld(u,v),u,v};}
- function parkSafe(n,p){const u=p.u-n.block.u,v=p.v-n.block.v;if(u<20||u>140||v<20||v>140||Math.abs(u-80)<14&&Math.abs(v-80)<14||!clearOfRoad(p.x,p.z))return false;const y=W.height(p.x,p.z);return Number.isFinite(y)&&y>.3&&!(W.trees||[]).some(t=>Math.hypot(t.x-p.x,t.z-p.z)<(t.r||.4)+.65);}
- function parkResidents(){const records=[];if(P.density!==3)return records;
-  for(const block of W.cityBlocks||[]){if(!block.park)continue;const center=W.cityToWorld(block.u+80,block.v+80),people=[];
-   for(let lane=0;lane<3;lane++){const route={block,radius:34+lane*6},valid=Array.from({length:96},(_,i)=>parkPoint(route,i*Math.PI/48)).every(p=>parkSafe(route,p));if(!valid)continue;
-    for(let i=0;i<4;i++)people.push({...person(1000000+block.ix*1000+block.iz*100+lane*4+i,i*Math.PI/2+lane*.37),...route,direction:lane===1?-1:1});
-   }if(people.length)records.push({block,center,people});
-  }return records;
+ function cityResidents(){P.cityPeople=[];P.parks=[];if(!P.citySpread)return;
+  const cells=new Map(),cellSize=64,margin=.9,key=(x,z)=>Math.floor(x/cellSize)+','+Math.floor(z/cellSize),parks=(W.cityBlocks||[]).filter(b=>b.park);
+  const add=(o,rx,rz)=>{for(let x=Math.floor((o.x-rx-margin)/cellSize);x<=Math.floor((o.x+rx+margin)/cellSize);x++)for(let z=Math.floor((o.z-rz-margin)/cellSize);z<=Math.floor((o.z+rz+margin)/cellSize);z++){const k=x+','+z;if(!cells.has(k))cells.set(k,[]);cells.get(k).push(o);}};
+  for(const b of W.buildings){const c=Math.abs(Math.cos(b.yaw)),s=Math.abs(Math.sin(b.yaw));add(b,(c*b.w+s*b.d)/2,(s*b.w+c*b.d)/2);}
+  for(const t of W.trees||[])add({...t,pedestrianTree:true},t.r||.4,t.r||.4);
+  for(const b of parks){const p=W.cityToWorld(b.u+80,b.v+80),q=W.cityToWorld(b.u+81,b.v+80),yaw=-Math.atan2(q.z-p.z,q.x-p.x);add({...p,w:26,d:26,yaw},19,19);P.parks.push({block:b,center:p,people:[]});}
+  const safePoint=(x,z)=>{if(Math.abs(x)>997||Math.abs(z)>997)return null;const y=W.height(x,z);if(!Number.isFinite(y)||y<.6)return null;const near=W.nearestRoad(x,z,2);if(near.p&&near.d<=near.p.width/2+1.4)return null;
+   for(const o of cells.get(key(x,z))||[]){if(o.pedestrianTree){if(Math.hypot(x-o.x,z-o.z)<(o.r||.4)+margin)return null;}else{const p=local(o,x,z);if(Math.abs(p.x)<o.w/2+margin&&Math.abs(p.z)<o.d/2+margin)return null;}}
+   return {x,z,y,near};
+  };
+  const noise=(ix,iz,salt)=>{let h=Math.imul(ix+8192,374761393)^Math.imul(iz+8192,668265263)^salt;h=Math.imul(h^(h>>>13),1274126177);return ((h^(h>>>16))>>>0)/4294967296;};
+  const target=P.records.length*5;let candidates=[];
+  for(const spacing of [22,20,18,16]){candidates=[];P.citySpacing=spacing;
+   for(let iz=0,z=-990+spacing/2;z<990;iz++,z+=spacing)for(let ix=0,x=-990+spacing/2;x<990;ix++,x+=spacing){const cx=x+(noise(ix,iz,17)-.5)*3.6,cz=z+(noise(ix,iz,71)-.5)*3.6,center=safePoint(cx,cz);if(!center)continue;const near=center.near;let angle=noise(ix,iz,193)*Math.PI;
+    if(near.p&&near.d<near.p.width/2+8){const samples=near.p.road?.samples,index=near.p.index||0,a=samples?.[Math.max(0,index-1)],b=samples?.[Math.min(samples.length-1,index+1)];if(a&&b)angle=Math.atan2(b.x-a.x,b.z-a.z);}
+    const points=[],dx=Math.sin(angle),dz=Math.cos(angle),span=2.4;let valid=true,min=Infinity,max=-Infinity;
+    for(let j=0;j<=6;j++){const along=-span+j*span/3,p=safePoint(cx+dx*along,cz+dz*along);if(!p){valid=false;break;}points.push({x:p.x,y:p.y,z:p.z});}if(!valid)continue;for(const p of points){p.y=W.driveHeight(p.x,p.z,true)+.02;min=Math.min(min,p.y);max=Math.max(max,p.y);}if(max-min>1.2)continue;
+    const p=W.cityLocal(cx,cz),park=P.parks.find(r=>p.u>r.block.u+12&&p.u<r.block.u+148&&p.v>r.block.v+12&&p.v<r.block.v+148);
+    candidates.push({anchor:{x:cx,z:cz},points,angle,span,phase:noise(ix,iz,307)*Math.PI*2,park:park?.block.key||null});
+   }if(candidates.length>=target)break;
+  }
+  P.cityCandidateCount=candidates.length;P.cityPopulationTarget=P.records.length*6;
+  const count=Math.min(target,candidates.length),stride=candidates.length/Math.max(1,count);
+  for(let i=0;i<count;i++){const route=candidates[Math.floor((i+.5)*stride)],n={...person(1000000+i,route.phase),...route};P.cityPeople.push(n);if(n.park)P.parks.find(r=>r.block.key===n.park).people.push(n);}
  }
- P.install=scene=>{if(P.scene===scene&&P.initialized)return;for(const mesh of P.batches){mesh.parent?.remove(mesh);mesh.dispose?.();}P.batches=[];P.scene=scene;P.initialized=true;P.records=[];P.active=[];P.activePark=[];P.clock=P.refresh=0;P.previousCars=new Map();P.density=W.mapId==='city'&&!W.customMap?3:1;P.peoplePerBuilding=2*P.density;P.maxPeople=72*P.density;
-  for(const b of W.buildings){if(!b.group||b.scenery||b.w<5||b.d<5||b.h<2.9||b.object&&(Math.abs(b.object.pitch||0)>.01||Math.abs(b.object.roll||0)>.01))continue;const residents=[];
-   for(let i=0;i<P.density;i++){const offset=i*Math.PI*2/3,id=i?200000+i*10000+b.id*2:b.id*2;residents.push(person(id,b.id*.913+offset),person(id+1,b.id*.627+offset,true));}
-   P.records.push({b,path:undefined,room:null,facade:null,residents,outside:residents[0],inside:residents[1]});
-  }P.parks=parkResidents();
+
+ P.install=scene=>{if(P.scene===scene&&P.initialized)return;for(const mesh of P.batches){mesh.parent?.remove(mesh);mesh.dispose?.();}P.batches=[];P.scene=scene;P.initialized=true;P.records=[];P.active=[];P.activeCity=[];P.activePark=[];P.clock=P.refresh=0;P.previousCars=new Map();P.citySpread=W.mapId==='city'&&!W.customMap;P.density=P.citySpread?3:1;P.peoplePerBuilding=P.citySpread?1:2;P.maxPeople=72*P.density;
+  for(const b of W.buildings){if(!b.group||b.scenery||b.w<5||b.d<5||b.h<2.9||b.object&&(Math.abs(b.object.pitch||0)>.01||Math.abs(b.object.roll||0)>.01))continue;const outside=P.citySpread?null:person(b.id*2,b.id*.913),inside=person(b.id*2+1,b.id*.627,true),residents=outside?[outside,inside]:[inside];
+   P.records.push({b,path:P.citySpread?null:undefined,room:null,facade:null,residents,outside,inside});
+  }cityResidents();
   P.head=makeBatch(scene,sphere,'#ffffff',P.maxPeople,true);P.hair=makeBatch(scene,sphere,'#3d342d',P.maxPeople);P.shirt=makeBatch(scene,unit,'#ffffff',P.maxPeople*3,true);P.hands=makeBatch(scene,unit,'#ffffff',P.maxPeople*2,true);P.pants=makeBatch(scene,unit,'#344553',P.maxPeople*2);P.shoes=makeBatch(scene,unit,'#292f32',P.maxPeople*2);P.update(0,0);
  };
  function prepare(rec){const b=rec.b;if(rec.path===undefined)rec.path=outsidePath(b);if(rec.room)return;const scale=b.group.scale.x||1;let room=b.group.userData.v22Room;if(!room){const floor=Math.max(b.foundation||0,W.height(b.x,b.z)-b.y+.08);room=furnish(b.group,b.w/scale,b.d/scale,b.h/scale,b.id%3===0||W.mapId==='playplace'?themeFor(b):null,floor/scale);}rec.room=room;rec.roomScale=scale;rec.facade=room.group;}
@@ -91,21 +108,21 @@
  }
  function collision(n,record,cars){if(n.inside||n.tumble||n.immune>0)return;for(const {c,prev,size}of cars){if(Math.abs(c.y-n.y)>2.5*size)continue;const dx=c.x-prev.x,dz=c.z-prev.z,d=dx*dx+dz*dz,t=d?Math.max(0,Math.min(1,((n.x-prev.x)*dx+(n.z-prev.z)*dz)/d)):1,x=prev.x+dx*t,z=prev.z+dz*t,co=Math.cos(c.yaw||0),si=Math.sin(c.yaw||0),across=(n.x-x)*co-(n.z-z)*si,along=(n.x-x)*si+(n.z-z)*co;if(Math.abs(across)>size+.3||Math.abs(along)>2.25*size+.3)continue;n.tumble=3;n.tumbleUntil=P.clock+3;n.hitX=n.x;n.hitZ=n.z;n.hitY=n.y;n.hitYaw=n.yaw;return;}}
  P.update=(dt,time)=>{if(!P.scene)return;dt=Math.max(0,Math.min(.1,Number(dt)||0));P.clock+=dt;const focus=W.vehicle||{x:0,z:0};P.refresh-=dt;
-  if(P.refresh<=0){P.refresh=.35;for(const r of P.records)if(r.facade)r.facade.visible=false;P.activePark=P.parks.filter(r=>Math.hypot(r.center.x-focus.x,r.center.z-focus.z)<221).flatMap(r=>r.people);const buildings=Math.floor((P.maxPeople-P.activePark.length)/P.peoplePerBuilding);P.active=P.records.filter(r=>!r.b.collapsed&&Math.hypot(r.b.x-focus.x,r.b.z-focus.z)<175+Math.hypot(r.b.w,r.b.d)/2).sort((a,b)=>Math.hypot(a.b.x-focus.x,a.b.z-focus.z)-Math.hypot(b.b.x-focus.x,b.b.z-focus.z)).slice(0,buildings);for(const r of P.active){prepare(r);if(r.facade)r.facade.visible=true;}}
+  if(P.refresh<=0){P.refresh=.35;for(const r of P.records)if(r.facade)r.facade.visible=false;P.active=P.records.filter(r=>!r.b.collapsed&&Math.hypot(r.b.x-focus.x,r.b.z-focus.z)<175+Math.hypot(r.b.w,r.b.d)/2).sort((a,b)=>Math.hypot(a.b.x-focus.x,a.b.z-focus.z)-Math.hypot(b.b.x-focus.x,b.b.z-focus.z)).slice(0,36);for(const r of P.active){prepare(r);if(r.facade)r.facade.visible=true;}const remaining=P.maxPeople-P.active.length*P.peoplePerBuilding;P.activeCity=P.cityPeople.filter(n=>Math.hypot(n.anchor.x-focus.x,n.anchor.z-focus.z)<178).sort((a,b)=>Math.hypot(a.anchor.x-focus.x,a.anchor.z-focus.z)-Math.hypot(b.anchor.x-focus.x,b.anchor.z-focus.z)).slice(0,remaining);P.activePark=P.activeCity.filter(n=>n.park);}
   const cars=vehicles(dt);let count=0;
   for(const r of P.active){if(r.b.collapsed)continue;const b=r.b,room=r.room;
    for(const n of r.residents){const inside=n.inside;if(!inside&&!r.path)continue;n.immune=Math.max(0,n.immune-dt);if(n.tumble){n.tumble=Math.max(0,n.tumbleUntil-P.clock);if(!n.tumble)n.immune=1.5;}
     if(n.tumble){n.x=n.hitX;n.y=n.hitY+.12;n.z=n.hitZ;n.yaw=n.hitYaw;}
     else if(inside){const scale=r.roomScale,p=point(b,Math.sin(P.clock*.4+n.phase)*room.w*.42*scale,(room.front-.85)*scale);n.x=p.x;n.z=p.z;n.y=b.y+room.floor*scale+.14;n.yaw=b.yaw+(Math.cos(P.clock*.4+n.phase)>0?Math.PI/2:-Math.PI/2);}
-    else{const path=r.path,along=Math.sin(P.clock*.28+n.phase)*path.span,p=point(b,path.front?along:path.sign*path.offset,path.front?path.sign*path.offset:along);if(P.density!==3&&!safe(b,p.x,p.z))continue;n.x=p.x;n.z=p.z;if(P.density===3){const t=(along/path.span+1)*.5*(path.points.length-1),i=Math.min(path.points.length-2,Math.floor(t));n.y=path.points[i].y+(path.points[i+1].y-path.points[i].y)*(t-i);}else n.y=W.height(p.x,p.z)+.02;n.yaw=b.yaw+(path.front?Math.PI/2:0)+(Math.cos(P.clock*.28+n.phase)<0?Math.PI:0);}
+    else{const path=r.path,along=Math.sin(P.clock*.28+n.phase)*path.span,p=point(b,path.front?along:path.sign*path.offset,path.front?path.sign*path.offset:along);if(!safe(b,p.x,p.z))continue;n.x=p.x;n.z=p.z;n.y=W.height(p.x,p.z)+.02;n.yaw=b.yaw+(path.front?Math.PI/2:0)+(Math.cos(P.clock*.28+n.phase)<0?Math.PI:0);}
     collision(n,r,cars);render(n,count++,P.clock);if(count>=P.maxPeople)break;
    }if(count>=P.maxPeople)break;
   }
-  P.visibleParkCount=0;
-  for(const n of P.activePark){if(count>=P.maxPeople)break;n.immune=Math.max(0,n.immune-dt);if(n.tumble){n.tumble=Math.max(0,n.tumbleUntil-P.clock);if(!n.tumble)n.immune=1.5;}
+  P.visibleParkCount=P.visibleCityCount=0;
+  for(const n of P.activeCity){if(count>=P.maxPeople)break;n.immune=Math.max(0,n.immune-dt);if(n.tumble){n.tumble=Math.max(0,n.tumbleUntil-P.clock);if(!n.tumble)n.immune=1.5;}
    if(n.tumble){n.x=n.hitX;n.y=n.hitY+.12;n.z=n.hitZ;n.yaw=n.hitYaw;}
-   else{const angle=n.phase+P.clock*1.05/n.radius*n.direction,p=parkPoint(n,angle);if(!parkSafe(n,p))continue;const next=parkPoint(n,angle+.01*n.direction);n.x=p.x;n.z=p.z;n.y=W.driveHeight(p.x,p.z,true)+.02;n.yaw=Math.atan2(next.x-p.x,next.z-p.z);}
-   collision(n,null,cars);render(n,count++,P.clock);P.visibleParkCount++;
+   else{const t=(Math.sin(P.clock*.28+n.phase)+1)*.5*(n.points.length-1),i=Math.min(n.points.length-2,Math.floor(t)),a=n.points[i],b=n.points[i+1],f=t-i;n.x=a.x+(b.x-a.x)*f;n.z=a.z+(b.z-a.z)*f;n.y=W.driveHeight(n.x,n.z,true)+.02;n.yaw=n.angle+(Math.cos(P.clock*.28+n.phase)<0?Math.PI:0);}
+   collision(n,null,cars);render(n,count++,P.clock);P.visibleCityCount++;if(n.park)P.visibleParkCount++;
   }P.head.count=P.hair.count=count;P.shirt.count=count*3;P.hands.count=P.pants.count=P.shoes.count=count*2;for(const mesh of P.batches){mesh.instanceMatrix.needsUpdate=true;if(mesh.instanceColor)mesh.instanceColor.needsUpdate=true;}P.visibleCount=count;
  };
 })();

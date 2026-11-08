@@ -1,8 +1,8 @@
-ISLA V2.37 — COSTA METRO CROWDS + WINDOWS AND SPORTS FIXES
+ISLA V2.37 — EVENLY SPREAD COSTA METRO POPULATION + WINDOWS AND SPORTS FIXES
 
 ONLINE UPDATE FOR YOUR EXISTING COMPLETE V2.33 OR LATER REPOSITORY
-1. Extract ISLA-V2.37-COSTA-CROWDS-ONLINE.zip.
-2. Open the matching ISLA-V2.37-COSTA-CROWDS-ONLINE folder.
+1. Extract ISLA-V2.37-EVEN-SPREAD-ONLINE.zip.
+2. Open the matching ISLA-V2.37-EVEN-SPREAD-ONLINE folder.
 3. Upload all 49 individual files inside to your repository ROOT, replacing
    matching files, in ONE batch. Commit the batch.
 4. Keep all other repository files and your existing wrangler.jsonc.
@@ -13,8 +13,10 @@ This cumulative patch includes V2.34 through V2.36. It requires your complete
 V2.33 or later repository; every required source is checked before building.
 
 NEW IN V2.37
-- Costa Metro has three times the building residents, plus 12 walkers in each
-  park. Nearby crowds share a 216-person limit and stay off the roads.
+- Costa Metro has about three times its original overall population, spread
+  evenly across walkable land, neighborhoods and parks. Each building keeps
+  one indoor person. Outdoor walkers have separate, spaced routes instead of
+  sharing a building route. Up to 216 nearby people are drawn at once.
 - Removed oversized facade cutouts. NPCs are visible through the existing
   ground-floor windows; doors, wall sections, frames and crossbars stay intact.
 - Scoring a basket in Play Place gives 7,000-9,000 Aura to the scoring driver.
@@ -25,7 +27,7 @@ NEW IN V2.37
 - Older Play Place clients must refresh to join the updated global room.
 
 OFFLINE EDITION (SEPARATE DOWNLOAD)
-Paste all text from ISLA-V2.37-COSTA-CROWDS-Offline.txt into an HTML viewer as before.
+Paste all text from ISLA-V2.37-EVEN-SPREAD-Offline.txt into an HTML viewer as before.
 It contains the same changes. Map Maker maps are now practice only: they do
 not award Aura or Iscoins. Rewards on the five built-in maps still work.
 Owner Controls, dated History, current balances, cars, upgrades and vault claims
