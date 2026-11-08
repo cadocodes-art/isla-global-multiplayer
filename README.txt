@@ -1,8 +1,8 @@
 ISLA V2.38 — CURVED BOWLING + VAULT MUSIC + OWNER CONTROLS
 
 ONLINE UPDATE FOR YOUR EXISTING COMPLETE V2.33 OR LATER REPOSITORY
-1. Extract ISLA-V2.38-ONLINE-PLAYS.zip.
-2. Open the matching ISLA-V2.38-ONLINE-PLAYS folder.
+1. Extract ISLA-V2.38-ONLINE-PLAYS-STATS.zip.
+2. Open the matching ISLA-V2.38-ONLINE-PLAYS-STATS folder.
 3. Upload all 75 individual files inside to your repository ROOT, replacing
    matching files, in ONE batch. Commit the batch.
 4. Keep all other repository files and your existing wrangler.jsonc.
@@ -14,7 +14,7 @@ V2.33 or later repository. The build checks every required source and reports
 which file to re-upload if anything is missing or from a different version.
 
 NEW IN V2.38
-- Online map cards show Plays. Each new driving visit counts, including repeat
+- Online map cards and each map detail/stats page show Plays. Each new driving visit counts, including repeat
   visits by the same player or guest. Retries within one visit count only once.
   Popularity, trending and play milestones use total recorded visits. Existing
   recorded visits are preserved; previously unrecorded replays cannot be recovered.

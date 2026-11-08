@@ -40,3 +40,6 @@ body.test-driving #header .top-right{visibility:visible;flex-shrink:0}body.test-
 @media(max-height:500px) and (orientation:landscape){.editor-shell{grid-template-rows:50px minmax(0,1fr) 155px}.editor-hint{display:none}.editor-tabs{padding-top:0}.editor-tabs button{min-height:38px!important}}
 /* V1.9 corner clock: large touch target, clear of selection and navigation. */
 .editor-clock{position:absolute;right:12px;bottom:14px;z-index:3;width:210px;padding:10px 12px;border-radius:12px;background:#102d38ed;color:#f2f6e9;font-size:12px;box-shadow:0 4px 18px #0003;display:grid;grid-template-columns:1fr auto;gap:4px}.editor-clock output{font-weight:700;color:#d8f5ac}.editor-clock input{grid-column:1/-1;width:100%;min-height:32px;accent-color:#d8f5ac;touch-action:none}.editor-clock span{grid-column:1/-1;text-align:center;font-size:10px;opacity:.7}@media(max-width:600px){.editor-clock{width:158px;right:8px;bottom:8px;padding:6px 9px;font-size:11px}.editor-clock input{min-height:30px}.editor-clock span{font-size:9px}}
+
+/* Total recorded visits on the map detail/stats page, including narrow screens. */
+.c-map-plays{display:inline-flex;align-items:center;padding:11px 15px;border:1px solid var(--c-line);border-radius:6px;color:var(--c-ink);font-size:12px;white-space:nowrap}

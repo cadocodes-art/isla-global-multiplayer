@@ -119,7 +119,7 @@
     {
       "name": "community-ui.js",
       "destination": "public/community-ui.js",
-      "sha256": "547bbb535db5b7a6e535dbfcfd508dca1b3bc6a2696f5453af47fce287ad16d4"
+      "sha256": "8732e248538f9a56fc6e2f6405e80acf397129388165d30e2f39a0d06feafd5e"
     },
     {
       "name": "social-rules.js",
@@ -224,7 +224,7 @@
     {
       "name": "community.css",
       "destination": "public/community.css",
-      "sha256": "042fe8fb67bc4c43e1b4bee9e5668a841888decbf468605be05ca2ff05b26330"
+      "sha256": "87781e888347080e2a1fed14d132bbb734778b95407ce48160b0a82fcec62f37"
     },
     {
       "name": "social.css",
@@ -489,7 +489,7 @@
     {
       "name": "README.txt",
       "destination": "README.txt",
-      "sha256": "8883c87e7ac0e00c722bac0d4337c088f1e81c7a22d542e491e466c49fe7d2ae"
+      "sha256": "6d9a5393d6ab25a60ef195049351a0a60d2afc535e20755cf58a119eec8ba4bc"
     },
     {
       "name": "v22-shared.js",
@@ -754,7 +754,7 @@
     {
       "name": "V2.38-Notes.md",
       "destination": "V2.38-Notes.md",
-      "sha256": "cb70ce7548e02f80f875e175c5d3e83bb89622caf900d845c45fafd7dd3bad89"
+      "sha256": "da96db28761430d07b9b0343876053f645ebe1a594042aeb769f1f1a3eb528bf"
     },
     {
       "name": "vault-music.js",
