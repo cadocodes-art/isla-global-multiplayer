@@ -1,8 +1,8 @@
 {
   "name": "isla-drive-cloudflare",
-  "version": "2.35.0",
+  "version": "2.36.0",
   "private": true,
-  "description": "ISLA V2.35 \u2014 varied NPC skin tones and a lower plateau between the roads",
+  "description": "ISLA V2.36 — Play Place buildings removed, 100 coins across attractions, reduced trampoline Aura",
   "engines": {
     "node": ">=22.0.0"
   },

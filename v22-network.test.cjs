@@ -58,3 +58,10 @@ test('V2.33 new visits reshuffle personal coins, keep cooldowns and survive serv
  assert.equal((await api('v22/collect',{run:second,coin:moved.id,position:moved})).data.collected,true);
  const otherRun=(await api('play/start',{map:'fern'},other)).data.run,otherCoins=(await api('v22/map',{run:otherRun},other)).data.coins;assert.notDeepEqual(otherCoins,b.coins,'room members have different layouts');
 });
+
+test('V2.36 account Play Place layouts contain 100 coins; sky bridge and pool pickups validate at their elevated heights',async()=>{
+ const visit=(await api('play/start',{map:'playplace'})).data.run,r=await api('v22/map',{run:visit});assert.equal(r.status,200);assert.equal(r.data.coins.length,100);const bridge=r.data.coins.find(c=>c.placement==='skybridge'),pool=r.data.coins.find(c=>c.placement==='water');assert(bridge&&pool);
+ const otherVisit=(await api('play/start',{map:'playplace'},other)).data.run,theirs=(await api('v22/map',{run:otherVisit},other)).data.coins;assert.notDeepEqual(r.data.coins,theirs);
+ for(const coin of [bridge,pool]){const pickup=await api('v22/collect',{run:visit,coin:coin.id,position:coin});assert.equal(pickup.status,200,JSON.stringify(pickup.data));assert(pickup.data.collected);assert.equal(pickup.data.value,coin.value);assert.equal((await api('v22/collect',{run:visit,coin:coin.id,position:coin})).data.collected,false);}
+ const extra=await api('v22/collect',{run:visit,coin:233100,position:{x:0,y:12,z:0}});assert.equal(extra.status,400);
+});

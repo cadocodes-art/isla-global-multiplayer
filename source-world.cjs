@@ -22,7 +22,7 @@ module.exports = function createWorld(mapId = 'islands', includeTrees = false) {
   const trees=Array.from(W.trees,t=>Object.fromEntries(['treeId','x','y','z','h','r'].map(k=>[k,t[k]])));
   let playground=null;if(mapId==='playplace'){W.makeRoadDetails(new THREE.Scene());const P=W.playplace;playground={pits:P.pits,foam:P.bodies.foam.map(b=>({x:b.x,y:b.y,z:b.z,w:b.w,h:b.h,d:b.d,pitch:b.pitch,roll:b.roll,yaw:b.yaw,index:b.index,tint:b.tint})),platforms:P.bodies.platforms.filter(b=>!b.seesaw).map(b=>b.plan),seesaws:P.seesaws.map(b=>({x:b.x,z:b.z,yaw:b.baseYaw})),ropes:P.ropes.map(r=>({x:r.x,z:r.z,length:r.length})),roads:P.roads.map(r=>({...r,samples:r.samples.map(({road,...p})=>p)})),colliders:W.colliders.map(b=>Object.fromEntries(['kind','x','y','z','w','h','d','yaw','preciseHeight'].map(k=>[k,b[k]]))),ramps:W.ramps.map(({group,...r})=>r)};}
   const bounds=mapId==='city'?{minX:-1000,maxX:1000,minZ:-1000,maxZ:1000}:mapId==='fern'?{minX:-2000,maxX:2000,minZ:-2000,maxZ:2000}:mapId==='playplace'?{minX:-590,maxX:590,minZ:-515,maxZ:515}:{minX:W.mapBounds.x,maxX:W.mapBounds.x+W.mapBounds.size,minZ:W.mapBounds.z,maxZ:W.mapBounds.z+W.mapBounds.size};
-  const coins=context.IslaV22.coins(mapId,W.roads,buildings,W.height,bounds);
+  const surfaces=context.IslaV22.coinSurfaces(W),coins=context.IslaV22.coins(mapId,W.roads,buildings,W.height,bounds,'',surfaces);
   W.buildings = []; W.colliders = [];
-  const rocks=Array.from(W.rocks||[],b=>Object.fromEntries(['rockId','x','y','z','r'].map(k=>[k,b[k]])));return { W, buildings, trees, rocks, playground, coins, bounds, pools:context.IslaV20Layout.pools };
+  const rocks=Array.from(W.rocks||[],b=>Object.fromEntries(['rockId','x','y','z','r'].map(k=>[k,b[k]])));return { W, buildings, trees, rocks, playground, coins, bounds, surfaces, pools:context.IslaV20Layout.pools };
 };

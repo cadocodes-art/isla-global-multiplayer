@@ -87,10 +87,10 @@
  W.playBounce=(c,from,time)=>{const p=pads.find(p=>inBox(c,p,-1));if(!p||c.waterMode!=='dry'||from.vy>.5||c.y>floor+.5||from.y<floor-.4||time<(c.playBounceAt||0)||c.playBounceRest)return false;
   const launch=c.playBouncePower?c.playBouncePower*.82:Math.min(14,Math.max(p.power,Math.abs(from.vy||0)*.38));c.playBouncePower=launch;p.bounced=time;
   if(launch<2.2){c.playBounceRest=true;c.vy=0;return false;}
-  c.y=floor+.5;c.vy=launch;c.grounded=false;c.contact=0;c.ramp=null;c.roadFrame=null;c.roadMode=false;c.airtime=.01;c.playAir=true;c.playBounceAt=time+.22;W.onPlayBounce?.();return true;
+  c.y=floor+.5;c.vy=launch;c.grounded=false;c.contact=0;c.ramp=null;c.roadFrame=null;c.roadMode=false;c.airtime=.01;c.playAir=true;c.playBounceAt=time+.22;c.playBounceRewardPending=true;W.onPlayBounce?.();return true;
  };
  W.playFoamLand=(c,from,time)=>bodies.collideCar(c,from,1/120,time);
- const reset=W.resetVehicle;W.resetVehicle=(...args)=>{reset(...args);Object.assign(W.vehicle,{playBouncePower:0,playBounceRest:false,playBounceAt:0,playAir:false,playFoamBounceAt:0,playSupport:null});};
+ const reset=W.resetVehicle;W.resetVehicle=(...args)=>{reset(...args);Object.assign(W.vehicle,{playBouncePower:0,playBounceRest:false,playBounceRewardPending:false,playBounceAt:0,playAir:false,playFoamBounceAt:0,playSupport:null});};
  const step=W.stepVehicle;W.stepVehicle=(dt,input,time)=>{const c=W.vehicle;W.stepPlayplaceWorld(dt);bodies.carry(c);const from={x:c.x,y:c.y,z:c.z,vy:c.vy};
   if(c.playAir&&!c.grounded&&!W.getCarSpec?.()?.flappy){const angle=(input.steer||0)*1.1*dt,cs=Math.cos(angle),sn=Math.sin(angle),vx=c.vx,vz=c.vz;c.vx=vx*cs+vz*sn;c.vz=vz*cs-vx*sn;c.yaw+=angle;const gas=Math.max(0,Number(input.gas)||0);if(gas&&Math.hypot(c.vx,c.vz)<14){c.vx+=Math.sin(c.yaw)*gas*4*dt;c.vz+=Math.cos(c.yaw)*gas*4*dt;}if(input.brake){const drag=Math.exp(-dt*1.2*input.brake);c.vx*=drag;c.vz*=drag;}}
   if(!W.stepMakerRoad(dt,input,time))step(dt,input,time);W.sweepMakerRoad(from);W.playSync?.contact(c);W.playBounce(c,from,time);W.playFoamLand(c,from,time);W.collidePlayRopes(c,dt);sports.collideCar(c,W.playplace.clock);

@@ -34,17 +34,18 @@
  function random(seed){let s=hash(seed);return ()=>((s=(Math.imul(s,1664525)+1013904223)>>>0)/4294967296);}
  function buildingKey(b){if(b.rewardKey)return b.rewardKey;if(b.object?.id)return 'object:'+b.object.id;return [b.x,b.y,b.z,b.w,b.d].map(v=>Math.round(v*10)).join(':');}
  // A visit seed changes positions; stable slot IDs preserve personal pickup cooldowns.
- function coins(key,roads,buildings,height,bounds,visit=''){
+ function coins(key,roads,buildings,height,bounds,visit='',surfaces=null){
   const rand=random('iscoins-2.33:'+key+':'+visit),result=[],segments=new Map(),blocks=new Map();
-  const max=240,b=bounds||{minX:-900,maxX:900,minZ:-900,maxZ:900};
+  const max=key==='playplace'?100:240,b=bounds||{minX:-900,maxX:900,minZ:-900,maxZ:900};
   const cell=(x,z)=>Math.floor(x/64)+','+Math.floor(z/64);
   function index(grid,item,x0,x1,z0,z1){for(let x=Math.floor(x0/64);x<=Math.floor(x1/64);x++)for(let z=Math.floor(z0/64);z<=Math.floor(z1/64);z++){const k=x+','+z;if(!grid.has(k))grid.set(k,[]);grid.get(k).push(item);}}
-  for(const r of roads||[]){const ps=(r.samples||[]).filter(p=>Number.isFinite(p.x)&&Number.isFinite(p.z));for(let i=0;i<ps.length;i++){const p=ps[i],q=ps[Math.min(i+1,ps.length-1)],width=Math.max(1,p.width||r.width||8),pad=width/2+12,s={p,q,pad,width};index(segments,s,Math.min(p.x,q.x)-pad,Math.max(p.x,q.x)+pad,Math.min(p.z,q.z)-pad,Math.max(p.z,q.z)+pad);}}
+  for(const r of [...(roads||[]),...(surfaces?.roads||[])]){const ps=(r.samples||[]).filter(p=>Number.isFinite(p.x)&&Number.isFinite(p.z));for(let i=0;i<ps.length;i++){const p=ps[i],q=ps[Math.min(i+1,ps.length-1)],width=Math.max(1,p.width||r.width||8),pad=width/2+12,s={p,q,pad,width,placement:r.coinArea||'road',face:r.corners&&i<ps.length-1?[...r.corners[i],...r.corners[i+1]]:null,exact:!!r.corners};index(segments,s,Math.min(p.x,q.x)-pad,Math.max(p.x,q.x)+pad,Math.min(p.z,q.z)-pad,Math.max(p.z,q.z)+pad);}}
   const roofs=[];
   for(const building of buildings||[]){const r=Math.hypot(building.w,building.d)/2+4;index(blocks,building,building.x-r,building.x+r,building.z-r,building.z+r);if(!building.obb&&building.w>=5&&building.d>=5&&Number.isFinite(building.y+building.h))roofs.push(building);}
   function nearRoad(x,z){return (segments.get(cell(x,z))||[]).some(({p,q,pad})=>{const dx=q.x-p.x,dz=q.z-p.z,t=clamp(((x-p.x)*dx+(z-p.z)*dz)/(dx*dx+dz*dz||1),0,1);return Math.hypot(x-p.x-dx*t,z-p.z-dz*t)<=pad;});}
   function blocked(x,z,y){return (blocks.get(cell(x,z))||[]).some(o=>{const co=Math.cos(o.yaw||0),si=Math.sin(o.yaw||0),dx=x-o.x,dz=z-o.z;return y<o.y+o.h+.6&&y>o.y-2&&Math.abs(dx*co-dz*si)<o.w/2+3&&Math.abs(dx*si+dz*co)<o.d/2+3;});}
-  function surfaceAt(x,z){let y=height(x,z),placement='ground';for(const {p,q,width} of segments.get(cell(x,z))||[]){const dx=q.x-p.x,dz=q.z-p.z,t=clamp(((x-p.x)*dx+(z-p.z)*dz)/(dx*dx+dz*dz||1),0,1);if(Math.hypot(x-p.x-dx*t,z-p.z-dz*t)>width/2||!Number.isFinite(p.y)||!Number.isFinite(q.y))continue;const deck=p.y+(q.y-p.y)*t;if(deck>=y){y=deck;placement='road';}}return {y,placement};}
+  function deckAt(face,x,z){for(const [a,b,c] of [[face[0],face[2],face[1]],[face[1],face[2],face[3]]]){const den=(b.z-c.z)*(a.x-c.x)+(c.x-b.x)*(a.z-c.z);if(Math.abs(den)<1e-8)continue;const u=((b.z-c.z)*(x-c.x)+(c.x-b.x)*(z-c.z))/den,v=((c.z-a.z)*(x-c.x)+(a.x-c.x)*(z-c.z))/den,w=1-u-v;if(Math.min(u,v,w)>=-1e-8)return u*a.y+v*b.y+w*c.y;}return null;}
+  function surfaceAt(x,z){let y=height(x,z),placement='ground';for(const pool of surfaces?.pools||[])if(Math.abs(x-pool.x)<pool.w/2&&Math.abs(z-pool.z)<pool.d/2){y=Math.max(y,surfaces.floor);placement='water';}for(const {p,q,width,placement:area,face,exact} of segments.get(cell(x,z))||[]){let deck;if(exact){if(!face)continue;deck=deckAt(face,x,z);if(deck===null)continue;}else{const dx=q.x-p.x,dz=q.z-p.z,t=clamp(((x-p.x)*dx+(z-p.z)*dz)/(dx*dx+dz*dz||1),0,1);if(Math.hypot(x-p.x-dx*t,z-p.z-dz*t)>width/2||!Number.isFinite(p.y)||!Number.isFinite(q.y))continue;deck=p.y+(q.y-p.y)*t;}if(deck>=y){y=deck;placement=area;}}return {y,placement};}
   function add(x,y,z,value,placement){
    // Quantize before validation so clients and the server classify the identical position.
    x=Math.round(x*100)/100;y=Math.round(y*100)/100;z=Math.round(z*100)/100;
@@ -57,12 +58,26 @@
    let placed=false;
    for(let k=0;k<1800&&!placed;k++){
     if(roofs.length&&(k%2===n%2)){const roof=roofs[Math.floor(rand()*roofs.length)];placed=add(roof.x,roof.y+roof.h+.8,roof.z,10,'roof');}
+    else if(surfaces?.pools?.length){const pool=surfaces.pools[n%surfaces.pools.length],x=pool.x+(rand()-.5)*(pool.w-12),z=pool.z+(rand()-.5)*(pool.d-12),s=surfaceAt(x,z);if(s.placement==='water')placed=add(x,s.y+.8,z,10,'water');}
     else{const p=point();if(height(p.x,p.z)<-1)placed=add(p.x,.8,p.z,10,'water');}
    }
    // Dry, building-free maps still get a rare collectible on accessible ground.
    for(let k=0;k<1200&&!placed;k++){const p=point(),y=height(p.x,p.z);if(y>=0&&Math.abs(height(p.x+3,p.z)-y)<4&&Math.abs(height(p.x,p.z+3)-y)<4)placed=add(p.x,y+.8,p.z,10,'ground');}
   }
-  // Sample the entire map uniformly; roads describe the surface, never a quota.
+  // Include the upper playground and water park on every visit, within the 100 slots.
+  if(key==='playplace'&&surfaces){
+   const bridges=surfaces.roads.filter(r=>r.coinArea==='skybridge');
+   for(let k=0,placed=0;k<1600&&placed<8&&bridges.length;k++){
+    const r=bridges[Math.floor(rand()*bridges.length)],i=Math.floor(rand()*(r.samples.length-1)),p=r.samples[i],q=r.samples[i+1],t=rand(),length=Math.hypot(q.x-p.x,q.z-p.z)||1,offset=(rand()-.5)*r.width*.5;
+    const x=p.x+(q.x-p.x)*t+(q.z-p.z)/length*offset,z=p.z+(q.z-p.z)*t-(q.x-p.x)/length*offset,s=surfaceAt(x,z);
+    if(s.placement==='skybridge'&&add(x,s.y+.8,z,rand()<.2?5:1,s.placement))placed++;
+   }
+   const pools=surfaces.pools;
+   if(pools.length){const x0=Math.min(...pools.map(p=>p.x-p.w/2))-60,x1=Math.max(...pools.map(p=>p.x+p.w/2))+40,z0=Math.min(...pools.map(p=>p.z-p.d/2))-60,z1=Math.max(...pools.map(p=>p.z+p.d/2))+40;
+    for(let k=0,placed=0;k<1600&&placed<12;k++){const x=x0+rand()*(x1-x0),z=z0+rand()*(z1-z0),s=surfaceAt(x,z);if(Math.abs(surfaceAt(x+3,z).y-s.y)>4||Math.abs(surfaceAt(x,z+3).y-s.y)>4)continue;if(add(x,s.y+.8,z,rand()<.2?5:1,s.placement))placed++;}
+   }
+  }
+  // Other slots sample the entire map; elevated decks and pool water stay collectible.
   for(let k=0;k<max*200&&result.length<max;k++){
    const p=point(),{y,placement}=surfaceAt(p.x,p.z);
    if(y<0||Math.abs(surfaceAt(p.x+3,p.z).y-y)>4||Math.abs(surfaceAt(p.x,p.z+3).y-y)>4)continue;
@@ -86,7 +101,11 @@
   let h=terrainCache.get(g);if(!h){const bytes=atob(g.packed);h=new Int32Array(g.nx*g.nz);let pos=0;for(let i=0;i<h.length;i++){let n=0,shift=0,byte;do{byte=bytes.charCodeAt(pos++);n|=(byte&127)<<shift;shift+=7;}while(byte&128);h[i]=(i%g.nx?h[i-1]:0)+((n>>>1)^-(n&1));}terrainCache.set(g,h);}
   return (x,z)=>{const fx=clamp((x-g.x)/g.step,0,g.nx-1.001),fz=clamp((z-g.z)/g.step,0,g.nz-1.001),ix=Math.floor(fx),iz=Math.floor(fz),a=fx-ix,b=fz-iz,n=g.nx,mix=(a,b,t)=>a+(b-a)*t;return mix(mix(h[iz*n+ix],h[iz*n+ix+1],a),mix(h[(iz+1)*n+ix],h[(iz+1)*n+ix+1],a),b)*g.scale;};
  }
- function visitCoins(data,visit){const w=data.coinWorld;return coins(data.mapId,w.roads,data.buildings,coinHeight(w.terrain),w.bounds,visit);}
- const api={coinHeight,visitCoins,isDrifting,nukeShots,prices,catalog,flappy,level,spec,normalize,purchase,chooseLevel,hash,random,buildingKey,coins,rewards,reward,coinRespawn:180000};
+ // Plain geometry shared by guest/offline placement and the account server.
+ function playplaceSurfaces(floor,pools,roads,height){return {floor,pools,roads:roads.map(r=>({width:r.width,coinArea:['Skybridge','Cloud bridge','Sky link','High traverse'].includes(r.name)?'skybridge':'road',samples:r.samples.map(p=>({x:p.x,y:p.y,z:p.z,width:p.width||r.width})),corners:r.samples.map((p,i)=>{const next=r.samples[Math.min(i+1,r.samples.length-1)],prev=r.samples[Math.max(0,i-1)],len=Math.hypot(next.x-prev.x,next.z-prev.z)||1,right=p.right||{x:(next.z-prev.z)/len,y:0,z:-(next.x-prev.x)/len},up=p.up||{x:0,y:1,z:0};return [-1,1].map(side=>{const q={x:p.x+right.x*side*r.width/2,y:p.y+right.y*side*r.width/2,z:p.z+right.z*side*r.width/2};q.y=r.conform?height(q.x,q.z)+(r.offset||0)+.16:q.y+up.y*.16;q.x+=r.conform?0:up.x*.16;q.z+=r.conform?0:up.z*.16;return q;});})}))};}
+ function coinSurfaces(W){return W.mapId==='playplace'&&W.playplace?playplaceSurfaces(W.playplace.floor,root.IslaV20Layout?.pools||[],W.playplace.roads,W.height):null;}
+ const surfaceCache=new WeakMap();
+ function visitCoins(data,visit){const w=data.coinWorld,height=coinHeight(w.terrain);let surfaces=null;if(data.mapId==='playplace'&&data.playground){surfaces=surfaceCache.get(w);if(!surfaces){surfaces=playplaceSurfaces(w.terrain.floor,w.terrain.pools,data.playground.roads,height);surfaceCache.set(w,surfaces);}}return coins(data.mapId,w.roads,data.buildings,height,w.bounds,visit,surfaces);}
+ const api={coinSurfaces,coinHeight,visitCoins,isDrifting,nukeShots,prices,catalog,flappy,level,spec,normalize,purchase,chooseLevel,hash,random,buildingKey,coins,rewards,reward,coinRespawn:180000};
  root.IslaV22=api;if(typeof module!=='undefined'&&module.exports)module.exports=api;
 })(typeof globalThis!=='undefined'?globalThis:this);

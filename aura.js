@@ -21,6 +21,7 @@
    const previous=this.previous,events=[],speed=Math.hypot(c.vx,c.vz);
    const distance=previous?Math.hypot(c.x-previous.x,c.z-previous.z):0;
    const air=c.waterMode==='dry'&&!c.grounded&&!c.ramp;
+   const trampoline=!!c.playBounceRewardPending;c.playBounceRewardPending=false;
    // Ignore a reset/teleport, even if a tool or future game feature moves the car directly.
    if(previous&&distance>Math.max(4,speed*dt*3+1)){this.interrupt('RECOVERED');this.previous=this.snapshot(c);return;}
    const award=(label,base,detail)=>{
@@ -32,12 +33,12 @@
    };
    let jumpToWater=false;
    if(air){
-    if(!this.flight&&previous&&previous.waterMode==='dry'&&previous.grounded){this.flight={seconds:0,distance:0,height:0,trickBonus:0};}
-    if(this.flight){this.flight.seconds+=dt;this.flight.distance+=distance;this.flight.height=Math.max(this.flight.height,c.y-Math.max(0,W.driveHeight(c.x,c.z)));}
+    if(!this.flight&&(trampoline||previous&&previous.waterMode==='dry'&&previous.grounded)){this.flight={seconds:0,distance:0,height:0,trickBonus:0};}
+    if(this.flight){if(trampoline)this.flight.trampoline=true;this.flight.seconds+=dt;this.flight.distance+=distance;this.flight.height=Math.max(this.flight.height,c.y-Math.max(0,W.driveHeight(c.x,c.z)));}
    }else if(this.flight){
     const f=this.flight,landed=c.grounded&&c.waterMode==='dry'||c.waterMode==='skimming';
     if(landed&&f.seconds>=.45&&f.distance>=6&&f.height>=.7){
-     award('JUMP',(100+f.seconds*120+f.distance*4+f.height*10)*(1+(f.trickBonus||0)),f.seconds.toFixed(1)+'s airtime · '+Math.round(f.distance)+' m');
+     award('JUMP',(100+f.seconds*120+f.distance*4+f.height*10)*(1+(f.trickBonus||0))*(f.trampoline ? 0.2 : 1),f.seconds.toFixed(1)+'s airtime · '+Math.round(f.distance)+' m');
      jumpToWater=c.waterMode==='skimming';
     }
     this.flight=null;

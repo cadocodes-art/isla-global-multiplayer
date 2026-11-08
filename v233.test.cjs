@@ -2,13 +2,13 @@
 const {test}=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path'),vm=require('node:vm'),crypto=require('node:crypto');
 const V=require('../public/v22-shared.js');
 
-test('V2.33 server terrain stays within 2.5 cm and two visits get 240 safe slots on every map',()=>{
+test('V2.33 server terrain stays within 2.5 cm and two visits get the map-specific number of safe slots',()=>{
  const world=require('../src/world-data.json'),source=require('../scripts/source-world.cjs');
  for(const id of ['islands','city','peaks','playplace','fern']){
   const data=id==='islands'?world:world.maps[id],{W}=source(id),height=V.coinHeight(data.coinWorld.terrain),a=V.visitCoins(data,'visit-A'),b=V.visitCoins(data,'visit-B');
-  assert.equal(a.length,240,id);assert.equal(b.length,240,id);assert.deepEqual(a,V.visitCoins(data,'visit-A'));assert.notDeepEqual(a,b);
+  const count=id==='playplace'?100:240;assert.equal(a.length,count,id);assert.equal(b.length,count,id);assert.deepEqual(a,V.visitCoins(data,'visit-A'));assert.notDeepEqual(a,b);
   assert.deepEqual(a.map(c=>c.id),b.map(c=>c.id),'cooldown slots stay stable');
-  assert(a.filter((c,i)=>Math.hypot(c.x-b[i].x,c.z-b[i].z)>10).length>225,id+' fresh positions');
+  assert(a.filter((c,i)=>Math.hypot(c.x-b[i].x,c.z-b[i].z)>10).length>count*.9,id+' fresh positions');
   for(const c of [...a,...b]){assert(Math.abs(height(c.x,c.z)-W.height(c.x,c.z))<=.026,id+' rendered terrain agreement');assert([1,5,10].includes(c.value));if(c.value!==10)assert(c.y>=W.height(c.x,c.z)+.76,id+' reachable above surface');}
   for(let i=0;i<a.length;i++)for(let j=i+1;j<a.length;j++)assert(Math.hypot(a[i].x-a[j].x,a[i].z-a[j].z)>=32-1e-8);
  }

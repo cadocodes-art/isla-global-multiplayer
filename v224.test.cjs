@@ -7,18 +7,18 @@ test('V2.24 charges 25% more for all 38 upgrades, rounds up and preserves existi
  assert.equal(V.coinRespawn,180000);assert.equal(V.prices.flappy,705000);
 });
 function roadNear(c,roads){for(const road of roads)for(let i=0;i<road.samples.length;i++){const p=road.samples[i],q=road.samples[Math.min(i+1,road.samples.length-1)],dx=q.x-p.x,dz=q.z-p.z,t=Math.max(0,Math.min(1,((c.x-p.x)*dx+(c.z-p.z)*dz)/(dx*dx+dz*dz||1)));if(Math.hypot(c.x-p.x-t*dx,c.z-p.z-t*dz)<=(p.width||road.width||8)/2+12)return true;}return false;}
-test('all five main maps have the 240-coin total and randomized safe placement, with rare roof/water tens',()=>{
+test('all five main maps have their configured coin total and randomized safe placement, with rare roof/water tens',()=>{
  const source=require('../scripts/source-world.cjs'),built=require('../src/world-data.json');
  for(const id of ['islands','city','peaks','playplace','fern']){
-  const {W,buildings,coins}=source(id),max=240;
+  const {W,buildings,coins}=source(id),max=id==='playplace'?100:240;
   assert.equal(coins.length,max,id);
   assert.deepEqual(JSON.parse(JSON.stringify(coins)),(id==='islands'?built:built.maps[id]).coins,id+' client/server equality');
   const rare=coins.filter(c=>c.value===10);assert.equal(rare.length,Math.round(max*.02));
   for(const [i,c]of coins.entries()){
-   assert.equal(roadNear(c,W.roads),c.nearRoad,id+' road classification');assert([1,5,10].includes(c.value));assert(c.id>=233000);
+   assert.equal(roadNear(c,[...W.roads,...(W.playplace?.roads||[])]),c.nearRoad,id+' road classification');assert([1,5,10].includes(c.value));assert(c.id>=233000);
    for(const d of coins.slice(i+1))assert(Math.hypot(c.x-d.x,c.z-d.z)>=32-1e-8,id+' spacing');
    if(c.placement==='roof')assert(buildings.some(b=>Math.hypot(b.x-c.x,b.z-c.z)<.02&&Math.abs(b.y+b.h+.8-c.y)<.02),id+' roof height');
-   else if(c.placement==='water'){assert(W.height(c.x,c.z)<-1);assert.equal(c.y,.8);}
+   else if(c.placement==='water'){if(id==='playplace'){assert(W.height(c.x,c.z)<12);assert.equal(c.y,12.8);}else{assert(W.height(c.x,c.z)<-1);assert.equal(c.y,.8);}}
    else assert(c.y>=W.height(c.x,c.z)+.7,id+' above ground');
   }
   assert(rare.every(c=>['roof','water'].includes(c.placement)||id==='playplace'&&c.placement==='ground'),id+' rare placement');
@@ -32,7 +32,7 @@ test('new layout cannot be hidden by old numerical coin IDs and never exceeds it
  const road={width:8,samples:Array.from({length:241},(_,i)=>({x:-3600+i*30,z:0,y:1}))},args=['test',[road],[],()=>1,{minX:-4000,maxX:4000,minZ:-4000,maxZ:4000}],a=V.coins(...args);assert.deepEqual(a,V.coins(...args));assert.equal(a.length,240);assert(a.filter(c=>c.nearRoad).length<20);assert.equal(new Set(a.map(c=>c.id)).size,240);assert(a.every(c=>c.id>=233000));
 });
 test('release entry points and offline export have no soundtrack dependency',()=>{
- const root=path.resolve(__dirname,'..'),html=fs.readFileSync(path.join(root,'public/index.html'),'utf8');assert.match(html,/V2\.34/);assert(!/menu-music|elektronomia/.test(html));assert(!/elektronomia/.test(fs.readFileSync(path.join(root,'scripts/build-offline.cjs'),'utf8')));const manifest=JSON.parse(fs.readFileSync(path.join(root,'isla-v16-upload.json')));assert.equal(manifest.version,'2.35');assert(!manifest.files.some(f=>/menu-music|elektronomia|Menu-Music/.test(f.name)));
+ const root=path.resolve(__dirname,'..'),html=fs.readFileSync(path.join(root,'public/index.html'),'utf8');assert.match(html,/V2\.36/);assert(!/menu-music|elektronomia/.test(html));assert(!/elektronomia/.test(fs.readFileSync(path.join(root,'scripts/build-offline.cjs'),'utf8')));const manifest=JSON.parse(fs.readFileSync(path.join(root,'isla-v16-upload.json')));assert.equal(manifest.version,'2.36');assert(!manifest.files.some(f=>/menu-music|elektronomia|Menu-Music/.test(f.name)));
 });
 
 test('V2.32 regular coin positions and values are independent of flat-road coverage, with no 40/60 quota',()=>{
