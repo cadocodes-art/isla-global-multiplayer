@@ -29,7 +29,7 @@
     {
       "name": "physics.js",
       "destination": "public/physics.js",
-      "sha256": "6ef0feeb3ee54e19efbf74a7c75dab1e6c5c9d35a3729ba6d1aa3d82611e31fa"
+      "sha256": "9022b6fcabd94688083123b453129bcd633ef3433113342b6fa7a175c3930800"
     },
     {
       "name": "aura.js",
@@ -214,7 +214,7 @@
     {
       "name": "game.js",
       "destination": "public/game.js",
-      "sha256": "f4bd9f2ac48c966e688e44a168c197d67d3de564d91df0f51c565f4304e8cbef"
+      "sha256": "ec7d8ecb53c9d614dbbf9364f62ad68ff9ec3a84f40a3d8fdc2e45d2d8669ea8"
     },
     {
       "name": "style.css",
@@ -489,7 +489,7 @@
     {
       "name": "README.txt",
       "destination": "README.txt",
-      "sha256": "de536b1290c5514758633b284ecb7f1352ec9f04336961fd2274c27bfe90e331"
+      "sha256": "1e3891dafa651727800c85f0e15ca13d737b1c161c6328702a70422d2afeb669"
     },
     {
       "name": "v22-shared.js",
@@ -534,7 +534,7 @@
     {
       "name": "refresh-manifest.cjs",
       "destination": "refresh-manifest.cjs",
-      "sha256": "e7a9bf863426e0cc3d7b4ddf281a338267b0365b3054513ffa2408aa9100c18d"
+      "sha256": "3384c27ebbea6c45b9ca8bd4091d0c6b732efbfa7caf850a4ef160dc4604b8d3"
     },
     {
       "name": "dev.cjs",
@@ -669,7 +669,12 @@
     {
       "name": "V2.35-Notes.md",
       "destination": "V2.35-Notes.md",
-      "sha256": "ab64a05f3c3e67432887d0d0c62fcfb7c13072c0e9665447ef7e75098634f385"
+      "sha256": "c6fe4496c471365e0035615cd8b7c899dd4d6a9c81b6f7abe780c43b10826a8e"
+    },
+    {
+      "name": "water-recovery.test.cjs",
+      "destination": "test/water-recovery.test.cjs",
+      "sha256": "0dc3eba6b963aa84bb112592ebc51cd1aa9dc305e1ed69a49653877075dc7793"
     }
   ]
 }

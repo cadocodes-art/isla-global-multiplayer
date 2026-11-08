@@ -4,7 +4,16 @@
  W.waterSkim={minimumSpeed:140/3.6,duration:6.5,sinkDuration:1.4,level:.10};
  W.nitro={minDuration:5,maxDuration:7,maxSpeed:53,thrust:8,gravityScale:.48,rechargeDuration:8};
  W.vehicle={x:0,y:0,z:700,vx:0,vy:0,vz:0,yaw:Math.PI/2,yawRate:0,steer:0,pitch:0,roll:0,speed:0,grounded:true,ramp:null,airtime:0,distance:0,rpm:850,gear:0,throttle:0,brake:0,slip:0,contact:1,surface:'ASPHALT',lastSafe:{x:0,z:700,yaw:Math.PI/2},waterMode:'dry',skimTime:0,waterTime:0,nitroTime:0,nitroDuration:0,nitroHeld:false,nitroCharge:1};
- W.resetVehicle=(atStart=false)=>{W.aura?.interrupt('RECOVERED');let c=W.vehicle,p=atStart?(W.spawn||{x:0,z:700,yaw:Math.PI/2+.14}):c.lastSafe;p=W.safeRecoveryPoint?.(p)||p;let r=W.rampAt?.(p.x,p.z);Object.assign(c,{x:p.x,z:p.z,y:Math.max(W.driveHeight(p.x,p.z),r?W.rampHeight(r,p.x,p.z):-Infinity)+.12,vx:0,vy:0,vz:0,yaw:p.yaw,yawRate:0,steer:0,pitch:0,roll:0,speed:0,grounded:true,ramp:null,airtime:0,waterMode:'dry',skimTime:0,waterTime:0,nitroTime:0,nitroDuration:0,nitroHeld:false,wall:null,wallMode:'',wallBlocked:null,roof:null,roadFrame:null,roadMode:false,nitroCharge:atStart?1:c.nitroCharge});};
+ W.resetVehicle=(atStart=false)=>{
+  W.aura?.interrupt('RECOVERED');const c=W.vehicle,fromWater=!atStart&&c.waterMode!=='dry',land=fromWater?W.nearestDryLand(c.x,c.z):null;
+  // Water recovery never uses the road visited before a flight. An entirely
+  // flooded custom map can only fall back to its authored start position.
+  let p=land||(atStart||fromWater?(W.spawn||{x:0,z:700,yaw:Math.PI/2+.14}):c.lastSafe);
+  if(!land&&!fromWater)p=W.safeRecoveryPoint?.(p)||p;
+  const r=land?null:W.rampAt?.(p.x,p.z),y=land?land.y:Math.max(W.driveHeight(p.x,p.z),r?W.rampHeight(r,p.x,p.z):-Infinity);
+  if(fromWater)c.lastSafe={x:p.x,z:p.z,yaw:p.yaw};
+  Object.assign(c,{x:p.x,z:p.z,y:y+.12,vx:0,vy:0,vz:0,yaw:p.yaw,yawRate:0,steer:0,pitch:0,roll:0,speed:0,grounded:true,ramp:null,airtime:0,waterMode:'dry',skimTime:0,waterTime:0,nitroTime:0,nitroDuration:0,nitroHeld:false,wall:null,wallMode:'',wallBlocked:null,roof:null,roadFrame:null,roadMode:false,nitroCharge:atStart?1:c.nitroCharge});
+ };
  W.damageForImpact=(speed,mass=W.getCarSpec?.()?.mass??1)=>W.getCarSpec?.()?.beast?(speed>=4?100:0):speed<15?0:(speed*speed-225)*.043*mass*(W.getCarSpec?.()?.ramFactor||1);
  // V2.23: uncapped impact energy keeps fast rams stronger; remaining building HP is the only limit.
  // Damage uses approach speed into the wall, so scraping and pushing cannot grind through a building.
@@ -14,6 +23,35 @@
  // Broad phase: nearby objects only. Both axles collide, rather than just the car's centre.
  const bins=new Map(),cs=45;
  W.buildCollisionIndex=()=>{bins.clear();for(let b of W.colliders){let radius=(b.r||Math.hypot(b.w,b.d)*.5)+4;for(let x=Math.floor((b.x-radius)/cs);x<=Math.floor((b.x+radius)/cs);x++)for(let z=Math.floor((b.z-radius)/cs);z<=Math.floor((b.z+radius)/cs);z++){let key=x+','+z;if(!bins.has(key))bins.set(key,[]);bins.get(key).push(b)}}};
+ // Search the whole playable terrain, so the nearest coast can belong to
+ // either island or either side of a bay. Refine the closest safe patch to 0.5 m.
+ W.nearestDryLand=(fromX,fromZ)=>{
+  const size=W.getCarSpec?.()?.size||1,radius=2.5*size+.75,map=W.mapBounds||{x:W.minX,z:W.minZ,size:W.span};
+  const limits=W.customMap?{minX:-W.customMap.size/2,maxX:W.customMap.size/2,minZ:-W.customMap.size/2,maxZ:W.customMap.size/2}:W.cityLimits||W.fern?.limits||(W.playplace?{minX:-W.playplace.halfX,maxX:W.playplace.halfX,minZ:-W.playplace.halfZ,maxZ:W.playplace.halfZ}:{minX:map.x,maxX:map.x+map.size,minZ:map.z,maxZ:map.z+map.size});
+  const minX=Math.max(limits.minX,W.minX)+radius,maxX=Math.min(limits.maxX,W.minX+W.span)-radius,minZ=Math.max(limits.minZ,W.minZ)+radius,maxZ=Math.min(limits.maxZ,W.minZ+W.depth)-radius;
+  const margin=W.customMap ? .3 : 0,footprint=[[0,0],...[0,1,2,3,4,5,6,7].map(i=>[Math.cos(i*Math.PI/4)*radius,Math.sin(i*Math.PI/4)*radius])];
+  let best=null,bestDistance=Infinity;
+  function consider(x,z){
+   const distance=(x-fromX)**2+(z-fromZ)**2;if(distance>=bestDistance||x<minX||x>maxX||z<minZ||z>maxZ)return;
+   const h=W.height(x,z);if(!Number.isFinite(h)||h<(W.waterLevelAt?.(x,z)??0)+margin)return;
+   for(const [dx,dz]of footprint){const q=W.height(x+dx,z+dz);if(!Number.isFinite(q)||q<(W.waterLevelAt?.(x+dx,z+dz)??0)+margin||Math.abs(q-h)>radius*.45)return;}
+   const y=W.driveHeight(x,z,true);if(!Number.isFinite(y)||y<h-.2||y>h+.6||W.rampAt?.(x,z))return;
+   const nearby=new Set(),cx=Math.floor(x/cs),cz=Math.floor(z/cs);for(let i=-1;i<=1;i++)for(let j=-1;j<=1;j++)for(const b of bins.get((cx+i)+','+(cz+j))||[])nearby.add(b);
+   for(const b of nearby){if(b.collapsed||y>(b.y+(b.h||6))||y+2*size<b.y)continue;
+    if(b.obb&&W.makerBoxHit){if(W.makerBoxHit(x,y+size,z,radius,b))return;}
+    else if(b.w){if(W.circleOBB(x,z,radius,b))return;}
+    else if(Math.hypot(x-b.x,z-b.z)<radius+(b.r||1))return;
+   }
+   if((W.traffic||[]).some(t=>Math.abs((t.y||0)-y)<3*size&&Math.hypot(t.x-x,t.z-z)<radius+3*(t.size||1)))return;
+   best={x,z,y,yaw:Math.atan2(x-fromX,z-fromZ)};bestDistance=distance;
+  }
+  const spacing=Math.min(12,Math.max(4,W.step||12));consider(clamp(fromX,minX,maxX),clamp(fromZ,minZ,maxZ));
+  // Small hand-made islands may fit between the terrain grid samples.
+  for(const edit of W.customMap?.terrain||[])if(edit.height>0)consider(edit.x,edit.z);
+  for(let z=minZ;z<=maxZ;z+=spacing)for(let x=minX;x<=maxX;x+=spacing)consider(x,z);
+  if(best)for(const step of new Set([spacing/2,spacing/4,1,.5])){const p={...best};for(let dz=-spacing;dz<=spacing;dz+=step)for(let dx=-spacing;dx<=spacing;dx+=step)consider(p.x+dx,p.z+dz);}
+  return best;
+ };
  function collide(c,time){const size=W.getCarSpec?.()?.size??1,mass=W.getCarSpec?.()?.mass??1;let list=bins.get(Math.floor(c.x/cs)+','+Math.floor(c.z/cs));if(!list)return;let sx=Math.sin(c.yaw),sz=Math.cos(c.yaw);for(let b of list){if(b.collapsed||c.roof===b||(b.rampStructure&&c.ramp?.id===b.rampId))continue;if(c.y>(b.y+(b.h||6)+(b.rampStructure||b.preciseHeight?0:.7))||c.y+1.6*size<b.y)continue;for(let off of [(W.getCarSpec?.()?.launcher?2.2:1.22)*size,-1.22*size]){const radius=(off>0&&W.getCarSpec?.()?.launcher?(W.getCarSpec().scoopRadius||1.2):.96)*size;let x=c.x+sx*off,z=c.z+sz*off,hit;if(b.kind==='ramp'&&(c.ramp===b||c.y>=W.rampHeight(b,x,z)-.4))continue;if(b.obb&&W.makerBoxHit){hit=W.makerBoxHit(x,c.y+.8*size,z,radius,b);if(!hit)continue;}else if(b.kind&&!b.w){let dx=x-b.x,dz=z-b.z,d=Math.hypot(dx,dz),r=b.r+radius;if(d>=r)continue;hit={nx:dx/(d||1),nz:dz/(d||1),depth:r-d};}else hit=W.circleOBB(x,z,radius,b.kind==='ramp'&&b.openFrame?W.rampBlockingPart(b,c.y,1.6*size):b);if(!hit)continue;let approach=-(c.vx*hit.nx+c.vz*hit.nz+c.vy*(hit.ny||0));
    if(W.tryLauncherHit?.(c,b,hit,approach,time))continue;
    if(!b.kind&&W.tryWallClimb?.(c,b,hit,approach))return;
@@ -108,7 +146,7 @@
   collide(c,time);for(let d of W.debris){let p=d.mesh.position,dx=p.x-c.x,dz=p.z-c.z;if(Math.abs(dx)>5*size||Math.abs(dz)>5*size||Math.abs(c.y-p.y)>2)continue;let along=dx*sx+dz*sz,across=dx*rx+dz*rz;if(Math.abs(along)<2.4*size+d.mesh.scale.z*.3&&Math.abs(across)<size+d.mesh.scale.x*.3&&Math.hypot(c.vx,c.vz)>1.5){d.vx=c.vx*.65;d.vz=c.vz*.65;d.vy=1.1;d.rest=false;d.age=0;c.vx*=1-dt*.7/mass;c.vz*=1-dt*.7/mass;}}c.distance+=Math.hypot(c.vx,c.vz)*dt;
   if(road&&Math.abs(forward)>2&&Math.abs(lateral)<3){let next=near.p.road.samples[Math.min(near.p.index+1,near.p.road.samples.length-1)],prev=near.p.road.samples[Math.max(0,near.p.index-1)],angle=Math.atan2(next.x-prev.x,next.z-prev.z);if(Math.cos(angle-c.yaw)<0)angle+=Math.PI;c.lastSafe={x:near.p.x,z:near.p.z,yaw:angle};}
   if(c.waterMode==='skimming'&&c.skimTime>=(c.skimDuration||skim.duration)-1e-9){c.waterMode='sinking';c.vy=-.55;c.waterTime=0;c.nitroTime=0;if(W.onWaterSink)W.onWaterSink();}
-  if(c.waterMode==='sinking'&&c.waterTime>=skim.sinkDuration){W.resetVehicle();if(W.onRecover)W.onRecover('Too deep. Back on dry land.');return;}
+  if(c.waterMode==='sinking'&&c.waterTime>=skim.sinkDuration){W.resetVehicle();if(W.onRecover)W.onRecover('Too deep. Back on nearby land.');return;}
   let speed=scaledSpeed;c.gear=forward<-.7?-1:speed<.3?0:speed<13?1:speed<23?2:speed<34?3:speed<46?4:5;let ratios=[0,3.4,2.1,1.5,1.15,.92];let rev=c.gear<=0?850+input.gas*700:Math.max(900,speed*ratios[c.gear]*105);c.rpm=mix(c.rpm,clamp(rev+input.gas*250,850,7200),1-Math.exp(-dt*10));
   if(boosting){c.nitroTime=Math.max(0,c.nitroTime-dt);c.nitroCharge=clamp(c.nitroCharge-dt/c.nitroDuration,0,1);if(c.nitroTime<1e-9)c.nitroTime=0;if(c.nitroCharge<1e-9)c.nitroCharge=0;}
   else{c.nitroCharge=Math.min(1,c.nitroCharge+dt/(spec?.nitroRecharge||W.nitro.rechargeDuration));if(c.nitroCharge>1-1e-9)c.nitroCharge=1;}
