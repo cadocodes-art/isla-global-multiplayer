@@ -65,3 +65,10 @@ test('V2.36 account Play Place layouts contain 100 coins; sky bridge and pool pi
  for(const coin of [bridge,pool]){const pickup=await api('v22/collect',{run:visit,coin:coin.id,position:coin});assert.equal(pickup.status,200,JSON.stringify(pickup.data));assert(pickup.data.collected);assert.equal(pickup.data.value,coin.value);assert.equal((await api('v22/collect',{run:visit,coin:coin.id,position:coin})).data.collected,false);}
  const extra=await api('v22/collect',{run:visit,coin:233100,position:{x:0,y:12,z:0}});assert.equal(extra.status,400);
 });
+
+test('V2.37 basketball rewards use the 7k–9k range and reject wrong-map, invalid-ball and repeated claims',async()=>{
+ const score='basket:network-test-237',body={kind:'basket',event:score,target:score,ball:0,car:'classic',position:{x:-290,y:12,z:-85},amount:999999};
+ const island=(await api('play/start',{map:'islands'})).data.run;assert.equal((await api('v22/reward',{...body,run:island})).status,400);
+ const visit=(await api('play/start',{map:'playplace'})).data.run;assert.equal((await api('v22/reward',{...body,run:visit,ball:14})).status,400);assert.equal((await api('v22/reward',{...body,run:visit,event:'unmatched-event'})).status,400);
+ const before=(await api('garage')).data.garage.earned,payload={...body,run:visit},both=await Promise.all([api('v22/reward',payload),api('v22/reward',payload)]);assert.equal(both.filter(r=>r.data.awarded).length,1);const reward=both.find(r=>r.data.awarded).data;assert(reward.points>=7000&&reward.points<=9000);assert.equal(reward.garage.earned,before+reward.points);await restart();assert.equal((await api('v22/reward',payload)).data.awarded,false);
+});

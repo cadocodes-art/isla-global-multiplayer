@@ -5,7 +5,7 @@
  const eligible=()=>!W.auraDisabled&&(!C.custom||!!C.custom.info?.approved);
  const mapKey=()=>C.custom?.info?.id||W.mapId;
  const accountKey=()=>C.account?'isla-v22-actions-'+C.account.id:null;
- const labels={launch:'OBJECT LAUNCHED',drift:'DRIFT',nuke:'NUCLEAR DEMOLITION',ram:'BUILDING DESTROYED',strike:'BOWLING STRIKE',spare:'BOWLING SPARE',slide:'WATERSLIDE COMPLETE'};
+ const labels={basket:'BASKET SCORED',launch:'OBJECT LAUNCHED',drift:'DRIFT',nuke:'NUCLEAR DEMOLITION',ram:'BUILDING DESTROYED',strike:'BOWLING STRIKE',spare:'BOWLING SPARE',slide:'WATERSLIDE COMPLETE'};
  function persist(){if(!C.account)return;try{localStorage.setItem(accountKey(),JSON.stringify(queue));}catch{C.syncError='Allow browser storage to save pending rewards.';}}
  W.v22Notice=(title,detail='',seconds=3)=>{if(!notice){notice=document.createElement('div');notice.className='v22-notice';notice.setAttribute('role','status');document.body.append(notice);}notice.replaceChildren(document.createTextNode(title));if(detail){const s=document.createElement('small');s.textContent=detail;notice.append(s);}notice.hidden=false;noticeUntil=performance.now()+seconds*1000;};
  W.refreshIscoinDisplay=()=>{V.normalize(W.garage);document.body.classList.toggle('hide-iscoins',!W.garage.showIscoins);for(const e of document.querySelectorAll('[data-iscoin-count]'))e.textContent=W.garage.iscoins.toLocaleString('en-US')+' ISCOINS';};

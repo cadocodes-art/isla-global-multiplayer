@@ -1,7 +1,7 @@
 'use strict';
 (()=>{
  const W=Isla,T=THREE,R=IslaRules;W.trees=[];W.rocks=[];W.registerRock=(rock,parts=[])=>{rock.rockId=W.rocks.length;rock.parts=parts;W.rocks.push(rock);return rock;};
- W.registerTree=(tree,parts)=>{tree.treeId=W.trees.length;tree.parts=parts;for(const p of parts)if(!p.mesh.instanceColor)p.mesh.setColorAt(p.index,new T.Color(1,1,1));W.trees.push(tree);return tree;};
+ W.registerTree=(tree,parts)=>{tree.treeId=W.trees.length;tree.parts=parts;for(const p of parts)if(!p.mesh.instanceColor){p.mesh.instanceColor=new T.InstancedBufferAttribute(new Float32Array(p.mesh.instanceMatrix.count*3).fill(1),3);p.mesh.instanceColor.needsUpdate=true;}W.trees.push(tree);return tree;};
  W.fellTree=(tree,dx=1,dz=0,remote=false)=>{
   if(!tree||tree.collapsed)return;tree.collapsed=true;
   const direction=new T.Vector3(dx,0,dz).normalize();if(direction.lengthSq()<.01)direction.set(1,0,0);
@@ -54,7 +54,7 @@
    for(let i=0;i<10;i++){const t=Math.random(),d=jet.distance*t;waterParticles.push({x:jet.start.x+jet.dx*d+(Math.random()-.5)*.25,y:R.hoseY(jet,d)+(Math.random()-.5)*.25,z:jet.start.z+jet.dz*d+(Math.random()-.5)*.25,vx:jet.dx*19,vy:19*(.10-2*(jet.drop??.014)*d),vz:jet.dz*19,life:Math.min(.22,(jet.distance-d)/19),span:.22});}
    splash(jet);
    for(const t of W.traffic){if(!R.inHose(jet,t))continue;t.wetTime=18;t.burning=false;if(spec.hosePush&&!W.net?.active){t.driftX=(t.driftX||0)+jet.dx*spec.hosePush*.05;t.driftZ=(t.driftZ||0)+jet.dz*spec.hosePush*.05;}splash({car:t,end:{x:t.x,y:t.y+1.54,z:t.z},normal:{y:1}});}
-   if(spec.hosePush&&!W.net?.active)for(const ball of W.playplace?.sports.balls||[])if(R.inHose(jet,{x:ball.p.x,y:ball.p.y-.8,z:ball.p.z}))ball.velocity.add(new T.Vector3(jet.dx,0,jet.dz).multiplyScalar(spec.hosePush*.05));
+   if(spec.hosePush&&!W.net?.active)for(const ball of W.playplace?.sports.balls||[])if(R.inHose(jet,{x:ball.p.x,y:ball.p.y-.8,z:ball.p.z})){ball.velocity.add(new T.Vector3(jet.dx,0,jet.dz).multiplyScalar(spec.hosePush*.05));W.playplace.sports.touch(ball,W.vehicle);}
    for(const tree of W.trees)if(!tree.collapsed&&R.inHose(jet,tree)){tree.wetTime=18;for(const part of tree.parts||[]){part.mesh.setColorAt(part.index,new T.Color(.55,.72,.75));part.mesh.instanceColor.needsUpdate=true;}}
   }
  }

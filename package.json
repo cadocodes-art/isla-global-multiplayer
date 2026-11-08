@@ -1,8 +1,8 @@
 {
   "name": "isla-drive-cloudflare",
-  "version": "2.36.0",
+  "version": "2.37.0",
   "private": true,
-  "description": "ISLA V2.36 — Play Place buildings removed, 100 coins across attractions, reduced trampoline Aura",
+  "description": "ISLA V2.37 — basketball Aura, easier bowling, ability button placement and palm colors",
   "engines": {
     "node": ">=22.0.0"
   },
