@@ -105,7 +105,7 @@
   const ws=new WebSocket((location.protocol==='https:'?'wss://':'ws://')+location.host+'/ws?map='+encodeURIComponent(W.mapId)+(W.customMap?'&revision='+IslaCommunity.custom.info.revision:''));socket=ws;
   status(identity?'Reconnecting to the global room…':'Connecting to the global room…');
   connectTimeout=setTimeout(()=>{if(socket===ws&&!net.connected){status('The server is taking a while. Retrying…');ws.close();}},70000);
-  ws.onopen=()=>{if(socket!==ws)return;send({...identity?{type:'resume',v:IslaRules.protocol,name:identity.name,token:identity.token}:intent,...W.mapId==='playplace'?{playplaceRevision:8}:{},...W.mapId==='peaks'?{peaksRevision:5}:{}});};
+  ws.onopen=()=>{if(socket!==ws)return;send({...identity?{type:'resume',v:IslaRules.protocol,name:identity.name,token:identity.token}:intent,...W.mapId==='playplace'?{playplaceRevision:9}:{},...W.mapId==='peaks'?{peaksRevision:5}:{}});};
   ws.onmessage=e=>{if(socket!==ws)return;let data;try{data=JSON.parse(e.data)}catch{return;}
    if(data.type==='welcome'){
     const expected=W.buildings.map(b=>[b.id,Math.round(b.x*100),Math.round(b.z*100)]);
@@ -185,6 +185,7 @@
   $('driverName').addEventListener('input',()=>{const error=IslaRules.validateName($('driverName').value);$('driverName').setAttribute('aria-invalid',error?'true':'false');status(error||'Name looks good. Ready to join.',!!error);});
   $('rooms').addEventListener('keydown',e=>{if(e.key==='Enter'&&e.target===$('driverName'))requestRoom();});
   try{const saved=JSON.parse(safeRead(session,sessionKey));if(saved?.token&&!IslaRules.validateName(saved?.name)&&location.protocol!=='file:'&&!new URLSearchParams(location.search).has('menu')){identity=saved;connect();}}catch{}
+  if(new URLSearchParams(location.search).has('join')&&!identity&&!connecting)requestRoom();
   // A low-rate parked update retains a quiet tab without 20 updates per second.
   setInterval(()=>{if(net.connected&&performance.now()-lastSend>5000){lastSend=performance.now();send({type:'state',state:pose()});}},5000);
   window.addEventListener('pagehide',()=>{leaving=true;socket?.close();});

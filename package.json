@@ -1,8 +1,8 @@
 {
   "name": "isla-drive-cloudflare",
-  "version": "2.37.0",
+  "version": "2.4.0",
   "private": true,
-  "description": "ISLA V2.37 \u2014 StickCar rooftop Aura reduction, evenly spread Costa Metro population, real house windows, basketball Aura, easier bowling, ability buttons and palm colors",
+  "description": "ISLA V2.4 \u2014 Mount Inferno, Inferno Vent, original looping music and bowling",
   "engines": {
     "node": ">=22.0.0"
   },
@@ -12,7 +12,7 @@
     "deploy": "npm run build && wrangler deploy",
     "check:worker": "wrangler deploy --dry-run --outdir build",
     "test": "npm run build && npm run check:worker && node --test --test-concurrency=2 test/*.test.cjs",
-    "build:offline": "node scripts/build-offline.cjs"
+    "build:offline": "node prepare-cloudflare.cjs && node scripts/build-offline.cjs"
   },
   "devDependencies": {
     "miniflare": "5.20261012.1-beta",

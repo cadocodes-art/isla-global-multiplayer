@@ -34,6 +34,9 @@
   function consider(x,z){
    const distance=(x-fromX)**2+(z-fromZ)**2;if(distance>=bestDistance||x<minX||x>maxX||z<minZ||z>maxZ)return;
    const h=W.height(x,z);if(!Number.isFinite(h)||h<(W.waterLevelAt?.(x,z)??0)+margin)return;
+   // Edited basins can have dry but steep banks that roll a recovered car
+   // straight back underwater. Pick the nearest stable patch on custom maps.
+   if(W.customMap){const slope=W.slope(x,z);if(Math.hypot(slope.x,slope.z)>=.04)return;}
    for(const [dx,dz]of footprint){const q=W.height(x+dx,z+dz);if(!Number.isFinite(q)||q<(W.waterLevelAt?.(x+dx,z+dz)??0)+margin||Math.abs(q-h)>radius*.45)return;}
    const y=W.driveHeight(x,z,true);if(!Number.isFinite(y)||y<h-.2||y>h+.6||W.rampAt?.(x,z))return;
    const nearby=new Set(),cx=Math.floor(x/cs),cz=Math.floor(z/cs);for(let i=-1;i<=1;i++)for(let j=-1;j<=1;j++)for(const b of bins.get((cx+i)+','+(cz+j))||[])nearby.add(b);

@@ -1,1 +1,8 @@
-const fs=require('node:fs'),path=require('node:path');const root=path.resolve(__dirname,'..'),dir=path.join(root,'public'),out=path.join(root,'dist');fs.mkdirSync(out,{recursive:true});let html=fs.readFileSync(path.join(dir,'index.html'),'utf8');html=html.replace(/<link rel="stylesheet" href="([^"]+)">/g,(_,name)=>'<style>\n'+fs.readFileSync(path.join(dir,name),'utf8')+'\n</style>');html=html.replace(/<script src="([^"]+)"><\/script>/g,(_,name)=>'<script>\n'+fs.readFileSync(path.join(dir,name),'utf8').replace(/<\/script/gi,'<\\/script')+'\n</script>');const license=fs.readFileSync(path.join(dir,'THREE-LICENSE.txt'),'utf8');html=html.replace('<!doctype html>','<!doctype html>\n<!-- Three.js license:\n'+license.replace(/--/g,'—')+'\n-->');fs.writeFileSync(path.join(out,'ISLA-Drive.html'),html);console.log('Packaged offline game:',Buffer.byteLength(html),'bytes');
+'use strict';
+const fs=require('node:fs'),path=require('node:path');
+const root=path.resolve(__dirname,'..'),out=path.join(root,'dist');
+require(path.join(root,'offline/build.cjs'));
+require(path.join(root,'offline/build-compact.cjs'));
+fs.mkdirSync(out,{recursive:true});
+for(const file of ['ISLA-V2.4-Offline.html','ISLA-V2.4-MOUNT-INFERNO-Offline.txt'])fs.copyFileSync(path.join(root,'offline',file),path.join(out,file));
+console.log('Full offline V2.4 with both original songs is ready in dist.');

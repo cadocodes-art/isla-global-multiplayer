@@ -4,7 +4,7 @@ const createWorld=require('../scripts/source-world.cjs'),manifest=require('../sr
 const {W,buildings,trees}=createWorld('peaks',true);W.initTraffic();W.buildCollisionIndex();
 test('third map is Islayan Peak, including old obstacle bookmarks, with ordinary solo and global play',()=>{
  assert.equal(W.mapId,'peaks');assert.equal(W.mapInfo.name,'Islayan Peak');assert(!W.course);assert.equal(W.ramps.length,0);
- const html=fs.readFileSync(require.resolve('../public/index.html'),'utf8'),maps=fs.readFileSync(require.resolve('../public/maps.js'),'utf8');assert(html.includes('peaks.js'));assert(!html.includes('course-client.js'));assert(maps.includes("requested==='obstacle'?'peaks'"));assert(!maps.includes('Void Run'));
+ const html=fs.readFileSync(require.resolve('../public/drive.html'),'utf8'),maps=fs.readFileSync(require.resolve('../public/maps.js'),'utf8');assert(html.includes('peaks.js'));assert(!html.includes('course-client.js'));assert(maps.includes("requested==='obstacle'?'peaks'"));assert(!maps.includes('Void Run'));
  const old=createWorld('obstacle');assert.equal(old.W.mapId,'peaks');assert.deepEqual(old.buildings,buildings);
 });
 test('one taller northern peak rises above the original valley town',()=>{

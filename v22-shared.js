@@ -35,6 +35,7 @@
  function buildingKey(b){if(b.rewardKey)return b.rewardKey;if(b.object?.id)return 'object:'+b.object.id;return [b.x,b.y,b.z,b.w,b.d].map(v=>Math.round(v*10)).join(':');}
  // A visit seed changes positions; stable slot IDs preserve personal pickup cooldowns.
  function coins(key,roads,buildings,height,bounds,visit='',surfaces=null){
+  if(key==='inferno'||key==='inferno-vent')return root.IslaInferno.coins(key,random('iscoins-2.4:'+key+':'+visit),buildings);
   const rand=random('iscoins-2.33:'+key+':'+visit),result=[],segments=new Map(),blocks=new Map();
   const max=key==='playplace'?100:240,b=bounds||{minX:-900,maxX:900,minZ:-900,maxZ:900};
   const cell=(x,z)=>Math.floor(x/64)+','+Math.floor(z/64);
@@ -97,6 +98,7 @@
  }
  const terrainCache=new WeakMap();
  function coinHeight(g){
+  if(g.kind==='inferno')return (x,z)=>root.IslaInferno.height(g.map,x,z);
   if(g.kind==='playplace')return (x,z)=>{let y=g.floor;const pit=g.pits.find(p=>Math.abs(x-p.x)<p.w/2&&Math.abs(z-p.z)<p.d/2);if(pit){const edge=Math.min(pit.w/2-Math.abs(x-pit.x),pit.d/2-Math.abs(z-pit.z)),t=clamp(edge/13,0,1);y-=4*t*t*(3-2*t);}for(const p of g.pools){const t=clamp(Math.min(p.w/2-Math.abs(x-p.x),p.d/2-Math.abs(z-p.z))/18,0,1);y=Math.min(y,g.floor-p.depth*t*t*(3-2*t));}return y;};
   let h=terrainCache.get(g);if(!h){const bytes=atob(g.packed);h=new Int32Array(g.nx*g.nz);let pos=0;for(let i=0;i<h.length;i++){let n=0,shift=0,byte;do{byte=bytes.charCodeAt(pos++);n|=(byte&127)<<shift;shift+=7;}while(byte&128);h[i]=(i%g.nx?h[i-1]:0)+((n>>>1)^-(n&1));}terrainCache.set(g,h);}
   return (x,z)=>{const fx=clamp((x-g.x)/g.step,0,g.nx-1.001),fz=clamp((z-g.z)/g.step,0,g.nz-1.001),ix=Math.floor(fx),iz=Math.floor(fz),a=fx-ix,b=fz-iz,n=g.nx,mix=(a,b,t)=>a+(b-a)*t;return mix(mix(h[iz*n+ix],h[iz*n+ix+1],a),mix(h[(iz+1)*n+ix],h[(iz+1)*n+ix+1],a),b)*g.scale;};

@@ -1,16 +1,16 @@
 'use strict';
 // Recover folder structure when a manual upload placed every file at the root.
-// A checked V2.37 manifest takes precedence over older structured files.
+// A checked V2.4 manifest takes precedence over older structured files.
 const fs = require('node:fs');
 const path = require('node:path');
 const root = __dirname;
-// A complete V2.37 flat upload replaces its matching structured files atomically
+// A complete V2.4 flat upload replaces its matching structured files atomically
 // after every checksum passes. This prevents old folders shadowing new uploads.
 const manifestPath=path.join(root,'isla-v16-upload.json');
 if(fs.existsSync(manifestPath)){
   const crypto=require('node:crypto'),manifest=JSON.parse(fs.readFileSync(manifestPath,'utf8'));
-  if(!['1.6','1.7','1.71','1.72','1.8','1.81','1.9','1.91','1.92','1.93','2.0','2.01','2.1','2.2','2.21','2.22','2.23','2.24','2.3','2.31','2.32','2.33','2.34','2.35','2.36','2.37'].includes(manifest.version)||!Array.isArray(manifest.files))throw Error('Invalid V2.37 upload manifest.');
-  for(const f of manifest.files){if(!/^[\w .()-]+$/.test(f.name)||!/^((public|src|scripts|test)(\/regression)?\/)?[\w .()-]+$/.test(f.destination))throw Error('Invalid upload path.');const source=path.join(root,f.name);if(!fs.existsSync(source)||crypto.createHash('sha256').update(fs.readFileSync(source)).digest('hex')!==f.sha256)throw Error('Incomplete V2.37 upload: upload '+f.name+' again from the ZIP.');}
+  if(!['1.6','1.7','1.71','1.72','1.8','1.81','1.9','1.91','1.92','1.93','2.0','2.01','2.1','2.2','2.21','2.22','2.23','2.24','2.3','2.31','2.32','2.33','2.34','2.35','2.36','2.37','2.4'].includes(manifest.version)||!Array.isArray(manifest.files))throw Error('Invalid V2.4 upload manifest.');
+  for(const f of manifest.files){if(!/^[\w .()-]+$/.test(f.name)||!/^((public|src|scripts|test|offline)(\/regression)?\/)?[\w .()-]+$/.test(f.destination))throw Error('Invalid upload path.');const source=path.join(root,f.name);if(!fs.existsSync(source)||crypto.createHash('sha256').update(fs.readFileSync(source)).digest('hex')!==f.sha256)throw Error('Incomplete V2.4 upload: upload '+f.name+' again from the ZIP.');}
   for(const f of manifest.files){if(f.name===f.destination)continue;const destination=path.join(root,f.destination);fs.mkdirSync(path.dirname(destination),{recursive:true});fs.copyFileSync(path.join(root,f.name),destination);}
 }
 const looseFiles = fs.readdirSync(root, {withFileTypes:true})

@@ -1,7 +1,8 @@
+import '../public/inferno-shared.js';
 import '../public/v22-shared.js';
 import world from './world-data.json';
 const V=globalThis.IslaV22,fail=(m,s=400)=>{throw Object.assign(Error(m),{status:s});};
-const maps=new Set(['islands','city','peaks','playplace','fern']);
+const maps=new Set(['islands','city','peaks','playplace','fern','inferno','inferno-vent']);
 export function installV22(h){
  h.db.exec(`CREATE TABLE IF NOT EXISTS v22_grants(id TEXT PRIMARY KEY,account TEXT NOT NULL,aura INTEGER NOT NULL,coins INTEGER NOT NULL,at INTEGER NOT NULL);
  CREATE TABLE IF NOT EXISTS v22_coins(account TEXT,map TEXT,coin INTEGER,at INTEGER,PRIMARY KEY(account,map,coin));
