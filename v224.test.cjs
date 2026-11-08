@@ -32,7 +32,7 @@ test('new layout cannot be hidden by old numerical coin IDs and never exceeds it
  const road={width:8,samples:Array.from({length:241},(_,i)=>({x:-3600+i*30,z:0,y:1}))},args=['test',[road],[],()=>1,{minX:-4000,maxX:4000,minZ:-4000,maxZ:4000}],a=V.coins(...args);assert.deepEqual(a,V.coins(...args));assert.equal(a.length,240);assert(a.filter(c=>c.nearRoad).length<20);assert.equal(new Set(a.map(c=>c.id)).size,240);assert(a.every(c=>c.id>=233000));
 });
 test('release entry points and offline export contain no retired NCS soundtrack',()=>{
- const root=path.resolve(__dirname,'..'),html=fs.readFileSync(path.join(root,'public/index.html'),'utf8');assert.match(html,/V2\.4/);assert(!/menu-music|elektronomia/.test(html));assert(!/elektronomia/.test(fs.readFileSync(path.join(root,'scripts/build-offline.cjs'),'utf8')));const manifest=JSON.parse(fs.readFileSync(path.join(root,'isla-v16-upload.json')));assert.equal(manifest.version,'2.4');assert(!manifest.files.some(f=>/menu-music|elektronomia|Menu-Music/.test(f.name)));
+ const root=path.resolve(__dirname,'..'),html=fs.readFileSync(path.join(root,'public/index.html'),'utf8');assert.match(html,/V2\.38/);assert(!/menu-music|elektronomia/.test(html));assert(!/elektronomia/.test(fs.readFileSync(path.join(root,'scripts/build-offline.cjs'),'utf8')));const manifest=JSON.parse(fs.readFileSync(path.join(root,'isla-v16-upload.json')));assert.equal(manifest.version,'2.38');assert(!manifest.files.some(f=>/menu-music|elektronomia|Menu-Music/.test(f.name)));
 });
 
 test('V2.32 regular coin positions and values are independent of flat-road coverage, with no 40/60 quota',()=>{

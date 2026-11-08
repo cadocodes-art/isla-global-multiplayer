@@ -185,7 +185,6 @@
   $('driverName').addEventListener('input',()=>{const error=IslaRules.validateName($('driverName').value);$('driverName').setAttribute('aria-invalid',error?'true':'false');status(error||'Name looks good. Ready to join.',!!error);});
   $('rooms').addEventListener('keydown',e=>{if(e.key==='Enter'&&e.target===$('driverName'))requestRoom();});
   try{const saved=JSON.parse(safeRead(session,sessionKey));if(saved?.token&&!IslaRules.validateName(saved?.name)&&location.protocol!=='file:'&&!new URLSearchParams(location.search).has('menu')){identity=saved;connect();}}catch{}
-  if(new URLSearchParams(location.search).has('join')&&!identity&&!connecting)requestRoom();
   // A low-rate parked update retains a quiet tab without 20 updates per second.
   setInterval(()=>{if(net.connected&&performance.now()-lastSend>5000){lastSend=performance.now();send({type:'state',state:pose()});}},5000);
   window.addEventListener('pagehide',()=>{leaving=true;socket?.close();});

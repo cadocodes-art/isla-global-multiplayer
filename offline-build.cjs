@@ -3,11 +3,10 @@ const fs=require('node:fs'),path=require('node:path'),vm=require('node:vm');
 const root=__dirname,source=path.resolve(root,'../public'),read=n=>fs.readFileSync(path.join(source,n),'utf8');
 function replace(s,a,b){if(!s.includes(a))throw Error('Missing adaptation: '+a.slice(0,100));return s.replace(a,b);}
 const skip=new Set(['community-api.js','community-ui.js','social-rules.js','social-ui.js','notifications.js','v23-leaderboard-ui.js','multiplayer.js']);
-let html=read('drive.html'),names=[...html.matchAll(/<script src="([^"]+)"><\/script>/g)].map(m=>m[1]);
+let html=read('index.html'),names=[...html.matchAll(/<script src="([^"]+)"><\/script>/g)].map(m=>m[1]);
 names=names.flatMap(n=>n==='community-api.js'?['local-data.js']:n==='community-ui.js'?['local-ui.js','local-extras.js']:n==='multiplayer.js'?['solo.js']:skip.has(n)?[]:[n]);
 names.splice(names.indexOf('game.js'),0,'local-owner.js');
 const aliases='const localStorage=IslaOffline.storage,sessionStorage=IslaOffline.session,requestAnimationFrame=IslaOffline.frame,setTimeout=IslaOffline.later,setInterval=IslaOffline.every,ResizeObserver=IslaOffline.ResizeObserver;\n';
-html=html.replace(/<script>if\(window.top===window.self[\s\S]*?<\/script>/,'');
 const compiled={};
 for(const name of names){let s=fs.existsSync(path.join(root,name))?fs.readFileSync(path.join(root,name),'utf8'):read(name);
  if(name!=='three.min.js'){
@@ -47,14 +46,14 @@ for(const name of names){let s=fs.existsSync(path.join(root,name))?fs.readFileSy
  }
  new vm.Script(s,{filename:name});compiled[name]=s;
 }
-const musicSources={menu:'data:audio/mp4;base64,'+fs.readFileSync(path.join(source,'isla-project13.m4a')).toString('base64'),vault:'data:audio/mp4;base64,'+fs.readFileSync(path.join(source,'isla-project10.m4a')).toString('base64')};
-html=html.replace('</head>','<style>'+read('soundtrack.css')+'</style><script>window.ISLA_MUSIC_SOURCES='+JSON.stringify(musicSources)+';</script><script>'+read('soundtrack.js')+'</script></head>');
+const vaultMusic='data:audio/mp4;base64,'+fs.readFileSync(path.join(source,'isla-project10.m4a')).toString('base64');
+html=html.replace('</head>','<script>window.ISLA_VAULT_MUSIC_SRC='+JSON.stringify(vaultMusic)+';</script></head>');
 let runtime=fs.readFileSync(path.join(root,'viewer-runtime.js'),'utf8').replace('__MODULE_COUNT__',names.length);
 new vm.Script(runtime);
 html=html.replace(/<script src="([^"]+)"><\/script>/g,'');
 html=html.replace(/<link rel="stylesheet" href="([^"]+)">/g,(_,n)=>'<style data-isla-source="'+n+'">'+read(n)+'</style>');
-html=html.replace('V2.4</span>','V2.4 · OFFLINE</span>').replace('Version 2.4"','Version 2.4 offline"');
-html=html.replace('ISLA / Drive without limits','ISLA V2.4 / Offline edition');
+html=html.replace('V2.38</span>','V2.38 · OFFLINE</span>').replace('Version 2.38"','Version 2.38 offline"');
+html=html.replace('ISLA / Drive without limits','ISLA V2.38 / Offline edition');
 html=replace(html,'onclick="location.reload()"','onclick="IslaOffline.retry()"');
 html=replace(html,'GLOBAL ROOM</button><button id="chatBtn"','OFFLINE INFO</button><button id="chatBtn"');
 html=replace(html,'<div class="intro-specs"','<div class="community-menu-buttons offline-menu"><button id="makerBtn">Map Maker <span>✎</span></button><button id="offlineInfoBtn">Offline edition <span>ⓘ</span></button></div><div class="intro-specs"');
@@ -68,6 +67,6 @@ html=html.replace('</head>','<style>'+fs.readFileSync(path.join(root,'local-owne
 const checksum=bytes=>{let h=2166136261;for(const b of bytes)h=Math.imul(h^b,16777619);return (h>>>0).toString(16).padStart(8,'0');};
 const scripts=names.map(n=>{const bytes=Buffer.from(compiled[n]);return '<script type="application/x-isla" data-isla-source="'+n+'" data-encoding="base64" data-bytes="'+bytes.length+'" data-checksum="'+checksum(bytes)+'">\n'+bytes.toString('base64').match(/.{1,120}/g).join('\n')+'\n</script>';}).join('\n');
 html=html.replace('</body>',scripts+'\n</body>');
-html=html.replace('<!doctype html>','<!doctype html>\n<!-- ISLA V2.4 standalone. All game code and assets included.\nThree.js license:\n'+read('THREE-LICENSE.txt').replaceAll('--','—')+'\n-->');
-fs.mkdirSync(path.join(root,'dist'),{recursive:true});fs.writeFileSync(path.join(root,'dist/index.html'),html);fs.writeFileSync(path.join(root,'ISLA-V2.4-Offline.html'),html);fs.writeFileSync(path.join(root,'compiled.json'),JSON.stringify(compiled));
-console.log(JSON.stringify({modules:names.length,bytes:Buffer.byteLength(html),file:path.join(root,'ISLA-V2.4-Offline.html')}));
+html=html.replace('<!doctype html>','<!doctype html>\n<!-- ISLA V2.38 standalone. All game code and assets included.\nThree.js license:\n'+read('THREE-LICENSE.txt').replaceAll('--','—')+'\n-->');
+fs.mkdirSync(path.join(root,'dist'),{recursive:true});fs.writeFileSync(path.join(root,'dist/index.html'),html);fs.writeFileSync(path.join(root,'ISLA-V2.38-Offline.html'),html);fs.writeFileSync(path.join(root,'compiled.json'),JSON.stringify(compiled));
+console.log(JSON.stringify({modules:names.length,bytes:Buffer.byteLength(html),file:path.join(root,'ISLA-V2.38-Offline.html')}));

@@ -84,7 +84,6 @@
  }
 
  P.install=scene=>{if(P.scene===scene&&P.initialized)return;for(const mesh of P.batches){mesh.parent?.remove(mesh);mesh.dispose?.();}P.batches=[];P.scene=scene;P.initialized=true;P.records=[];P.active=[];P.activeCity=[];P.activePark=[];P.clock=P.refresh=0;P.previousCars=new Map();P.citySpread=W.mapId==='city'&&!W.customMap;P.density=P.citySpread?3:1;P.peoplePerBuilding=P.citySpread?1:2;P.maxPeople=72*P.density;
-  if(W.inferno){P.scene=null;P.cityPeople=[];P.parks=[];P.visibleCount=0;return;}
   for(const b of W.buildings){if(!b.group||b.scenery||b.w<5||b.d<5||b.h<2.9||b.object&&(Math.abs(b.object.pitch||0)>.01||Math.abs(b.object.roll||0)>.01))continue;const outside=P.citySpread?null:person(b.id*2,b.id*.913),inside=person(b.id*2+1,b.id*.627,true),residents=outside?[outside,inside]:[inside];
    P.records.push({b,path:P.citySpread?null:undefined,room:null,facade:null,residents,outside,inside});
   }cityResidents();

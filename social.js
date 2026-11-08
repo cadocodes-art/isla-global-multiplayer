@@ -5,7 +5,11 @@ const pair=(a,b)=>[a,b].sort().join(':');
 const person=a=>({id:a.id,username:a.username});
 const integer=(v,fallback=0)=>/^\d+$/.test(String(v))?Math.min(Number(v),Number.MAX_SAFE_INTEGER):fallback;
 
-export function installSocial(h){h.db.exec(`
+export function installSocial(h){
+ // Preserve recorded visits while giving each new page visit an idempotency key.
+ if(!h.rows('PRAGMA table_info(plays)').some(c=>c.name==='visit'))h.db.exec('ALTER TABLE plays ADD COLUMN visit TEXT');
+ h.db.exec(`
+CREATE UNIQUE INDEX IF NOT EXISTS plays_visit ON plays(visitor,map,visit);
 CREATE TABLE IF NOT EXISTS notifications(seq INTEGER PRIMARY KEY AUTOINCREMENT,account TEXT,kind TEXT,target TEXT,actor TEXT,marker INTEGER DEFAULT 0,at INTEGER,seen INTEGER DEFAULT 0,UNIQUE(account,kind,target,marker));
 CREATE INDEX IF NOT EXISTS plays_map_visitor ON plays(map,visitor);
 CREATE INDEX IF NOT EXISTS notifications_account ON notifications(account,seq);
@@ -22,11 +26,13 @@ CREATE TABLE IF NOT EXISTS message_reads(account TEXT,pair TEXT,seq INTEGER,PRIM
 CREATE TABLE IF NOT EXISTS social_reports(id TEXT PRIMARY KEY,reporter TEXT,kind TEXT,target TEXT,author TEXT,text TEXT,reason TEXT,detail TEXT,at INTEGER,resolved INTEGER DEFAULT 0,UNIQUE(reporter,kind,target));
 `);}
 function blocked(h,a,b){return !!h.one('SELECT 1 FROM blocks WHERE (account=? AND target=?) OR (account=? AND target=?)',a,b,b,a);}
-export function notifyMapPlay(h,m,visitor,now){
+export function notifyMapPlay(h,m,visitor,now,visit=null){
  h.ctx.storage.transactionSync(()=>{
-  const previous=h.count('SELECT COUNT(DISTINCT visitor) n FROM plays WHERE map=?',m.id);
-  h.db.exec('INSERT INTO plays VALUES(?,?,?)',visitor,m.id,now);
-  const current=h.count('SELECT COUNT(DISTINCT visitor) n FROM plays WHERE map=?',m.id);
+  if(visit&&h.one('SELECT 1 FROM plays WHERE visitor=? AND map=? AND visit=?',visitor,m.id,visit))return;
+  const previous=h.count('SELECT COUNT(*) n FROM plays WHERE map=?',m.id);
+  const last=h.one('SELECT MAX(at) last FROM plays WHERE visitor=? AND map=?',visitor,m.id)?.last||0;
+  h.db.exec('INSERT INTO plays(visitor,map,at,visit) VALUES(?,?,?,?)',visitor,m.id,Math.max(now,last+1),visit);
+  const current=previous+1;
   for(const milestone of [50,100,500,1000,5000,10000,50000,100000])if(previous<milestone&&current>=milestone)h.db.exec('INSERT OR IGNORE INTO notifications(account,kind,target,actor,marker,at) VALUES(?,?,?,?,?,?)',m.owner,'milestone',m.id,m.owner,milestone,now);
  });
 }

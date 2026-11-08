@@ -2,6 +2,9 @@
 const fs=require('node:fs'),path=require('node:path'),crypto=require('node:crypto');
 const root=__dirname,file=path.join(root,'isla-v16-upload.json'),manifest=JSON.parse(fs.readFileSync(file,'utf8'));
 const additions={
+ 'map-plays.test.cjs':'test/map-plays.test.cjs',
+ 'vault-music.js':'public/vault-music.js',
+ 'v238.test.cjs':'test/v238.test.cjs','V2.38-Notes.md':'V2.38-Notes.md',
  'offline-build.cjs':'offline/build.cjs',
  'offline-compact.cjs':'offline/build-compact.cjs',
  'offline-runtime.js':'offline/viewer-runtime.js',
@@ -13,16 +16,7 @@ const additions={
  'offline-owner-lock.json':'offline/owner-lock.json',
  'offline-solo.js':'offline/solo.js',
 
- 'v24.test.cjs':'test/v24.test.cjs','music.test.cjs':'test/music.test.cjs','V2.4-Notes.md':'V2.4-Notes.md',
- 'drive.html':'public/drive.html',
- 'soundtrack.js':'public/soundtrack.js',
- 'soundtrack.css':'public/soundtrack.css',
- 'music-shell.js':'public/music-shell.js',
- 'music-route.js':'public/music-route.js',
- 'isla-project13.m4a':'public/isla-project13.m4a',
  'isla-project10.m4a':'public/isla-project10.m4a',
- 'inferno-shared.js':'public/inferno-shared.js',
- 'inferno.js':'public/inferno.js',
 
  'v237.test.cjs':'test/v237.test.cjs','V2.37-Notes.md':'V2.37-Notes.md',
  'v236.test.cjs':'test/v236.test.cjs','V2.37-Notes.md':'V2.37-Notes.md',
@@ -43,7 +37,7 @@ const additions={
  'refresh-manifest.cjs':'refresh-manifest.cjs','dev.cjs':'dev.cjs'
 };
 for(const [name,destination] of Object.entries(additions))if(fs.existsSync(path.join(root,name))&&!manifest.files.some(f=>f.name===name))manifest.files.push({name,destination});
-manifest.version='2.4';
+manifest.version='2.38';
 for(const entry of manifest.files){const bytes=fs.readFileSync(path.join(root,entry.name));entry.sha256=crypto.createHash('sha256').update(bytes).digest('hex');if('size' in entry)entry.size=bytes.length;}
 fs.writeFileSync(file,JSON.stringify(manifest,null,2)+'\n');
-console.log('V2.4 manifest: '+manifest.files.length+' verified source files.');
+console.log('V2.38 manifest: '+manifest.files.length+' verified source files.');

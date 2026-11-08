@@ -25,18 +25,19 @@ test('notifications are private, persist, and retries create only one message al
  await api('social/block',{id:alice.id,block:true},bob);assert.equal((await api('social/notifications',undefined,bob)).data.items.length,0);
  await api('social/block',{id:alice.id,block:false},bob);await friend(alice,bob);
 });
-test('all eight map milestones fire exactly once at their unique-driver counts',async()=>{
+test('all eight map milestones fire exactly once at their play counts, including repeat visits',async()=>{
  const saved=await api('drafts/save',{slot:0,name:'Milestone Map',description:'Test map.',document:M.fresh(),preview:'data:image/jpeg;base64,YQ=='},alice);assert.equal(saved.status,200,JSON.stringify(saved.data));const mid=saved.data.map.id;
  assert.equal((await api('maps/publish',{id:mid},alice)).status,200);
  let count=0;for(const milestone of [50,100,500,1000,5000,10000,50000,100000]){
   await store.exec('DELETE FROM plays WHERE map=?',mid);
   await store.exec('WITH RECURSIVE n(x) AS (SELECT 1 UNION ALL SELECT x+1 FROM n WHERE x<?) INSERT INTO plays(visitor,map,at) SELECT CAST(x AS TEXT),?,1 FROM n',milestone-1,mid);
-  const r=await api('play/start',{map:mid},bob);assert.equal(r.status,200);count++;
+  const visit=randomUUID(),r=await api('play/start',{map:mid,visit},bob);assert.equal(r.status,200);count++;
   let d=(await api('social/notifications',undefined,alice)).data;assert.equal(d.items.filter(n=>n.kind==='milestone').length,count);assert.equal(d.items[0].milestone,milestone);assert.equal(d.items[0].target,mid);
-  await api('play/start',{map:mid},bob);assert.equal((await api('social/notifications',undefined,alice)).data.items.length,count);
-  // Replaying after the 30-minute window still counts as the same driver.
-  await store.exec('UPDATE plays SET at=1 WHERE visitor=? AND map=?',bob.id,mid);await api('play/start',{map:mid},bob);
-  assert.equal((await api('maps/detail?id='+mid)).data.map.plays,milestone);
+  await api('play/start',{map:mid,visit},bob);assert.equal((await api('social/notifications',undefined,alice)).data.items.length,count);
+  // A fresh visit from the same player counts immediately, without a 30-minute wait.
+  await api('play/start',{map:mid,visit:randomUUID()},bob);
+  assert.equal((await api('maps/detail?id='+mid)).data.map.plays,milestone+1);
+  assert.equal((await api('social/notifications',undefined,alice)).data.items.filter(n=>n.kind==='milestone').length,count);
  }
  const d=(await api('social/notifications',undefined,alice)).data;await api('social/notifications/read',{through:d.cursor},alice);assert.equal((await api('social/notifications',undefined,alice)).data.unread,0);
  await api('maps/publish',{id:mid},alice);assert.equal((await api('social/notifications',undefined,alice)).data.items.length,8,'republish preserves milestone history');

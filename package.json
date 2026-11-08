@@ -1,8 +1,8 @@
 {
   "name": "isla-drive-cloudflare",
-  "version": "2.4.0",
+  "version": "2.38.0",
   "private": true,
-  "description": "ISLA V2.4 \u2014 Mount Inferno, Inferno Vent, original looping music and bowling",
+  "description": "ISLA V2.38 \u2014 curved bowling, vault music and bulk offline Owner Controls",
   "engines": {
     "node": ">=22.0.0"
   },
