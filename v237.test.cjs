@@ -71,3 +71,29 @@ test('V2.37 rotated and scaled Map Maker houses and themed buildings use their o
   checkWindows(W,b,{npc:false});
  }
 });
+
+test('V2.37 Costa Metro triples building residents and fills its parks with safe, bounded, reusable crowds',()=>{
+ const {W}=create('city'),scene=new T.Scene();W.makeBuildings(scene);W.makeVegetation(scene);W.scene=scene;W.traffic=[];
+ Object.assign(W.vehicle,{x:1e7,y:0,z:1e7,vx:0,vz:0});W.v22People.install(scene);const P=W.v22People,head=P.head.instanceMatrix.array,colors=P.shirt.instanceColor.array;
+ assert.equal(P.density,3);assert.equal(P.maxPeople,216);assert.equal(P.visibleCount,0);assert.equal(P.batches.length,6);
+ const ids=new Set();for(const r of P.records){assert.equal(r.residents.length,6);assert.equal(r.residents.filter(n=>n.inside).length,3);for(const n of r.residents){assert(!ids.has(n.id));ids.add(n.id);}}
+ assert.equal(P.parks.length,3);for(const park of P.parks){assert.equal(park.people.length,12);for(const n of park.people){assert(!ids.has(n.id));ids.add(n.id);}}
+ const focus=(x,z)=>{Object.assign(W.vehicle,{x,y:W.height(x,z),z,vx:0,vz:0});P.refresh=0;P.update(0,P.clock);};
+ const near=P.records.find(r=>r.b.house).b;focus(near.x,near.z);assert.equal(P.activePark.length,0);assert.equal(P.visibleCount,3*(P.active.length+P.active.filter(r=>r.path).length),'three times the original visible building residents');
+ const unique=new Set();for(const r of P.active)for(const n of r.residents){assert(Number.isFinite(n.x));unique.add(n.x.toFixed(3)+','+n.z.toFixed(3));}assert(unique.size>P.visibleCount*.9,'extra people are distributed along their routes');
+ for(const park of P.parks){focus(park.center.x,park.center.z);assert(P.visibleParkCount>=12);
+  for(let seconds=0;seconds<=300;seconds+=5){P.clock=seconds;P.update(0,seconds);assert(P.visibleCount<=216);assert.equal(P.head.count,P.visibleCount);assert.equal(P.shirt.count,P.visibleCount*3);
+   for(const n of P.activePark){const p=W.cityLocal(n.x,n.z),u=p.u-n.block.u,v=p.v-n.block.v,road=W.nearestRoad(n.x,n.z,2);assert(u>20&&u<140&&v>20&&v<140);assert(Math.abs(u-80)>14||Math.abs(v-80)>14,'walkers avoid the fountain');assert(!road.p||road.d>road.p.width/2+1,'park walkers never enter traffic');assert(Math.abs(n.y-W.driveHeight(n.x,n.z,true)-.02)<.001);for(const t of W.trees)assert(Math.hypot(n.x-t.x,n.z-t.z)>(t.r||.4)+.6,'walkers avoid trunks');}
+   for(const r of P.active)if(r.path)for(const n of r.residents.filter(n=>!n.inside)){assert(P.footprintDistance(r.b,n.x,n.z)<=5);const road=W.nearestRoad(n.x,n.z,2);assert(!road.p||road.d>road.p.width/2+1);assert(Math.abs(n.y-W.driveHeight(n.x,n.z,true)-.02)<.03,'ground samples follow the raised city surface');}
+  }
+ }
+ const park=P.parks[1];focus(park.center.x,park.center.z);const n=P.activePark[0];Object.assign(W.vehicle,{x:n.x,y:n.y,z:n.z,vx:0,vz:10,yaw:0});P.previousCars.clear();P.update(.01,301);assert(n.tumble>2.9,'park walkers use the same ragdoll reaction');
+ Object.assign(W.vehicle,{x:n.x+20,z:n.z+20,vx:0,vz:0});for(let i=0;i<62;i++)P.update(.05,301+i*.05);assert.equal(n.tumble,0);assert(n.immune>0);
+ focus(1e7,1e7);assert.equal(P.visibleCount,0);focus(park.center.x,park.center.z);assert(P.visibleParkCount>=12);assert.strictEqual(P.head.instanceMatrix.array,head);assert.strictEqual(P.shirt.instanceColor.array,colors);assert.equal(P.shirt.instanceColor.count,648);assert.equal(P.hands.instanceColor.count,432);
+ P.install(scene);assert.equal(P.batches.length,6,'reinstalling does not duplicate crowds');
+});
+
+test('V2.37 other maps keep their original population and have no city park walkers',()=>{
+ const {W}=create('fern'),scene=new T.Scene();W.makeBuildings(scene);W.v22People.install(scene);const P=W.v22People;
+ assert.equal(P.density,1);assert.equal(P.maxPeople,72);assert.equal(P.parks.length,0);assert(P.records.length>0);assert(P.records.every(r=>r.residents.length===2));assert(P.visibleCount<=72);
+});

@@ -474,7 +474,7 @@
     {
       "name": "package.json",
       "destination": "package.json",
-      "sha256": "e43641667ac3bdaa6ff5d15db20243d3dbe498ba8f58b5fe662631f229286333"
+      "sha256": "c89b48a65e135abbcd1eccfbbc6d65d4c7d3d5eb64424c677e5f5149027787d2"
     },
     {
       "name": "package-lock.json",
@@ -489,7 +489,7 @@
     {
       "name": "README.txt",
       "destination": "README.txt",
-      "sha256": "61e07432ab7c56d7bf0aab70d1564532ff9139bd773c21964682cfb1141d05d6"
+      "sha256": "9ed4d0825b31048e8edd79aeb619358fb763240f367d39f517fcffb062da198c"
     },
     {
       "name": "v22-shared.js",
@@ -519,7 +519,7 @@
     {
       "name": "v22-people-buildings.js",
       "destination": "public/v22-people-buildings.js",
-      "sha256": "3cac42b348e8aacb4c04792bf86a65b7f65bf6ea7779955c5e2c0d7c367178c0"
+      "sha256": "3515e4c5d644d5512f7ff167daae55145121a76be4f1e22cafbd45af02900fbe"
     },
     {
       "name": "v22.css",
@@ -689,12 +689,12 @@
     {
       "name": "v237.test.cjs",
       "destination": "test/v237.test.cjs",
-      "sha256": "2fa7559e8c21a13ac8ee36aeddda6117272730b2c579487f7a4c6bc7d8e3ee60"
+      "sha256": "6ee53b6b7269199e2aefb70eee9d2c24504b1623d440fc27b193d796d172a288"
     },
     {
       "name": "V2.37-Notes.md",
       "destination": "V2.37-Notes.md",
-      "sha256": "805b901b23afc0b4aba9c18854f064d44deef1336f6bfe5138f758219e233fe4"
+      "sha256": "6bd51db6290ab58fea3cb447bcc0aee201d00445a87b0ef73d0ded0a2d6ac45e"
     }
   ]
 }
