@@ -14,7 +14,7 @@
     {
       "name": "world.js",
       "destination": "public/world.js",
-      "sha256": "6d687d1c2fe929ab5f9defce652783a1f4a387e4560dd5f3d1f50498027d074f"
+      "sha256": "0724b3ab940da7c711d30add308656192d0d87f5e8d101c3a934020b9f409110"
     },
     {
       "name": "islands.js",
@@ -59,12 +59,12 @@
     {
       "name": "maps.js",
       "destination": "public/maps.js",
-      "sha256": "8f60d02061898554c640cc0f0f46c2803ee4ce73f610b362a185690df0263c0a"
+      "sha256": "17ad7497c2aaf7167ac85769a32a6cb57357f22fb5b8bafe64dbf944a11a7752"
     },
     {
       "name": "peaks.js",
       "destination": "public/peaks.js",
-      "sha256": "d24575341788d85cf4f29cf074ef121781c7f42ab22b7ac7666b7e9e2d17c6a8"
+      "sha256": "87af40dd4c38bb071689cf67b998faaf9031a1a8e2f7011fd624c11e685f9bdf"
     },
     {
       "name": "specials.js",
@@ -89,7 +89,7 @@
     {
       "name": "maker-assets.js",
       "destination": "public/maker-assets.js",
-      "sha256": "37999e3fb71b0c3582783013e91ff0d4cb72d03c6e219bfadd6c8b0196cdf36d"
+      "sha256": "b970f20ac465bee6b308036f5ba1a4d1ec470587cb3a549dcd399469284f7764"
     },
     {
       "name": "community-api.js",
@@ -214,7 +214,7 @@
     {
       "name": "game.js",
       "destination": "public/game.js",
-      "sha256": "ec7d8ecb53c9d614dbbf9364f62ad68ff9ec3a84f40a3d8fdc2e45d2d8669ea8"
+      "sha256": "e91252ba56ebfc5966d4b3ed7287daa4ab27e0d69dc2391f3ab264b49b2c2098"
     },
     {
       "name": "style.css",
@@ -474,7 +474,7 @@
     {
       "name": "package.json",
       "destination": "package.json",
-      "sha256": "9f700455989a164e93e7dcd1b37587091be072d81a4ff2003634c08f61479a2e"
+      "sha256": "e43641667ac3bdaa6ff5d15db20243d3dbe498ba8f58b5fe662631f229286333"
     },
     {
       "name": "package-lock.json",
@@ -489,7 +489,7 @@
     {
       "name": "README.txt",
       "destination": "README.txt",
-      "sha256": "8975a1eaf8224d5b20a3019260b30fca4265d9eea3e12f7df25f59945035a432"
+      "sha256": "61e07432ab7c56d7bf0aab70d1564532ff9139bd773c21964682cfb1141d05d6"
     },
     {
       "name": "v22-shared.js",
@@ -519,7 +519,7 @@
     {
       "name": "v22-people-buildings.js",
       "destination": "public/v22-people-buildings.js",
-      "sha256": "f23133d242f53e82d5138a3d4860ebfa4bcecc1fe2ff34891ab7899b0df1fd28"
+      "sha256": "3cac42b348e8aacb4c04792bf86a65b7f65bf6ea7779955c5e2c0d7c367178c0"
     },
     {
       "name": "v22.css",
@@ -689,12 +689,12 @@
     {
       "name": "v237.test.cjs",
       "destination": "test/v237.test.cjs",
-      "sha256": "fb887eee65c5996edafaf0ee8c7272ede59c10683ddf888e10c1dc2a3b6c9b45"
+      "sha256": "2fa7559e8c21a13ac8ee36aeddda6117272730b2c579487f7a4c6bc7d8e3ee60"
     },
     {
       "name": "V2.37-Notes.md",
       "destination": "V2.37-Notes.md",
-      "sha256": "eee81c87eea6cddc701a28eb4c3cb8f362e8c02bc11d0073edbe71900267aa70"
+      "sha256": "805b901b23afc0b4aba9c18854f064d44deef1336f6bfe5138f758219e233fe4"
     }
   ]
 }

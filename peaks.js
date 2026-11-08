@@ -100,6 +100,9 @@
    const wall=W.mat('#ffffff',.87);wall.map=textures[p.variant];const b={...p,group,wall,color:'#ffffff',hp:100,maxHp:100,collapsed:false,lastHit:-10,cracks:[],windows:[],pieces:[]};W.buildings.push(b);W.colliders.push(b);
    W.box(group,0,p.foundation/2,0,p.w+.5,p.foundation,p.d+.5,stone);const height=p.floors*3.2;
    b.body=W.box(group,0,p.foundation+height/2,0,p.w,height,p.d,wall);b.body.geometry=W.unitBox.clone();const uv=b.body.geometry.attributes.uv;for(let i=0;i<uv.count;i++)uv.setY(i,uv.getY(i)*p.floors);
+   // Match the four glass panes in each painted ground-floor window; leave its frame and crossbars solid.
+   b.body.userData.v237Wall=true;group.userData.v237Windows=[];
+   for(const x of [30,150])for(const [left,right]of [[x+9,x+29],[x+34,x+55]])for(const [top,bottom]of [[57,99],[103,151]])group.userData.v237Windows.push({x:((left+right)/512-.5)*p.w,y:p.foundation+(1-(top+bottom)/512)*3.2,w:(right-left)/256*p.w,h:(bottom-top)/256*3.2,painted:true});
    const roof=new T.Mesh(roofGeo,snow);roof.position.y=p.foundation+height;roof.scale.set(p.w+2,3.1,p.d+2);roof.castShadow=roof.receiveShadow=true;group.add(roof);
    W.box(group,p.w*.25,p.h-1,-p.d*.2,.85,2.2,.9,stone);W.box(group,p.w*.25,p.h+.15,-p.d*.2,1.15,.15,1.2,snow);
    W.box(group,0,p.foundation+1.15,p.d/2+.06,1.5,2.3,.15,timber);W.box(group,0,p.foundation+.08,p.d/2+1,3.6,.22,2,stone);

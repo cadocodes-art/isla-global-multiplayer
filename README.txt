@@ -1,9 +1,9 @@
-ISLA V2.37 — SPORTS AND SOLO FIXES
+ISLA V2.37 — WINDOWS FIX + SPORTS AND SOLO FIXES
 
 ONLINE UPDATE FOR YOUR EXISTING COMPLETE V2.33 OR LATER REPOSITORY
-1. Extract ISLA-V2.37-SPORTS-ONLINE.zip.
-2. Open the matching ISLA-V2.37-SPORTS-ONLINE folder.
-3. Upload all 47 individual files inside to your repository ROOT, replacing
+1. Extract ISLA-V2.37-WINDOWS-FIX-ONLINE.zip.
+2. Open the matching ISLA-V2.37-WINDOWS-FIX-ONLINE folder.
+3. Upload all 49 individual files inside to your repository ROOT, replacing
    matching files, in ONE batch. Commit the batch.
 4. Keep all other repository files and your existing wrangler.jsonc.
 5. Let Cloudflare use your existing build/deploy configuration.
@@ -13,6 +13,8 @@ This cumulative patch includes V2.34 through V2.36. It requires your complete
 V2.33 or later repository; every required source is checked before building.
 
 NEW IN V2.37
+- Removed oversized facade cutouts. NPCs are visible through the existing
+  ground-floor windows; doors, wall sections, frames and crossbars stay intact.
 - Scoring a basket in Play Place gives 7,000-9,000 Aura to the scoring driver.
   Repeated bounces without a fresh push do not generate extra rewards.
 - Flap, Rocket and other ability buttons move 40 pixels left and 40 pixels up.
@@ -21,7 +23,7 @@ NEW IN V2.37
 - Older Play Place clients must refresh to join the updated global room.
 
 OFFLINE EDITION (SEPARATE DOWNLOAD)
-Paste all text from ISLA-V2.37-SPORTS-Offline.txt into an HTML viewer as before.
+Paste all text from ISLA-V2.37-WINDOWS-FIX-Offline.txt into an HTML viewer as before.
 It contains the same changes. Map Maker maps are now practice only: they do
 not award Aura or Iscoins. Rewards on the five built-in maps still work.
 Owner Controls, dated History, current balances, cars, upgrades and vault claims

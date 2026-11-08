@@ -12,29 +12,37 @@
  const point=(b,x,z)=>({x:b.x+Math.cos(b.yaw)*x+Math.sin(b.yaw)*z,z:b.z-Math.sin(b.yaw)*x+Math.cos(b.yaw)*z});
  const local=(b,x,z)=>{const dx=x-b.x,dz=z-b.z;return {x:Math.cos(b.yaw)*dx-Math.sin(b.yaw)*dz,z:Math.sin(b.yaw)*dx+Math.cos(b.yaw)*dz};};
  function footprintDistance(b,x,z){const p=local(b,x,z);return Math.hypot(Math.max(0,Math.abs(p.x)-b.w/2),Math.max(0,Math.abs(p.z)-b.d/2));}
- // A true opening in the facade, so interior people are visible through it.
- // Geometry is cloned; shared unit boxes and materials are never mutated.
- function cutWindow(root,opening){root.updateMatrixWorld(true);const basis=new T.Matrix4().copy(root.matrixWorld).invert(),meshes=[];root.traverse(m=>{if(m.isMesh&&!m.isInstancedMesh&&!m.userData.v22Interior)meshes.push(m);});
-  const min=[-opening.w/2,opening.floor+.35,opening.front-.7],max=[opening.w/2,opening.floor+2.55,opening.front+3];
+ // Open only the existing ground-floor glass panes. Doors, frames, crossbars and the rest of the facade stay intact.
+ // Only marked wall/backing surfaces are clipped; shared geometry and materials are never mutated.
+ function cutWindow(root,opening,front){root.updateMatrixWorld(true);const basis=new T.Matrix4().copy(root.matrixWorld).invert(),meshes=[];root.traverse(m=>{if(m.isMesh&&!m.isInstancedMesh&&m.userData.v237Wall)meshes.push(m);});
+  const min=[opening.x-opening.w/2,opening.y-opening.h/2,front-.3],max=[opening.x+opening.w/2,opening.y+opening.h/2,front+.3];
   const clip=(poly,axis,bound,sign)=>{const out=[];for(let i=0;i<poly.length;i++){const a=poly[i],b=poly[(i+1)%poly.length],da=(a[axis]-bound)*sign,db=(b[axis]-bound)*sign;if(da>=-1e-8)out.push(a);if(da*db<0){const t=da/(da-db);out.push(a.map((v,k)=>v+(b[k]-v)*t));}}return out;};
   for(const mesh of meshes){const src=mesh.geometry;if(!src?.attributes.position)continue;const transform=new T.Matrix4().multiplyMatrices(basis,mesh.matrixWorld),bounds=new T.Box3().setFromBufferAttribute(src.attributes.position).applyMatrix4(transform);if(bounds.max.x<min[0]||bounds.min.x>max[0]||bounds.max.y<min[1]||bounds.min.y>max[1]||bounds.max.z<min[2]||bounds.min.z>max[2])continue;
    const p=src.attributes.position,n=src.attributes.normal,uv=src.attributes.uv,index=src.index,normalMatrix=new T.Matrix3().getNormalMatrix(transform),positions=[],normals=[],uvs=[],groups=[];
    const read=i=>{const v=new T.Vector3().fromBufferAttribute(p,i).applyMatrix4(transform),normal=n?new T.Vector3().fromBufferAttribute(n,i).applyMatrix3(normalMatrix).normalize():new T.Vector3(0,1,0);return [v.x,v.y,v.z,normal.x,normal.y,normal.z,uv?uv.getX(i):0,uv?uv.getY(i):0];};
    const emit=poly=>{for(let i=1;i<poly.length-1;i++)for(const v of [poly[0],poly[i],poly[i+1]]){positions.push(v[0],v[1],v[2]);normals.push(v[3],v[4],v[5]);uvs.push(v[6],v[7]);}};
    for(const g of src.groups.length?src.groups:[{start:0,count:index?index.count:p.count,materialIndex:0}]){const start=positions.length/3;for(let i=g.start;i<g.start+g.count;i+=3){let inside=[0,1,2].map(k=>read(index?index.getX(i+k):i+k));for(let axis=0;axis<3&&inside.length;axis++){emit(clip(inside,axis,min[axis],-1));inside=clip(inside,axis,min[axis],1);if(!inside.length)break;emit(clip(inside,axis,max[axis],1));inside=clip(inside,axis,max[axis],-1);}}groups.push({start,count:positions.length/3-start,materialIndex:g.materialIndex});}
-   const geo=new T.BufferGeometry();geo.setAttribute('position',new T.Float32BufferAttribute(positions,3));geo.setAttribute('normal',new T.Float32BufferAttribute(normals,3));geo.setAttribute('uv',new T.Float32BufferAttribute(uvs,2));if(Array.isArray(mesh.material))for(const g of groups)geo.addGroup(g.start,g.count,g.materialIndex);geo.applyMatrix4(transform.invert());geo.computeBoundingSphere();mesh.geometry=geo;mesh.userData.v22WindowCut=true;
+   const geo=new T.BufferGeometry();geo.setAttribute('position',new T.Float32BufferAttribute(positions,3));geo.setAttribute('normal',new T.Float32BufferAttribute(normals,3));geo.setAttribute('uv',new T.Float32BufferAttribute(uvs,2));if(Array.isArray(mesh.material))for(const g of groups)geo.addGroup(g.start,g.count,g.materialIndex);geo.applyMatrix4(transform.invert());geo.computeBoundingSphere();if(mesh.userData.v22WindowCut)src.dispose();mesh.geometry=geo;mesh.userData.v22WindowCut=true;
   }
  }
- function furnish(root,w,d,h,type,floor=0){if(root.userData.v22Room)return root.userData.v22Room;const room={w:Math.min(6,w*.55),front:d/2,floor:Math.min(Math.max(0,floor),Math.max(0,h-2.8))};cutWindow(root,room);
-  const g=new T.Group();g.userData.v22Interior=true;g.userData.dynamic=true;root.add(g);const plaster=mat('#d9d2bc'),trim=mat('#eee7d5'),wood=mat('#856e53'),dark=mat('#344b54'),accent=mat(themes[type]?.color||'#668b85'),z=room.front,y=room.floor,wide=room.w;
-  box(g,0,y+.05,z-1.45,wide+.35,.15,3.1,wood);box(g,0,y+2.75,z-1.45,wide+.35,.12,3.1,plaster);box(g,0,y+1.4,z-3,wide+.35,2.8,.15,plaster);for(const s of [-1,1]){box(g,s*(wide/2+.1),y+1.4,z-1.45,.15,2.8,3.1,plaster);box(g,s*(wide/2+.08),y+1.45,z+.08,.16,2.45,.2,trim);}for(const yy of [.28,2.62])box(g,0,y+yy,z+.08,wide+.35,.16,.25,trim);
+ function openWindows(root,front){const panes=root.userData.v237Windows||[];
+  for(const pane of panes)cutWindow(root,pane,front);
+  root.traverse(mesh=>{if(!mesh.userData.v237Pane)return;const glass=mesh.material.clone();glass.color.set('#9dc3c9').convertSRGBToLinear();glass.transparent=true;glass.opacity=.18;glass.depthWrite=false;mesh.material=glass;mesh.castShadow=false;mesh.receiveShadow=false;});
+  const glass=new T.MeshStandardMaterial({color:new T.Color('#9dc3c9').convertSRGBToLinear(),roughness:.25,transparent:true,opacity:.22,depthWrite:false,side:T.DoubleSide});
+  for(const pane of panes){if(!pane.painted)continue;const mesh=new T.Mesh(new T.PlaneGeometry(pane.w,pane.h),glass);mesh.position.set(pane.x,pane.y,front+(pane.frame?.23:.015));mesh.userData.v237Glazing=true;root.add(mesh);
+   if(pane.frame){const frame=mat('#e8e3d4');for(const side of [-1,1]){box(root,pane.x+side*(pane.w/2+.055),pane.y,front+.23,.11,pane.h+.22,.1,frame);box(root,pane.x,pane.y+side*(pane.h/2+.055),front+.23,pane.w,.11,.1,frame);}}
+  }return panes;
+ }
+ function furnish(root,w,d,h,type,floor=0){if(root.userData.v22Room)return root.userData.v22Room;const panes=openWindows(root,d/2),room={w:Math.max(2,w-.6),front:d/2,floor:Math.min(Math.max(0,floor),Math.max(0,h-2.8))};room.ceiling=Math.max(2.9,...panes.map(p=>p.y+p.h/2-room.floor+.15));
+  const g=new T.Group();g.userData.v22Interior=true;g.userData.dynamic=true;root.add(g);const plaster=mat('#d9d2bc'),trim=mat('#eee7d5'),wood=mat('#856e53'),dark=mat('#344b54'),accent=mat(themes[type]?.color||'#668b85'),z=room.front,y=room.floor,wide=room.w,ceiling=room.ceiling,signWide=Math.min(6,w*.55);
+  box(g,0,y+.05,z-1.45,wide+.35,.15,3.1,wood);box(g,0,y+ceiling,z-1.45,wide+.35,.12,3.1,plaster);box(g,0,y+ceiling/2,z-3,wide+.35,ceiling,.15,plaster);for(const s of [-1,1])box(g,s*(wide/2+.1),y+ceiling/2,z-1.45,.15,ceiling,3.1,plaster);
   box(g,0,y+.55,z-2.45,wide*.7,1.05,.65,wood);box(g,0,y+1.11,z-2.45,wide*.76,.1,.8,trim);
   if(type==='shop'){for(const s of [-1,1])for(const yy of [.65,1.3,1.95]){box(g,s*(wide/2-.45),y+yy,z-1.7,.7,.12,1.7,wood);for(let i=0;i<3;i++)box(g,s*(wide/2-.45),y+yy+.2,z-2.2+i*.5,.28,.3,.28,mat(['#b56548','#779750','#c6aa65'][i]));}}
   else if(type==='restaurant'){for(const s of [-1,1]){box(g,s*wide*.29,y+.68,z-1.25,.85,.1,.85,trim);box(g,s*wide*.29,y+.34,z-1.25,.13,.68,.13,dark);box(g,s*wide*.29,y+.4,z-1.9,.8,.18,.45,accent);}}
   else if(type==='police'){box(g,-wide*.2,y+1.45,z-2.5,.65,.5,.12,dark);box(g,wide*.23,y+1.9,z-2.88,.8,.75,.1,accent);}
   else if(type==='clinic'){box(g,wide*.25,y+.6,z-1.7,.9,.2,1.5,trim);box(g,-wide*.28,y+1.65,z-2.83,.65,.65,.15,mat('#a95248'));box(g,-wide*.28,y+1.65,z-2.73,.15,.5,.05,trim);box(g,-wide*.28,y+1.65,z-2.72,.5,.15,.05,trim);}
   else{box(g,-wide*.28,y+.4,z-1.65,.75,.7,1.1,accent);box(g,wide*.27,y+1.55,z-2.85,1,.7,.1,dark);}
-  if(type){box(g,0,y+3.05,z+.18,Math.min(w-.3,wide+2),.8,.25,accent);const sign=new T.Mesh(new T.PlaneGeometry(Math.min(w-.5,wide+1.7),.65),signMaterial(type));sign.position.set(0,y+3.05,z+.32);g.add(sign);if(type==='restaurant'||type==='shop')for(let i=0;i<8;i++)box(g,(i-3.5)*(wide+.5)/8,y+2.8,z+.65,(wide+.5)/8,.12,1.3,i%2?accent:trim);if(type==='police'){for(const s of [-1,1])box(g,s*(wide/2+.45),y+3.4,z+.2,.3,.22,.3,mat(s<0?'#558fc8':'#c56358'));}}
+  if(type){box(g,0,y+3.05,z+.18,Math.min(w-.3,signWide+2),.8,.25,accent);const sign=new T.Mesh(new T.PlaneGeometry(Math.min(w-.5,signWide+1.7),.65),signMaterial(type));sign.position.set(0,y+3.05,z+.32);g.add(sign);if(type==='restaurant'||type==='shop')for(let i=0;i<8;i++)box(g,(i-3.5)*(signWide+.5)/8,y+2.8,z+.65,(signWide+.5)/8,.12,1.3,i%2?accent:trim);if(type==='police'){for(const s of [-1,1])box(g,s*(signWide/2+.45),y+3.4,z+.2,.3,.22,.3,mat(s<0?'#558fc8':'#c56358'));}}
   room.group=g;root.userData.v22Room=room;return room;
  }
  const originalObject=A.object;
@@ -74,7 +82,7 @@
   for(const r of P.active){if(r.b.collapsed)continue;const b=r.b,room=r.room;
    for(const inside of [false,true]){if(!inside&&!r.path)continue;const n=inside?r.inside:r.outside;n.inside=inside;n.immune=Math.max(0,n.immune-dt);if(n.tumble){n.tumble=Math.max(0,n.tumbleUntil-P.clock);if(!n.tumble)n.immune=1.5;}
     if(n.tumble){n.x=n.hitX;n.y=n.hitY+.12;n.z=n.hitZ;n.yaw=n.hitYaw;}
-    else if(inside){const scale=r.roomScale,p=point(b,Math.sin(P.clock*.4+n.phase)*room.w*.18*scale,(room.front-1.4)*scale);n.x=p.x;n.z=p.z;n.y=b.y+room.floor*scale+.14;n.yaw=b.yaw+(Math.cos(P.clock*.4+n.phase)>0?Math.PI/2:-Math.PI/2);}
+    else if(inside){const scale=r.roomScale,p=point(b,Math.sin(P.clock*.4+n.phase)*room.w*.42*scale,(room.front-.85)*scale);n.x=p.x;n.z=p.z;n.y=b.y+room.floor*scale+.14;n.yaw=b.yaw+(Math.cos(P.clock*.4+n.phase)>0?Math.PI/2:-Math.PI/2);}
     else{const path=r.path,along=Math.sin(P.clock*.28+n.phase)*path.span,p=point(b,path.front?along:path.sign*path.offset,path.front?path.sign*path.offset:along);if(!safe(b,p.x,p.z))continue;n.x=p.x;n.z=p.z;n.y=W.height(p.x,p.z)+.02;n.yaw=b.yaw+(path.front?Math.PI/2:0)+(Math.cos(P.clock*.28+n.phase)<0?Math.PI:0);}
     collision(n,r,cars);render(n,count++,P.clock);if(count>=P.maxPeople)break;
    }if(count>=P.maxPeople)break;

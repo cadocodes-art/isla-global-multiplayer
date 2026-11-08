@@ -101,10 +101,13 @@
   for(const p of W.cityBuildingPlans()){
    const group=new T.Group();group.position.set(p.x,p.y,p.z);group.rotation.y=p.yaw;scene.add(group);const wall=p.house?homeWalls[p.variant].clone():W.mat('#ffffff',.55,.16);if(!p.house)wall.map=atlases[p.id%6];const b={...p,group,wall,color:'#ffffff',hp:100,maxHp:100,collapsed:false,lastHit:-10,cracks:[],windows:[],pieces:[]};W.buildings.push(b);W.colliders.push(b);
    if(p.house){const height=p.floors*3.1;W.box(group,0,p.foundation/2,0,p.w+.25,p.foundation,p.d+.25,trim);b.body=W.box(group,0,p.foundation+height/2,0,p.w,height,p.d,wall);b.body.geometry=W.unitBox.clone();const uv=b.body.geometry.attributes.uv;for(let i=0;i<uv.count;i++)uv.setY(i,uv.getY(i)*p.floors);
+    b.body.userData.v237Wall=true;group.userData.v237Windows=[];
+    for(const x of [22,80])for(const [left,right]of [[x+4,x+13],[x+15,x+25]])for(const [top,bottom]of [[38,61],[63,85]])group.userData.v237Windows.push({x:((left+right)/256-.5)*p.w,y:p.foundation+(1-(top+bottom)/256)*3.1,w:(right-left)/128*p.w,h:(bottom-top)/128*3.1,painted:true});
     const top=new T.Mesh(roofGeo,homeRoofMats[p.variant%3]);top.position.y=p.foundation+height+1.1;top.scale.set(p.w*.78,2.2,p.d*.78);top.castShadow=top.receiveShadow=true;group.add(top);W.box(group,0,p.foundation+1.15,p.d/2+.08,1.3,2.3,.18,doorMat);W.box(group,0,p.foundation+.08,p.d/2+.8,3.6,.2,1.8,trim);W.box(group,p.w*.26,p.h-.2,-p.d*.18,.8,2,.8,trim);continue;
    }
    W.box(group,0,p.foundation/2,0,p.w+1,p.foundation,p.d+1,trim);const tower=p.h-p.foundation;b.body=W.box(group,0,p.foundation+tower/2,0,p.w,tower,p.d,wall);b.body.geometry=W.unitBox.clone();const uv=b.body.geometry.attributes.uv;for(let i=0;i<uv.count;i++)uv.setY(i,uv.getY(i)*p.floors/8);W.box(group,0,p.h+.12,0,p.w+1,.35,p.d+1,trim);W.box(group,p.w*.18,p.h+1.3,0,p.w*.34,2.2,p.d*.4,roof);
-   const storefront=W.mat(['#334954','#35635c','#794a37','#414b61'][p.id%4]);W.box(group,0,p.foundation+1.5,p.d/2+.1,p.w*.82,2.7,.22,storefront,false);W.box(group,0,p.foundation+3.3,p.d/2+.5,p.w*.9,.2,1.5,trim);
+   const storefront=W.mat(['#334954','#35635c','#794a37','#414b61'][p.id%4]);W.box(group,0,p.foundation+1.5,p.d/2+.1,p.w*.82,2.7,.22,storefront,false).userData.v237Wall=true;b.body.userData.v237Wall=true;group.userData.v237Windows=[];
+   for(let col=0;col<6;col++)group.userData.v237Windows.push({x:((col*42+20.5)/256-.5)*p.w,y:p.foundation+16.5/32*tower/p.floors,w:25/256*p.w,h:17/32*tower/p.floors,painted:true,frame:true});W.box(group,0,p.foundation+3.3,p.d/2+.5,p.w*.9,.2,1.5,trim);
    for(const side of [-1,1]){const crack=new T.Mesh(new T.PlaneGeometry(p.w,tower),crackMat);crack.position.set(0,p.foundation+tower/2,side*(p.d/2+.25));crack.rotation.y=side<0?Math.PI:0;crack.visible=false;group.add(crack);b.cracks.push(crack);}
   }
   W.makeSuburbScenery(scene,{walls:homeWalls,roofs:homeRoofMats,roofGeo,trim});
