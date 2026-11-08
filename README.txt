@@ -1,8 +1,8 @@
-ISLA V2.37 — EVENLY SPREAD COSTA METRO POPULATION + WINDOWS AND SPORTS FIXES
+ISLA V2.37 — STICKCAR ROOFTOP AURA + POPULATION, WINDOWS AND SPORTS FIXES
 
 ONLINE UPDATE FOR YOUR EXISTING COMPLETE V2.33 OR LATER REPOSITORY
-1. Extract ISLA-V2.37-EVEN-SPREAD-ONLINE.zip.
-2. Open the matching ISLA-V2.37-EVEN-SPREAD-ONLINE folder.
+1. Extract ISLA-V2.37-STICKCAR-AURA-ONLINE.zip.
+2. Open the matching ISLA-V2.37-STICKCAR-AURA-ONLINE folder.
 3. Upload all 49 individual files inside to your repository ROOT, replacing
    matching files, in ONE batch. Commit the batch.
 4. Keep all other repository files and your existing wrangler.jsonc.
@@ -13,6 +13,10 @@ This cumulative patch includes V2.34 through V2.36. It requires your complete
 V2.33 or later repository; every required source is checked before building.
 
 NEW IN V2.37
+- StickCar jumps from a rooftop award 25% of their previous landing Aura,
+  wherever they land: ground, water, another roof or another building side.
+  Chain multipliers and air-trick bonuses are included before the reduction.
+  All three upgrade levels use this rate. Other jumps keep their usual rewards.
 - Costa Metro has about three times its original overall population, spread
   evenly across walkable land, neighborhoods and parks. Each building keeps
   one indoor person. Outdoor walkers have separate, spaced routes instead of
@@ -27,7 +31,7 @@ NEW IN V2.37
 - Older Play Place clients must refresh to join the updated global room.
 
 OFFLINE EDITION (SEPARATE DOWNLOAD)
-Paste all text from ISLA-V2.37-EVEN-SPREAD-Offline.txt into an HTML viewer as before.
+Paste all text from ISLA-V2.37-STICKCAR-AURA-Offline.txt into an HTML viewer as before.
 It contains the same changes. Map Maker maps are now practice only: they do
 not award Aura or Iscoins. Rewards on the five built-in maps still work.
 Owner Controls, dated History, current balances, cars, upgrades and vault claims

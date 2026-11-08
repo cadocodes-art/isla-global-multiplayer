@@ -2,7 +2,7 @@
   "name": "isla-drive-cloudflare",
   "version": "2.37.0",
   "private": true,
-  "description": "ISLA V2.37 — evenly spread Costa Metro population, real house windows, basketball Aura, easier bowling, ability button placement and palm colors",
+  "description": "ISLA V2.37 \u2014 StickCar rooftop Aura reduction, evenly spread Costa Metro population, real house windows, basketball Aura, easier bowling, ability buttons and palm colors",
   "engines": {
     "node": ">=22.0.0"
   },

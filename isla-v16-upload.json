@@ -34,7 +34,7 @@
     {
       "name": "aura.js",
       "destination": "public/aura.js",
-      "sha256": "91e4633b8d80bb8fcf7d0b4a8de74e35ae1dcae703e2190da6f15fc5e9de5b5a"
+      "sha256": "cf184e34ee0a1023c18ac55bd907b3e95d5ba20cd1cf99d750b3ef70d7ab5611"
     },
     {
       "name": "player-rules.js",
@@ -474,7 +474,7 @@
     {
       "name": "package.json",
       "destination": "package.json",
-      "sha256": "467e0b6abc8736e24ce32242f84afc5c6934a40aca200bc2f0c82c9b64ef6058"
+      "sha256": "0ea226b92fe12b5b8f9ac321cdcba517a0b66747f312393107fb363d14c4adea"
     },
     {
       "name": "package-lock.json",
@@ -489,7 +489,7 @@
     {
       "name": "README.txt",
       "destination": "README.txt",
-      "sha256": "2b0df53da31fb4221c10bd8f6f438ca4dc39e5bf566b29a1a97536ab28cab09b"
+      "sha256": "898f3d2be81c46ecc35036ccf5c97c39a01f943a2ff1ae2a8e26f6130f2289ed"
     },
     {
       "name": "v22-shared.js",
@@ -689,12 +689,12 @@
     {
       "name": "v237.test.cjs",
       "destination": "test/v237.test.cjs",
-      "sha256": "5ee21f620cb1ce4feafbce7389155a5369ed8a442e1c7776e4c022f6c5d17843"
+      "sha256": "febbe244d8f668690d42bf3fe2843567a9489cf56eafdf6e8dfb585925ac9e9d"
     },
     {
       "name": "V2.37-Notes.md",
       "destination": "V2.37-Notes.md",
-      "sha256": "9ce444a06e7dcbba03e6ebaf87e7924540721b46b7acf628b884740268f4b6a6"
+      "sha256": "2e8f0bccfcc66ec0154e7190c3d050fdedd0dfc455ec810b87308c0bb7bbc976"
     }
   ]
 }

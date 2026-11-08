@@ -104,3 +104,49 @@ test('V2.37 other maps keep their original population and have no city park walk
  const {W}=create('fern'),scene=new T.Scene();W.makeBuildings(scene);W.v22People.install(scene);const P=W.v22People;
  assert.equal(P.density,1);assert.equal(P.maxPeople,72);assert.equal(P.parks.length,0);assert(P.records.length>0);assert(P.records.every(r=>r.residents.length===2));assert(P.visibleCount<=72);
 });
+
+function rooftopTracker(sticky=true){
+ const credited=[],W={driveHeight:()=>0,getCarSpec:()=>({sticky}),onAuraEarn:(points,best)=>credited.push({points,best})},ctx=vm.createContext({Isla:W});
+ vm.runInContext(fs.readFileSync(path.join(__dirname,'../public/aura.js'),'utf8'),ctx);
+ return {W,a:W.createAuraTracker(),credited};
+}
+function rooftopFlight(a,{roof=true,landing='ground',bonus=0,trampoline=false,interrupt=false}={}){
+ const c={x:0,z:0,y:80,vx:20,vz:0,grounded:true,waterMode:'dry',roof:roof?{id:1}:null};a.update(c,1/120);
+ for(let i=1;i<=120;i++){Object.assign(c,{x:i/6,y:80-i/12,grounded:false,roof:null,playBounceRewardPending:trampoline&&i===1});a.update(c,1/120);if(a.flight)a.flight.trickBonus=bonus;if(interrupt&&i===60)a.interrupt('RECOVERED');}
+ Object.assign(c,{grounded:landing!=='water',waterMode:landing==='water'?'skimming':'dry',roof:landing==='roof'?{id:2}:null,wall:landing==='wall'?{b:{id:2}}:null,y:landing==='ground'||landing==='water'?0:60});a.update(c,1/120);
+ return a.notice?.points||0;
+}
+test('V2.37 StickCar rooftop jumps pay one quarter on ground, water, another roof or another building side, including bonuses',()=>{
+ for(const landing of ['ground','water','roof','wall'])for(const chain of [0,2,4])for(const bonus of [0,.04])for(const trampoline of [false,true]){
+  const reduced=rooftopTracker(),normal=rooftopTracker();for(const {a}of [reduced,normal]){a.chainCount=chain;a.remaining=5;}
+  const points=rooftopFlight(reduced.a,{landing,bonus,trampoline}),full=rooftopFlight(normal.a,{roof:false,landing,bonus,trampoline});
+  assert(full>0);assert.equal(points,Math.round(full*.25),landing+' with chain '+chain);assert.equal(reduced.credited.length,1);assert.equal(reduced.credited[0].points,points);assert.equal(reduced.a.total,points);assert.equal(reduced.a.chainPoints,points);
+ }
+ const other=rooftopTracker(false);assert.equal(rooftopFlight(other.a),rooftopFlight(rooftopTracker().a,{roof:false}),'other cars retain full rewards');
+ const interrupted=rooftopTracker();assert.equal(rooftopFlight(interrupted.a,{interrupt:true}),0);assert.equal(interrupted.credited.length,0);
+ interrupted.a.interrupt();assert.equal(rooftopFlight(interrupted.a,{roof:false}),rooftopFlight(rooftopTracker().a,{roof:false}),'the discount does not carry to a later normal jump');
+});
+
+function rooftopPhysics(){
+ const paint=new Proxy({measureText:()=>({width:100}),createRadialGradient:()=>({addColorStop(){}})},{get:(o,k)=>o[k]||(()=>{})}),ctx=vm.createContext({THREE:T,console,document:{createElement:()=>({getContext:()=>paint}),getElementById:()=>null},performance:{now:()=>0}});ctx.window=ctx;
+ for(const n of ['v22-shared','v20-rules','world','physics','player-rules','garage','aura','cars-v19','utility-cars','specials','launcher-props','cars-v20'])vm.runInContext(fs.readFileSync(path.join(__dirname,'../public',n+'.js'),'utf8'),ctx,{filename:n});
+ const W=ctx.Isla;W.scene=new T.Scene();W.traffic=[];W.height=W.driveHeight=()=>0;W.slope=()=>({x:0,z:0});const road={samples:[{x:0,z:-1},{x:0,z:0},{x:0,z:1}]};W.nearestRoad=(x,z)=>({d:0,p:{x,z,width:12,index:1,road}});W.mapBounds={x:-1000,z:-1000,size:2000};W.awardV22=W.v22Notice=()=>{};W.garage.owned=W.carModels.map(m=>m.id);ctx.IslaV22.normalize(W.garage);
+ vm.runInContext(fs.readFileSync(path.join(__dirname,'../public/v22-gameplay.js'),'utf8'),ctx);vm.runInContext('Math.random=()=>.5',ctx);return W;
+}
+test('V2.37 actual StickCar climbing and roof departures retain the quarter rate through landing at all upgrade levels',()=>{
+ for(const level of [1,2,3])for(const sideLanding of [false,true]){
+  const W=rooftopPhysics(),roof={id:0,x:0,z:8,y:0,w:20,d:8,h:80,yaw:0,hp:100,collapsed:false,lastHit:-99},other={id:1,x:0,z:45,y:0,w:40,d:12,h:120,yaw:0,hp:100,collapsed:false,lastHit:-99};W.buildings=W.colliders=sideLanding?[roof,other]:[roof];W.buildCollisionIndex();
+  W.garage.selected='stick';W.garage.upgrades.stick=3;W.garage.levels.stick=level;W.aura=W.createAuraTracker();W.resetVehicle(true);const c=W.vehicle;Object.assign(c,{x:0,y:.12,z:0,yaw:0,vx:0,vy:0,vz:43/3.6,grounded:true});W.aura.update(c,1/120);let climbed=false,reachedRoof=false,departed=false,awarded=false,lastFlight=null;
+  const startingBalance=W.garage.balance,startingEarned=W.garage.earned;
+  for(let i=0;i<3600;i++){
+   lastFlight=W.aura.flight&&{...W.aura.flight};W.stepVehicle(1/120,{gas:1,brake:0,steer:0,handbrake:false,boost:false},i/120);climbed=climbed||!!c.wall;
+   if(c.roof===roof&&!reachedRoof){reachedRoof=true;W.aura.chainCount=2;W.aura.remaining=5;}
+   W.aura.update(c,1/120);
+   if(W.aura.flight&&!departed){departed=true;assert(W.aura.flight.stickRoof);assert(W.performAirTrick());}
+   if(lastFlight&&!W.aura.flight&&W.aura.notice?.label==='JUMP'){
+    assert(climbed&&reachedRoof&&departed);assert(lastFlight.trickBonus>=.03&&lastFlight.trickBonus<=.04);if(sideLanding)assert.equal(c.wall?.b,other,'landed on the other building side');else assert(c.grounded&&c.waterMode==='dry'&&!c.wall);
+    const full=Math.round((100+lastFlight.seconds*120+lastFlight.distance*4+lastFlight.height*10)*(1+lastFlight.trickBonus)*3),points=Math.round(full*.25);assert.equal(W.aura.notice.points,points);assert.equal(W.garage.balance-startingBalance,points);assert.equal(W.garage.earned-startingEarned,points);awarded=true;break;
+   }
+  }assert(awarded,'roof jump completed: level '+level+', side landing '+sideLanding);W.resetVehicle(true);assert.equal(W.aura.flight,null);assert.equal(W.aura.previous,null);
+ }
+});
