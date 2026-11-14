@@ -4,18 +4,28 @@
    let x=clamp(lx,-b.w/2,b.w/2),z=clamp(lz,-b.d/2,b.d/2);if(x===lx&&z===lz){if(b.w/2-Math.abs(lx)<b.d/2-Math.abs(lz))x=(lx<0?-1:1)*b.w/2;else z=(lz<0?-1:1)*b.d/2;}
    const ax=b.x+x*co+z*si,az=b.z-x*si+z*co,y=clamp(c.y+Math.min(18,b.h*.65),b.y+Math.min(3,b.h*.5),b.y+b.h-.2),d=Math.hypot(ax-c.x,az-c.z),length=Math.hypot(ax-c.x,y-c.y,az-c.z);if(d<2||length>range)continue;if(!best||length<best.score)best={x:ax,y,z:az,score:length,length,target:b};}return best;
  }
- function attach(c,anchor){if(!anchor)return false;c.grapple={...anchor};c.grappleActive=true;c.grounded=false;c.roadMode=false;c.roadFrame=null;c.vy=Math.max(c.vy||0,8);c.y+=.4;return true;}
+ function attach(c,anchor){if(!anchor)return false;const b=anchor.target,dx=c.x-b.x,dz=c.z-b.z,r=Math.hypot(dx,dz),angle=Math.atan2(dx,dz),tangent=(c.vx||0)*Math.cos(angle)-(c.vz||0)*Math.sin(angle);
+   c.grapple={...anchor,cx:b.x,cz:b.z,halfDiagonal:Math.hypot(b.w,b.d)/2,angularSpeed:r?clamp(tangent/r,-2,2):0,direction:Math.sign(tangent)||-1,height:Math.max(c.y+3,b.y+Math.min(10,Math.max(4,b.h*.45)))};
+   c.grappleActive=true;c.grounded=false;c.roadMode=false;c.roadFrame=null;c.ramp=null;c.playSupport=null;c.vy=Math.max(c.vy||0,8);c.y+=.4;return true;}
  function release(c){c.grapple=null;c.grappleActive=false;}
- function step(dt,input,c,s){const g=c.grapple;if(!g)return;if(!s.grappler||g.target?.collapsed||c.waterMode==='sinking'){release(c);return;}const dx=g.x-c.x,dy=g.y-c.y,dz=g.z-c.z,d=Math.hypot(dx,dy,dz),horizontal=Math.hypot(dx,dz);if(d<3||d>s.grappleRange*1.5){release(c);return;}
-   const nx=dx/d,ny=dy/d,nz=dz/d,steer=clamp(input.steer||0,-1,1),tx=horizontal>1e-5?dz/horizontal:Math.cos(c.yaw),tz=horizontal>1e-5?-dx/horizontal:-Math.sin(c.yaw),gas=clamp(input.gas||0,0,1),brake=clamp(input.brake||0,0,1);
-   // Steering is tangent to the rope, so holding either direction produces a stable orbit.
-   g.length=Math.max(9,g.length-dt*(3+gas*8));const pull=(s.grapplePull||28)*1.35+clamp(d-g.length,0,12)*5;
-   c.vx+=nx*pull*dt+tx*steer*58*dt;c.vz+=nz*pull*dt+tz*steer*58*dt;c.vy+=ny*pull*dt+9*dt;
-   const damping=Math.exp(-dt*(.08+brake*2.2));c.vx*=damping;c.vz*=damping;c.vy*=Math.exp(-dt*.12);
-   if(d>=g.length){const radial=c.vx*nx+c.vy*ny+c.vz*nz;if(radial<0){c.vx-=nx*radial;c.vy-=ny*radial;c.vz-=nz*radial;}}
-   const speed=Math.hypot(c.vx,c.vz),limit=Math.max(35,(s.boostLimit||279/3.6));if(speed>limit){c.vx*=limit/speed;c.vz*=limit/speed;}
-   if(speed>2){c.yaw+=wrap(Math.atan2(c.vx,c.vz)-c.yaw)*(1-Math.exp(-dt*7));c.yawRate=0;}
-   c.vy=clamp(c.vy,-24,32);c.grappleDistance=d;c.grappleAimYaw=wrap(Math.atan2(dx,dz)-c.yaw);c.grappleAimPitch=Math.atan2(dy,horizontal);c.grappleActive=true;
+ function step(dt,input,c,s,ground){const g=c.grapple;if(!g)return;if(!s.grappler||g.target?.collapsed||c.waterMode==='sinking'){release(c);return;}const b=g.target,dx=c.x-g.cx,dz=c.z-g.cz,r=Math.hypot(dx,dz);if(!Number.isFinite(r)||r<.1||r>g.halfDiagonal+s.grappleRange*1.8){release(c);return;}
+   const size=s.size||1,clearance=5*size+1,minRadius=g.halfDiagonal+clearance,steer=clamp(input.steer||0,-1,1),gas=clamp(input.gas||0,0,1),brake=Math.max(clamp(input.brake||0,0,1),input.handbrake?1:0),angle=Math.atan2(dx,dz);
+   if(Math.abs(steer)>.12)g.direction=-Math.sign(steer);
+   // First move outward on the current face. Turning starts only outside the
+   // circle that encloses every corner plus the full car and a safety margin.
+   const entering=r<minRadius,goal=minRadius+.8+1.2*(1-gas),radial=clamp((goal-r)*7,-24,32),nextRadius=Math.max(.1,r+radial*dt);
+   const levelFactor=clamp((s.grapplePull||28)/28,1,1.35),limit=s.boostLimit||279/3.6,speed=Math.min(limit*(input.boost?1:.92),75*levelFactor)*(1-brake),omega=entering?0:g.direction*Math.min(3.2*levelFactor,speed/r);
+   g.angularSpeed+=(omega-g.angularSpeed)*(1-Math.exp(-dt*(brake?14:9)));if(entering)g.angularSpeed=0;
+   const nextAngle=angle+g.angularSpeed*dt;
+   // Exact arc integration supplies the centripetal motion that a weak pull
+   // cannot provide at this speed. Normal game physics still handles impacts.
+   c.vx=(g.cx+Math.sin(nextAngle)*nextRadius-c.x)/dt;c.vz=(g.cz+Math.cos(nextAngle)*nextRadius-c.z)/dt;
+   const terrain=ground?.(c.x,c.z),height=Math.max(g.height,Number.isFinite(terrain)?terrain+2.5*size:-Infinity);c.vy=clamp((height-c.y)*6,-16,20)+9.81*dt;
+   const v=Math.hypot(c.vx,c.vz);if(v>2){c.yaw+=wrap(Math.atan2(c.vx,c.vz)-c.yaw)*(1-Math.exp(-dt*12));c.yawRate=0;}
+   // The hook/rope follows the visible near face as it wraps around corners;
+   // its physical orbit remains centered on the entire building.
+   const co=Math.cos(b.yaw||0),si=Math.sin(b.yaw||0),lx=dx*co-dz*si,lz=dx*si+dz*co,x=clamp(lx,-b.w/2,b.w/2),z=clamp(lz,-b.d/2,b.d/2);g.x=b.x+x*co+z*si;g.z=b.z-x*si+z*co;
+   const hx=g.x-c.x,hz=g.z-c.z,hy=g.y-c.y;g.length=Math.hypot(hx,hy,hz);c.grappleDistance=g.length;c.grappleAimYaw=wrap(Math.atan2(hx,hz)-c.yaw);c.grappleAimPitch=Math.atan2(hy,Math.hypot(hx,hz));c.grappleActive=true;
  }
  root.IslaGrapple={nearest,attach,release,step};if(typeof module!=='undefined')module.exports=root.IslaGrapple;
 })(globalThis);
