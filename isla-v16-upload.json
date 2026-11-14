@@ -1,5 +1,5 @@
 {
-  "version": "2.38",
+  "version": "2.4",
   "files": [
     {
       "name": "three.min.js",
@@ -29,7 +29,7 @@
     {
       "name": "physics.js",
       "destination": "public/physics.js",
-      "sha256": "62eacaf3228895b1ee4c7598f7e12a44fed7a5aa64b0d6b5b8dac79b9226bc20"
+      "sha256": "52a7b1eb6886d5f503e03d9ea45eb26aa1699354f2e0b9aa29141b5c6d45646e"
     },
     {
       "name": "aura.js",
@@ -39,12 +39,12 @@
     {
       "name": "player-rules.js",
       "destination": "public/player-rules.js",
-      "sha256": "360d92cf5b70223abf56d88b7a01a024478283ce140a595f7808abdb65d477d2"
+      "sha256": "ac753989767325dad71d2123f7908108c126f7ebd48a4aba4e6611f1688fd622"
     },
     {
       "name": "garage.js",
       "destination": "public/garage.js",
-      "sha256": "045d645f088a80f6b311c97403f4681a71117b00a2d18f3b12caa75181edf9be"
+      "sha256": "0d75c7e77be0e8a69e6310f7dd135ee89268835b701eb1551e055194a859ff63"
     },
     {
       "name": "cars-v19.js",
@@ -79,12 +79,12 @@
     {
       "name": "multiplayer.js",
       "destination": "public/multiplayer.js",
-      "sha256": "cca4b3c665bbf10df356a1245d886fe20058b58d7243d568477d4a96cdb4aea3"
+      "sha256": "129c94dfef8d9f3f6a7ac25dff236dc7dcc6d0f1e641e2cc7e6be5810f067b09"
     },
     {
       "name": "maker-core.js",
       "destination": "public/maker-core.js",
-      "sha256": "630a47e56352ef9478385308426bbec51dcbb42171f840ce22747b362f63d3ad"
+      "sha256": "12ecf95ae3b98db54a79ef2e05abf20dcadd286c11aff1953fcccb47e69d092a"
     },
     {
       "name": "maker-assets.js",
@@ -94,7 +94,7 @@
     {
       "name": "community-api.js",
       "destination": "public/community-api.js",
-      "sha256": "a7442cd42654b5960b7026c56e5f1701ec81d1a14771bc4d7b31e5a8ce2f7dd2"
+      "sha256": "c526dc7c05bc38cf5be805e85486781dcab90314e98b3d9db0737a71a8123537"
     },
     {
       "name": "editor-test.js",
@@ -114,12 +114,12 @@
     {
       "name": "map-editor.js",
       "destination": "public/map-editor.js",
-      "sha256": "3bcffe3b3cb412d3dda78696028dc23b7c0a970ab96997d518b26dc9c549ea4c"
+      "sha256": "9f51520b9c63265c7b3e1b7925b1b3566eebb8afc38afd60f88e5bf0237227ad"
     },
     {
       "name": "community-ui.js",
       "destination": "public/community-ui.js",
-      "sha256": "8732e248538f9a56fc6e2f6405e80acf397129388165d30e2f39a0d06feafd5e"
+      "sha256": "f3f5ba0fff34b35ddad3e111d76d1c6dcf9813b0e213f848439837f9c0db7489"
     },
     {
       "name": "social-rules.js",
@@ -214,7 +214,7 @@
     {
       "name": "game.js",
       "destination": "public/game.js",
-      "sha256": "e91252ba56ebfc5966d4b3ed7287daa4ab27e0d69dc2391f3ab264b49b2c2098"
+      "sha256": "301aa01f88ada063c332bbcf4b8c3a15531c69be91aeb9068a3bd614d338177b"
     },
     {
       "name": "style.css",
@@ -234,7 +234,7 @@
     {
       "name": "index.html",
       "destination": "public/index.html",
-      "sha256": "79e57e2367a5e9aa3c6332cd6be39269786aaaf329da15df41651e0f93652580"
+      "sha256": "e67a010bddc93c5e07f4ec127e554e9ceb390b2d092a3dbd1bedcdbf129c5510"
     },
     {
       "name": "player-collisions.js",
@@ -249,7 +249,7 @@
     {
       "name": "worker.js",
       "destination": "src/worker.js",
-      "sha256": "76c607eb295f91d2c1d6ccc70167e22eba551d58446932dbe259b8b621e7f93a"
+      "sha256": "0d3bcb11f25a43979f51652d112649d4d3e53b8474cb6f2906d9a4b3006b499a"
     },
     {
       "name": "playground.js",
@@ -259,7 +259,7 @@
     {
       "name": "community.js",
       "destination": "src/community.js",
-      "sha256": "57dec515411e1967eab52b1c703c90625407278ec40bb4352bbd4d3554d1f9a7"
+      "sha256": "55911ed57bd6f6b393ab00a76f95449a93af721fc000015bafe8e25607221fa4"
     },
     {
       "name": "social.js",
@@ -274,7 +274,7 @@
     {
       "name": "build-offline.cjs",
       "destination": "scripts/build-offline.cjs",
-      "sha256": "c75807dc9694066f4efafdca2e21496225386f97086654beddaca2a3d5b9fa76"
+      "sha256": "f0659e25bd03454211cf2a9f7319a7d2ea7aa922a841dc34b6a3f130ea53b530"
     },
     {
       "name": "build-world.cjs",
@@ -284,12 +284,12 @@
     {
       "name": "source-world.cjs",
       "destination": "scripts/source-world.cjs",
-      "sha256": "25b9c41923118cb4eba850df66e30a712e87e4fa634738e21fd2e87dd5e43d48"
+      "sha256": "1209ad0891a6184394865ea059ab43aefaa6726bba0ea45c1f9f853455f2eafa"
     },
     {
       "name": "upgrade-v16-config.cjs",
       "destination": "scripts/upgrade-v16-config.cjs",
-      "sha256": "52260ac225d8b9afa639a00ea72dcfa47ee5d4da25deaed5e5eadd2d9022b8ac"
+      "sha256": "ec21cfddecc90e75dc2f1cea004e99b81306909e0a3cf319676b8d93542d4518"
     },
     {
       "name": "city.test.cjs",
@@ -474,27 +474,27 @@
     {
       "name": "package.json",
       "destination": "package.json",
-      "sha256": "d2918ccd86e20d8d5986e5970a9837b77e2ddc7fe922677a26bcf2f747841615"
+      "sha256": "d093d9fc36dd14e3ffb92f73a5eed45c01b01d51886180e85f914be417d892ee"
     },
     {
       "name": "package-lock.json",
       "destination": "package-lock.json",
-      "sha256": "18953928bb72d2327897e247b8255236f10ca245124fd8a87fa0e4bfbbbb73b0"
+      "sha256": "936aaf34cd4096d482bd9a55bb87bf9fd7a21b55975d8f4732c1258e969134b3"
     },
     {
       "name": "prepare-cloudflare.cjs",
       "destination": "prepare-cloudflare.cjs",
-      "sha256": "dffd4e7b9ef6c89f355cefaa162c7fcf2f7151a7bcd8c815d4e1e3d055367e28"
+      "sha256": "96636b9d341a8e669137ffc6cb78c7ddca3c21b9125e575d7c30e9bb71ab6762"
     },
     {
       "name": "README.txt",
       "destination": "README.txt",
-      "sha256": "6d9a5393d6ab25a60ef195049351a0a60d2afc535e20755cf58a119eec8ba4bc"
+      "sha256": "00f6061c0bf7a5b57db5dd64d058468ca425d058e39c3393825055528af7c3be"
     },
     {
       "name": "v22-shared.js",
       "destination": "public/v22-shared.js",
-      "sha256": "54fcd1bf948abc20c79870b68b02bae0c4616a9e542fc874f308e9b89002e45f"
+      "sha256": "ea2620f6433d9a00f4138c72012c84d33fb824480aef45cb0216417240ce47f5"
     },
     {
       "name": "v22-garage.js",
@@ -504,12 +504,12 @@
     {
       "name": "v22-gameplay.js",
       "destination": "public/v22-gameplay.js",
-      "sha256": "de4a58718949ed83e18eff6015b5ad70b04ae41007e5149faeaea2c4609f3cdf"
+      "sha256": "a200fca3f9527b3fb01852308e93fa605bfe1326053101a725a9fde7cfc8452b"
     },
     {
       "name": "v22-economy-client.js",
       "destination": "public/v22-economy-client.js",
-      "sha256": "c552940d366879ae36aee0c511225319d99f66073c65743e57118a85f845c5b7"
+      "sha256": "088482524e3a0ca318c43ae69c8610217e772b3ba8d840e8f39916095eb0f246"
     },
     {
       "name": "v22-car-assets.js",
@@ -529,12 +529,12 @@
     {
       "name": "v22-economy.js",
       "destination": "src/v22-economy.js",
-      "sha256": "5c27d6ea98e3f03ed792fb9b23bff45af828d13ff04b7fe39f83126eb4bd6474"
+      "sha256": "521c5a3fa2855518d4c7ddc5f81ad7b243be03cb6fd7ca7373a0a8ed09705f64"
     },
     {
       "name": "refresh-manifest.cjs",
       "destination": "refresh-manifest.cjs",
-      "sha256": "4d1408bc20803838702fa863d350e20fac1bce70fc079dcf4f35a6b27d902818"
+      "sha256": "6131a8e71d59fc884d3da8347ce1639b1425e1a0904ee29aae330777d5fbb8fa"
     },
     {
       "name": "dev.cjs",
@@ -764,12 +764,72 @@
     {
       "name": "v238.test.cjs",
       "destination": "test/v238.test.cjs",
-      "sha256": "d9e4ca7dbd2f9b551f0be9b094055e2a0856cb7ccd352c8ca14438fcd1d408e9"
+      "sha256": "1dff8dea844756ce258486bf0091e22caffe8f8ee29214aaab4d320a2e15b76d"
     },
     {
       "name": "map-plays.test.cjs",
       "destination": "test/map-plays.test.cjs",
       "sha256": "4df6280fb731005891e2584050f17c8ac60ec27f1b0e5fcd961a52a25e40ebb9"
+    },
+    {
+      "name": "v24-shared.js",
+      "destination": "public/v24-shared.js",
+      "sha256": "52ceb8138f854a02d804add78b74a7196cd36142f07f95632fffafe6470e0c6a"
+    },
+    {
+      "name": "v24-car-assets.js",
+      "destination": "public/v24-car-assets.js",
+      "sha256": "a0efe70aefdd23b0aefef8eb5e67823f49c04360a578b1449894a551da3c1c02"
+    },
+    {
+      "name": "v24-maker-assets.js",
+      "destination": "public/v24-maker-assets.js",
+      "sha256": "08c5a66f2c00aab0598d7afe6852c0a854f1f9aab3b57c1eada377b8a4d57885"
+    },
+    {
+      "name": "v24-client.js",
+      "destination": "public/v24-client.js",
+      "sha256": "49945364d43af6816eb5a8e8c7469eef9c44b70a3c7502dcb842b7e09a1caac1"
+    },
+    {
+      "name": "v24-server.js",
+      "destination": "src/v24-server.js",
+      "sha256": "b05b77d13b99da2455034b8eab96672edf90f471a4ef3f39efeadd494e71a47a"
+    },
+    {
+      "name": "v24-release.test.cjs",
+      "destination": "test/v24-release.test.cjs",
+      "sha256": "7e8b51c00a4a4f0201e61a252fa8409d4f93ed1abaece20c3f1f090dadc3b1cb"
+    },
+    {
+      "name": "v24-admin.js",
+      "destination": "src/v24-admin.js",
+      "sha256": "716be90127d24f65dad1f6480ef22d4b5af152de5adeea1743cbb0bbf7f7e9a3"
+    },
+    {
+      "name": "v24-owner-ui.js",
+      "destination": "public/v24-owner-ui.js",
+      "sha256": "374c41da470c11b81a219cf1a6ec1f63aeeb4a8b9670bdd1214cc3f45cf49ada"
+    },
+    {
+      "name": "v24-offline-source.json",
+      "destination": "offline/v24-source.json",
+      "sha256": "d9e7e515d6aee0d887ef6747eecea212e84ab1deb10b3a2df00c569a88f6ca44"
+    },
+    {
+      "name": "V2.4-Notes.md",
+      "destination": "V2.4-Notes.md",
+      "sha256": "fc64070ca9a2812d7e87579b592c2e448e8e8ea71f04266cde80965e75f45143"
+    },
+    {
+      "name": "v24-route-check.cjs",
+      "destination": "v24-route-check.cjs",
+      "sha256": "2ed22c96d5da0f3ce6da9e83732ed7f93e3822cac4db02a83d5dbf670fe1b017"
+    },
+    {
+      "name": "v24-admin-check.cjs",
+      "destination": "v24-admin-check.cjs",
+      "sha256": "502bbdda67a9fbbeae096f325f571d375943c326c9b3705a198071dd63ef030e"
     }
   ]
 }

@@ -73,11 +73,11 @@
   c.nitroHeld=!!input.boost;
   c.surface=ramp?'RAMP':road?'ASPHALT':sand?'BEACH':'OFF ROAD';c.speed=forward;c.slip=Math.abs(lateral);c.throttle=clamp(Number(input.gas)||0,0,1);c.brake=forward>.5?clamp(Number(input.brake)||0,0,1):0;
   let maxSteer=.605/(1+absSpeed*.027),targetSteer=input.steer*maxSteer;c.steer=mix(c.steer,targetSteer,1-Math.exp(-dt*(input.steer?6.0:7.5)*(spec?.steerResponse||1)/Math.sqrt(mass)));let steer=c.steer;
-  const waterLevel=W.waterLevelAt?.(c.x,c.z)??0,overWater=W.height(c.x,c.z)<waterLevel-.5&&!onBridge,skim=W.waterSkim;
+  const waterLevel=W.waterLevelAt?.(c.x,c.z)??0,overWater=W.height(c.x,c.z)<waterLevel-.5&&!onBridge&&W.v24StoneHeight?.(c.x,c.z)==null,skim=W.waterSkim;
   if(!overWater){c.waterMode='dry';c.skimTime=0;c.waterTime=0;}
   // A jump over the ocean does not use up the skim: start on actual water contact.
   else if(c.waterMode==='dry'&&c.y<=waterLevel+.25&&c.vy<=.5){
-   c.skimDuration=spec?.amphibious?Math.max(0,30-(c.boatUsed||0)):6+Math.random();c.waterMode=(spec?.amphibious?c.skimDuration>.01:Math.hypot(c.vx,c.vz)>skim.minimumSpeed)?'skimming':'sinking';c.skimTime=0;c.waterTime=0;c.airtime=0;
+   c.skimDuration=spec?.inferno?Math.max(.001,spec.heatDuration-(c.infernoUsed||0)):spec?.amphibious?Math.max(0,30-(c.boatUsed||0)):6+Math.random();c.waterMode=(spec?.inferno?c.infernoHeat>.001:spec?.amphibious?c.skimDuration>.01:Math.hypot(c.vx,c.vz)>skim.minimumSpeed)?'skimming':'sinking';c.skimTime=0;c.waterTime=0;c.airtime=0;
    if(c.waterMode==='skimming'){c.y=waterLevel+skim.level;c.vy=0;if(W.onWaterSkim)W.onWaterSkim();}
   }
   if(c.waterMode==='sinking')c.nitroTime=0;
@@ -92,7 +92,7 @@
    // Momentum carries the car; throttle cannot extend or restart this one-shot timer.
    c.grounded=false;c.contact=0;c.surface=spec?.amphibious?'BOAT MODE':'WATER SKIM';c.airtime=0;
    const drag=(spec?.amphibious?.055:.10)+.35*(spec?.waterBrake||1)*(input.handbrake?1:clamp(Number(input.brake)||0,0,1));
-   const boatPower=spec?.amphibious?((input.brake?(forward>.6?-14:-5):input.gas||boosting?Math.min(12,420/(Math.abs(forward)+12)):0)+thrust):thrust*.65;
+   const boatPower=(spec?.amphibious||spec?.inferno)?((input.brake?(forward>.6?-14:-5):input.gas||boosting?Math.min(12,420/(Math.abs(forward)+12)):0)+thrust):thrust*.65;
    ax=-c.vx*drag-rx*lateral*.22*(spec?.waterGrip||1)+sx*boatPower;az=-c.vz*drag-rz*lateral*.22*(spec?.waterGrip||1)+sz*boatPower;
    c.yawRate=mix(c.yawRate,clamp(forward/(2.85*size)*Math.tan(steer)*.10*(spec?.waterSteer||1),-.28*(spec?.waterSteer||1),.28*(spec?.waterSteer||1)),1-Math.exp(-dt*3));
    c.y=waterLevel+skim.level+Math.sin(time*18)*.018;c.vy=0;
@@ -144,11 +144,11 @@
   c.x+=c.vx*dt;c.z+=c.vz*dt;c.y+=c.vy*dt;c.yaw+=c.yawRate*dt;
   if(ramp){if(W.rampAt(c.x,c.z)===ramp){const g=W.rampGradient(ramp,c.x,c.z);c.y=W.rampHeight(ramp,c.x,c.z)+.12+(boosting?.08:0);c.vy=g.x*c.vx+g.z*c.vz;}else{c.ramp=null;c.grounded=false;c.contact=0;c.airtime=dt;}}
   // Reaching shore ends the skim safely; submerged ground must not lift a sinking car.
-  if(W.height(c.x,c.z)>=(W.waterLevelAt?.(c.x,c.z)??0)-.5||(W.bridgeSurface?.(c.x,c.z)!=null&&c.y>=W.bridge.deckY-.6)){c.waterMode='dry';c.skimTime=0;c.waterTime=0;}
+  if(W.v24StoneHeight?.(c.x,c.z)!=null||W.height(c.x,c.z)>=(W.waterLevelAt?.(c.x,c.z)??0)-.5||(W.bridgeSurface?.(c.x,c.z)!=null&&c.y>=W.bridge.deckY-.6)){c.waterMode='dry';c.skimTime=0;c.waterTime=0;}
   let floor=surfaceHeight(c.x,c.z)+.10;if(c.waterMode==='dry'&&c.y<floor-.15){if(c.vy<-3&&W.onLanding)W.onLanding(.35,c.vy);c.y=floor-.06;c.vy=Math.max(0,-c.vy*.12);}
   collide(c,time);for(let d of W.debris){let p=d.mesh.position,dx=p.x-c.x,dz=p.z-c.z;if(Math.abs(dx)>5*size||Math.abs(dz)>5*size||Math.abs(c.y-p.y)>2)continue;let along=dx*sx+dz*sz,across=dx*rx+dz*rz;if(Math.abs(along)<2.4*size+d.mesh.scale.z*.3&&Math.abs(across)<size+d.mesh.scale.x*.3&&Math.hypot(c.vx,c.vz)>1.5){d.vx=c.vx*.65;d.vz=c.vz*.65;d.vy=1.1;d.rest=false;d.age=0;c.vx*=1-dt*.7/mass;c.vz*=1-dt*.7/mass;}}c.distance+=Math.hypot(c.vx,c.vz)*dt;
   if(road&&Math.abs(forward)>2&&Math.abs(lateral)<3){let next=near.p.road.samples[Math.min(near.p.index+1,near.p.road.samples.length-1)],prev=near.p.road.samples[Math.max(0,near.p.index-1)],angle=Math.atan2(next.x-prev.x,next.z-prev.z);if(Math.cos(angle-c.yaw)<0)angle+=Math.PI;c.lastSafe={x:near.p.x,z:near.p.z,yaw:angle};}
-  if(c.waterMode==='skimming'&&c.skimTime>=(c.skimDuration||skim.duration)-1e-9){c.waterMode='sinking';c.vy=-.55;c.waterTime=0;c.nitroTime=0;if(W.onWaterSink)W.onWaterSink();}
+  if(c.waterMode==='skimming'&&(spec?.inferno&&c.infernoHeat<=.001||c.skimTime>=(c.skimDuration||skim.duration)-1e-9)){c.waterMode='sinking';c.vy=-.55;c.waterTime=0;c.nitroTime=0;if(W.onWaterSink)W.onWaterSink();}
   if(c.waterMode==='sinking'&&c.waterTime>=skim.sinkDuration){W.resetVehicle();if(W.onRecover)W.onRecover('Too deep. Back on nearby land.');return;}
   let speed=scaledSpeed;c.gear=forward<-.7?-1:speed<.3?0:speed<13?1:speed<23?2:speed<34?3:speed<46?4:5;let ratios=[0,3.4,2.1,1.5,1.15,.92];let rev=c.gear<=0?850+input.gas*700:Math.max(900,speed*ratios[c.gear]*105);c.rpm=mix(c.rpm,clamp(rev+input.gas*250,850,7200),1-Math.exp(-dt*10));
   if(boosting){c.nitroTime=Math.max(0,c.nitroTime-dt);c.nitroCharge=clamp(c.nitroCharge-dt/c.nitroDuration,0,1);if(c.nitroTime<1e-9)c.nitroTime=0;if(c.nitroCharge<1e-9)c.nitroCharge=0;}

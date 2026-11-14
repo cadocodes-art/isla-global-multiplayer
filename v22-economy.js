@@ -69,10 +69,10 @@ export async function v22Route(h,{path,method,body,a,need}){
   }else if(kind==='drift'){if(!(body.duration>=2&&body.duration<=120&&body.speed>=7&&body.speed<=200))fail('Complete a controlled drift first.');}
   else if(kind==='launch'){if(body.car!=='launcher'||!body.target||!(body.speed>=(V.catalog.launcher[g.levels.launcher]?.params.launchMinimum??150/3.6)&&body.speed<=200))fail('Launch an object with Launcher first.');}
   else if(kind==='basket'){if(run.map!=='playplace'||!Number.isInteger(body.ball)||body.ball<0||body.ball>=14||!/^basket:[A-Za-z0-9:_-]{8,90}$/.test(target)||event!==target)fail('Score a basket in The Playplace first.');}
-  else if(['strike','spare','slide'].includes(kind)){if(run.map!=='playplace')fail('This activity is in The Playplace.');if(kind==='slide'&&!(body.duration>=2&&body.duration<=120))fail('Complete the waterslide first.');if(kind!=='slide'&&body.pins!==10)fail('Complete the bowling roll first.');}
+  else if(['strike','spare','pins9','pins8','pins7','slide'].includes(kind)){if(run.map!=='playplace')fail('This activity is in The Playplace.');if(kind==='slide'&&!(body.duration>=2&&body.duration<=120))fail('Complete the waterslide first.');if(kind!=='slide'){const pins=kind.startsWith('pins')?Number(kind.slice(4)):10;if(body.pins!==pins||!/^lane:[0-9]+:[0-9]+$/.test(target))fail('Complete both bowling rolls first.');category='bowling';target=run.id+':'+target;}}
   const previous=h.one('SELECT at FROM v22_events WHERE account=? AND kind=? AND map=? AND target=? ORDER BY at DESC LIMIT 1',a.id,category,run.map,target);
   const wait=category==='building'?8000:kind==='drift'?2500:kind==='launch'?750:kind==='slide'?8000:8000;
-  if(previous&&now-previous.at<wait)fail('Complete another activity before claiming this reward.',429);
+  if(previous&&(category==='bowling'||now-previous.at<wait))fail('Complete another activity before claiming this reward.',429);
   return h.ctx.storage.transactionSync(()=>{let which=kind;if(b){if(h.one('SELECT 1 FROM v22_buildings WHERE account=? AND map=? AND building=?',a.id,run.map,target))which='repeat';else h.db.exec('INSERT INTO v22_buildings VALUES(?,?,?,?)',a.id,run.map,target,now);}const points=V.reward(which,event),current=fresh();current.balance=Math.min(1e12,current.balance+points);current.earned=Math.min(1e12,current.earned+points);save(current);h.db.exec('INSERT INTO v22_events VALUES(?,?,?,?,?,?,?)',a.id,event,category,run.map,target,points,now);return {garage:current,awarded:true,points,repeat:which==='repeat'};});
  }
  fail('Unknown V2.2 action.',404);

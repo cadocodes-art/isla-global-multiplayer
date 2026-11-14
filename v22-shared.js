@@ -1,7 +1,7 @@
 /* ISLA 2.2: shared economy, upgrade specifications and deterministic collectibles. */
 (function(root){'use strict';
  const clamp=(n,a,b)=>Math.max(a,Math.min(b,n)),own=(o,k)=>Object.prototype.hasOwnProperty.call(o,k);
- const prices={classic:0,rally:60000,gt:160000,truck:140000,solstice:360000,moonlight:500000,nuker:550000,plane:660000,firetruck:270000,stick:630000,beast:640000,waterskidder:560000,micro:400000,vespera:680000,cruiser:80000,launcher:580000,ultra:1000000,hover:510000,flappy:705000};
+ const prices={classic:20000,rally:60000,gt:160000,truck:20000,solstice:360000,moonlight:500000,nuker:550000,plane:660000,firetruck:270000,stick:630000,beast:640000,waterskidder:560000,micro:400000,vespera:680000,cruiser:80000,launcher:580000,ultra:1000000,hover:510000,flappy:705000,inferno:800000,grappler:750000,f1:900000};
  const catalog={};
  function add(id,c2,c3,n2,n3,p2,p3,d2,d3){catalog[id]={2:{cost:Math.ceil(c2*1.25),name:n2,params:p2,description:d2},3:{cost:Math.ceil(c3*1.25),name:n3,params:{...p2,...p3},description:d3}};}
  add('classic',100,250,'Road Ready','Street Original',{"landingStability":0.6,"brakeFactor":1.35,"driftRecharge":0.08},{"landingStability":0.8,"brakeFactor":1.5,"driftRecharge":0.12},"Strong landing stabilization, 35% stronger brakes and nitro recharge while drifting.","Even stronger stabilization, 50% stronger brakes and faster drift recharge.");
@@ -23,6 +23,14 @@
  add('ultra',275,575,'Vector Jets','Long Burn',{"rocketSteer":0.46,"rocketDuration":10,"rocketCooldownMin":20,"rocketCooldownMax":23},{"rocketSteer":0.58,"rocketDuration":12,"rocketCooldownMin":15,"rocketCooldownMax":18},"Ten-second rocket burst, sharper steering and a 20–23-second cooldown.","Twelve-second rocket burst, strong steering and a 15–18-second cooldown.");
  add('hover',200,425,'Rotor Control','Lift Pulse',{"airSteer":0.4,"descentLimit":7,"gripFactor":1.25,"offroadFactor":1.3},{"airSteer":0.6,"descentLimit":5,"hop":8,"hopCooldown":5,"gripFactor":1.4,"offroadFactor":1.5},"Strong air steering, slower descent and improved grip on and off the road.","F / HOP gives an 8 m/s rotor-powered jump every five seconds, plus stronger air control.");
  add('flappy',240,500,'Seraph','Archangel',{"flaps":30,"flapImpulse":4.2,"flapCap":12,"airSteer":0.45},{"flaps":40,"flapImpulse":5.2,"flapCap":15,"airSteer":0.65,"airBrake":1.3},"30 flaps per takeoff, stronger lift and responsive air steering.","40 powerful flaps, stronger air control and wing air brakes.");
+ add('inferno',260,540,'Magma Core','Supernova',{heatDuration:25,heatRecharge:10},{heatDuration:30,heatRecharge:8},'25 seconds of heat over water, 378 km/h nitro and a ten-second land recharge.','30 seconds of heat, 453 km/h nitro and an eight-second land recharge.');
+ add('grappler',250,520,'Longline','Sky Anchor',{grappleRange:105,grapplePull:36},{grappleRange:140,grapplePull:45,airSteer:.6},'Longer 105-meter reach and a stronger winch. Tap F / GRAPPLE to latch or release.','140-meter reach, a powerful winch and improved steering in the air.');
+ add('f1',300,650,'Grand Prix','Pole Position',{gripFactor:1.2,brakeFactor:1.35},{gripFactor:1.4,brakeFactor:1.6,landingStability:.8},'688 km/h nitro, stronger brakes and racing grip.','825 km/h nitro, powerful brakes and stable landings.');
+ const extraCars=[
+ {id:'inferno',name:'Inferno',price:800000,color:'#ff4c13',style:'hyper',engine:2.6,grip:1.4,offroad:1.2,boostMax:94,thrust:34,boostKph:302,boostLimit:302/3.6,inferno:true,heatDuration:20,heatRecharge:12,waterSteer:1.8,waterGrip:1.5,tag:'LEAVE A MOLTEN ROAD',description:'A living lava car. Forge driveable stone on water for 20 seconds before cooling. Stone lasts 30 seconds for everyone. Recharge heat on real land.'},
+ {id:'grappler',name:'Grappler',price:750000,color:'#27aaa2',style:'hyper',engine:2.2,grip:1.35,offroad:1.1,boostMax:87,thrust:30,boostKph:279,boostLimit:279/3.6,grappler:true,grappleRange:75,grapplePull:28,tag:'HOOK. SWING. LAUNCH.',description:'Aim your car at a structure and tap F or GRAPPLE. A roof-mounted hook pulls you toward it. Steer to swing, then tap again to release.'},
+ {id:'f1',name:'F1',price:900000,color:'#e53436',style:'f1',size:1.05,engine:5,grip:1.9,offroad:.85,boostMax:165,thrust:140,boostKph:550,boostLimit:550/3.6,brakeFactor:1.2,tag:'BUILT FOR THE STRAIGHT',description:'Open wheels, a low cockpit and broad racing wings. 550 km/h nitro at level 1. Find a long stretch of road.'}
+ ];
  const flappy={id:'flappy',name:'Flappy Car',price:705000,color:'#e9e4ff',style:'hyper',size:1,engine:1.9,grip:1.2,offroad:1,boostMax:79,thrust:24,boostKph:268,boostLimit:268/3.6,flappy:true,flaps:20,flapImpulse:3.2,flapCap:9,tag:'WINGS OF YOUR OWN',description:'Angel wings and 20 midair flaps. Each flap gives a little upward jump. Press F or FLAP.'};
  function level(v){return Number.isInteger(v)&&v>=1&&v<=3?v:1;}
  function spec(base,l=1){if(!base)return null;l=level(l);const p=catalog[base.id]?.[l]?.params||{},f=l===2?1.25:l===3?1.5:1,m={...base,...p,upgradeLevel:l,upgradeName:catalog[base.id]?.[l]?.name||'Original',price:prices[base.id]??base.price};
@@ -85,7 +93,7 @@
   }
   return result;
  }
- const rewards={basket:[7000,9000],launch:[1100,1200],drift:[700,1300],nuke:[1000,2000],ram:[1200,1300],spare:[1200,1400],strike:[3000,4000],slide:[600,800],repeat:[100,200]};
+ const rewards={basket:[7000,9000],launch:[1100,1200],drift:[700,1300],nuke:[1000,2000],ram:[1200,1300],spare:[6000,8000],strike:[10000,15000],pins9:[2000,3000],pins8:[800,1000],pins7:[200,300],slide:[600,800],repeat:[100,200]};
  const reward=(kind,event)=>{const r=rewards[kind];return r?r[0]+hash(event)%(r[1]-r[0]+1):0;};
  function isDrifting(c,input={}){const speed=Math.hypot(c.vx||0,c.vz||0);return !!(c.grounded&&c.waterMode==='dry'&&!c.wall&&speed>7&&(c.slip>2.1&&(input.handbrake||Math.abs(input.steer||0)>.2)||input.handbrake&&Math.abs(c.yawRate||0)>.12&&(Math.abs(input.steer||0)>.15||c.slip>.6)));}
  function nukeShots(state,model,targets,shotFactory){
@@ -106,6 +114,6 @@
  function coinSurfaces(W){return W.mapId==='playplace'&&W.playplace?playplaceSurfaces(W.playplace.floor,root.IslaV20Layout?.pools||[],W.playplace.roads,W.height):null;}
  const surfaceCache=new WeakMap();
  function visitCoins(data,visit){const w=data.coinWorld,height=coinHeight(w.terrain);let surfaces=null;if(data.mapId==='playplace'&&data.playground){surfaces=surfaceCache.get(w);if(!surfaces){surfaces=playplaceSurfaces(w.terrain.floor,w.terrain.pools,data.playground.roads,height);surfaceCache.set(w,surfaces);}}return coins(data.mapId,w.roads,data.buildings,height,w.bounds,visit,surfaces);}
- const api={coinSurfaces,coinHeight,visitCoins,isDrifting,nukeShots,prices,catalog,flappy,level,spec,normalize,purchase,chooseLevel,hash,random,buildingKey,coins,rewards,reward,coinRespawn:180000};
+ const api={coinSurfaces,coinHeight,visitCoins,isDrifting,nukeShots,prices,catalog,extraCars,flappy,level,spec,normalize,purchase,chooseLevel,hash,random,buildingKey,coins,rewards,reward,coinRespawn:180000};
  root.IslaV22=api;if(typeof module!=='undefined'&&module.exports)module.exports=api;
 })(typeof globalThis!=='undefined'?globalThis:this);

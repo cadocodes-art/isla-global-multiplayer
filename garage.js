@@ -2,10 +2,10 @@
 (()=>{
  const walletClaim='cado-online-wallet-1400000-v1',W=Isla,validColor=v=>typeof v==='string'&&/^#[0-9a-f]{6}$/i.test(v);
  W.carModels=Object.freeze([
-  {id:'classic',name:'Bahía Classic',price:0,color:'#9a3227',style:'classic',engine:1,grip:1,offroad:1,boostMax:53,thrust:8,boostKph:187,tag:'THE ORIGINAL',description:'The red sedan that started it all. Balanced, familiar, and always yours.'},
+  {id:'classic',name:'Bahía Classic',price:0,color:'#9a3227',style:'classic',engine:1,grip:1,offroad:1,boostMax:53,thrust:8,boostKph:187,tag:'THE ORIGINAL',description:'The red sedan that started it all. Balanced, familiar, and ready for your first drive.'},
   {id:'rally',name:'Ruiz Rally',price:30000,color:'#d7bf81',style:'rally',engine:1.16,grip:1.06,offroad:1.35,boostMax:59,thrust:9,boostKph:208,tag:'ISLAND EXPLORER',description:'Rally lamps, a roof rack, and better grip for hills and off-road ramp runs.'},
   {id:'gt',name:'Coastline GT',price:80000,color:'#258fba',style:'gt',engine:1.4,grip:1.14,offroad:.98,boostMax:66,thrust:11,boostKph:233,tag:'COAST ROAD SPECIAL',description:'A low blue coupe with a white racing stripe, rear wing, and harder acceleration.'},
-  {id:'truck',name:'The Big Truck',price:70000,color:'#617864',style:'truck',size:1.5,mass:2,speedScale:2/3,engine:1,grip:.94,offroad:1.1,boostMax:53/1.5,thrust:8/1.5,boostKph:125,tag:'HEAVY METAL',description:'A towering pickup with an open bed. 1.5× bigger, 2× heavier, and two-thirds the speed of the Classic.'},
+  {id:'truck',name:'The Big Truck',price:20000,color:'#617864',style:'truck',size:1.5,mass:2,speedScale:154/187,engine:1.2,grip:.94,offroad:1.1,boostMax:49,thrust:12,boostKph:154,boostLimit:154/3.6,ramFactor:1.6,tag:'HEAVY METAL',description:'A towering pickup with an open bed. 1.5× bigger, 2× heavier, with a reinforced bumper. 154 km/h nitro at level 1.'},
   {id:'solstice',name:'Solstice R',price:180000,color:'#f2b12c',style:'hyper',engine:1.8,grip:1.2,offroad:.9,boostMax:75,thrust:14,boostKph:264,tag:'MAXIMUM AURA',description:'Wide, low, and loud. Gold bodywork, black aero, and serious nitro power.'},
   {id:'moonlight',name:'Moonlight Z',price:250000,color:'#000000',style:'hyper',size:.8,engine:1.95,grip:1.23,offroad:.9,boostMax:83,thrust:22,boostKph:285,boostLimit:285/3.6,tag:'AFTER DARK',description:'Pitch-black paint and a compact hypercar silhouette. 80% of the Solstice’s size, with 285 km/h nitro.'},
   {id:'nuker',name:'The Nuker',price:275000,color:'#46533b',style:'hyper',size:1.2,engine:1.9,grip:1.13,offroad:1.05,boostMax:79,thrust:22,boostKph:270,boostLimit:270/3.6,weapon:'nuke',tag:'PURE CHAOS',description:'A forward launcher fires automatically every 15 seconds of driving. The blast levels nearby buildings and throws traffic aside. 1.2× Solstice size.'},
@@ -20,22 +20,22 @@
   {id:'launcher',name:'Launcher',price:290000,color:'#e4ab48',style:'truck',size:1.65,mass:2.6,engine:2.6,grip:1.3,offroad:1.35,boostMax:78,thrust:80,boostKph:250,boostLimit:250/3.6,launcher:true,tag:'SEND IT SKYWARD',description:'An angled steel scoop launches cars, rocks, and sports balls above 150 km/h. Exceptionally fast hits can uproot trees. 250 km/h nitro.'},
   {id:'ultra',name:'The Ultra',price:500000,color:'#7027c5',style:'hyper',size:1.1,engine:1.7,grip:1.55,offroad:1.1,boostMax:70,thrust:26,boostKph:230,boostLimit:230/3.6,rocket:true,tag:'UNREASONABLY FAST',description:'Twin giant rockets. Tap E or ROCKET for an 8-second 571–583 km/h burst; add nitro for 613–633 km/h. Tap again or brake to cancel. Recharges in 30–35 seconds. Ordinary nitro: 230 km/h.'},
   {id:'hover',name:'Hover',price:255000,color:'#d4e5ef',style:'hyper',engine:2.1,grip:1.3,offroad:1.25,boostMax:85,thrust:27,boostKph:278,boostLimit:278/3.6,hover:true,tag:'A LITTLE ABOVE IT ALL',description:'Four angled propellers lift you half a meter above land while moving. 278 km/h with nitro. Water still requires a fast skim!'}
- ].concat(globalThis.IslaV22?[globalThis.IslaV22.flappy]:[]).map(m=>globalThis.IslaV22?{...m,price:IslaV22.prices[m.id]}:m));
+ ].concat(globalThis.IslaV22?[globalThis.IslaV22.flappy,...(globalThis.IslaV22.extraCars||[])]:[]).map(m=>globalThis.IslaV22?{...m,price:IslaV22.prices[m.id]}:m));
  W.createGarage=storage=>{
   // Requested fresh start: keep the previous save recoverable and save all new progress separately.
   const key='isla-drive-garage-v2',known=new Set(W.carModels.map(x=>x.id));let saved;
   try{saved=JSON.parse(storage?.getItem(key)||'null');}catch(e){}
   const number=v=>Number.isFinite(v)&&v>=0?Math.min(1e12,Math.floor(v)):0;
-  const g={balance:number(saved?.balance),earned:number(saved?.earned),bestChain:number(saved?.bestChain),owned:[...new Set(['classic',...(Array.isArray(saved?.owned)?saved.owned.filter(id=>known.has(id)):[])])],selected:'classic',colors:{},persistent:!!storage};
+  const g={balance:number(saved?.balance),earned:number(saved?.earned),bestChain:number(saved?.bestChain),owned:[...new Set(Array.isArray(saved?.owned)?saved.owned.filter(id=>known.has(id)):(saved?['classic']:[]))],starterPending:!saved||saved.starterPending===true,selected:'classic',colors:{},persistent:!!storage};
   if(globalThis.IslaV22){for(const k of ['iscoins','upgrades','levels','trailColor','showIscoins','manualNukes','buildingHistory','coinHistory'])if(saved?.[k]!==undefined)g[k]=saved[k];IslaV22.normalize(g);}
   g.playtestWallet=saved?.playtestWallet===walletClaim?walletClaim:'';
   if(g.owned.includes(saved?.selected))g.selected=saved.selected;g.earned=Math.max(g.earned,g.balance);
   for(const m of W.carModels)if(validColor(saved?.colors?.[m.id]))g.colors[m.id]=saved.colors[m.id].toLowerCase();
   g.getColor=(id=g.selected)=>g.colors[id]||W.carModels.find(m=>m.id===id)?.color||W.carModels[0].color;
   g.setColor=(value,id=g.selected)=>{if(!known.has(id)||!g.owned.includes(id)||!validColor(value))return false;g.colors[id]=value.toLowerCase();g.save();return true;};
-  g.save=()=>{try{if(!storage)throw Error();storage.setItem(key,JSON.stringify({balance:g.balance,earned:g.earned,bestChain:g.bestChain,owned:g.owned,selected:g.selected,colors:g.colors,iscoins:g.iscoins,upgrades:g.upgrades,levels:g.levels,trailColor:g.trailColor,showIscoins:g.showIscoins,manualNukes:g.manualNukes,buildingHistory:g.buildingHistory,coinHistory:g.coinHistory,...(g.playtestWallet?{playtestWallet:g.playtestWallet}:{})}));g.persistent=true;}catch(e){g.persistent=false;}};
+  g.save=()=>{try{if(!storage)throw Error();storage.setItem(key,JSON.stringify({balance:g.balance,earned:g.earned,bestChain:g.bestChain,owned:g.owned,starterPending:g.starterPending,selected:g.selected,colors:g.colors,iscoins:g.iscoins,upgrades:g.upgrades,levels:g.levels,trailColor:g.trailColor,showIscoins:g.showIscoins,manualNukes:g.manualNukes,buildingHistory:g.buildingHistory,coinHistory:g.coinHistory,...(g.playtestWallet?{playtestWallet:g.playtestWallet}:{})}));g.persistent=true;}catch(e){g.persistent=false;}};
   g.credit=(points,best=0)=>{if(!Number.isSafeInteger(points)||points<=0)return;g.balance+=points;g.earned+=points;g.bestChain=Math.max(g.bestChain,best);g.save();};
-  g.choose=id=>{const m=W.carModels.find(x=>x.id===id);if(!m)return {ok:false,message:'Unknown car.'};if(!g.owned.includes(id)){if(g.balance<m.price)return {ok:false,message:'Earn more aura to unlock this car.'};g.balance-=m.price;g.owned.push(id);}g.selected=id;g.save();return {ok:true,model:m};};
+  g.choose=id=>{if(g.starterPending)return {ok:false,message:'Choose your free starter first.'};const m=W.carModels.find(x=>x.id===id);if(!m)return {ok:false,message:'Unknown car.'};if(!g.owned.includes(id)){if(g.balance<m.price)return {ok:false,message:'Earn more aura to unlock this car.'};g.balance-=m.price;g.owned.push(id);}g.selected=id;g.save();return {ok:true,model:m};};
   return g;
  };
  let storage;try{storage=window.localStorage;}catch(e){}W.garage=W.createGarage(storage);

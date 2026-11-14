@@ -1,14 +1,14 @@
 'use strict';
 const test=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path'),vm=require('node:vm'),T=require('../public/three.min.js');
 const source=n=>fs.readFileSync(path.join(__dirname,'../public',n),'utf8');
-test('V2.38 opens directly with five maps and only Project 10 vault music',()=>{
+test('V2.4 retains V2.38 five-map startup and only Project 10 vault music',()=>{
  const root=path.join(__dirname,'..'),manifest=JSON.parse(fs.readFileSync(path.join(root,'isla-v16-upload.json'))),html=source('index.html');
- assert.equal(manifest.version,'2.38');assert.match(html,/V2\.38/);assert(!/iframe|soundtrack|project13|music-shell|startGate/i.test(html));
+ assert.equal(manifest.version,'2.4');assert.match(html,/V2\.4/);assert(!/iframe|soundtrack|project13|music-shell|startGate/i.test(html));
  for(const name of ['inferno.js','inferno-shared.js','drive.html','soundtrack.js','isla-project13.m4a'])assert(!manifest.files.some(f=>f.name===name));
  for(const name of ['vault-music.js','isla-project10.m4a'])assert(manifest.files.some(f=>f.name===name));
  assert(html.indexOf('vault-music.js')<html.indexOf('v224-vault.js'));
  const data=JSON.parse(fs.readFileSync(path.join(root,'src/world-data.json')));assert.deepEqual([data.mapId,...Object.keys(data.maps)].sort(),['city','fern','islands','peaks','playplace']);
- assert(!/inferno/i.test(source('maps.js')));assert(!/inferno/i.test(source('physics.js')));
+ assert(!/inferno/i.test(source('maps.js'))); // Inferno is a car in V2.4, never a sixth map.
  assert.match(fs.readFileSync(path.join(root,'src/v22-economy.js'),'utf8'),/Mount inferno/);
 });
 function music(){

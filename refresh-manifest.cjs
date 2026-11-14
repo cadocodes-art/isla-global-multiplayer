@@ -2,9 +2,13 @@
 const fs=require('node:fs'),path=require('node:path'),crypto=require('node:crypto');
 const root=__dirname,file=path.join(root,'isla-v16-upload.json'),manifest=JSON.parse(fs.readFileSync(file,'utf8'));
 const additions={
+ 'v24-route-check.cjs':'v24-route-check.cjs','v24-admin-check.cjs':'v24-admin-check.cjs',
+ 'v24-offline-source.json':'offline/v24-source.json',
+ 'v24-admin.js':'src/v24-admin.js','v24-owner-ui.js':'public/v24-owner-ui.js',
+ 'v24-shared.js':'public/v24-shared.js','v24-car-assets.js':'public/v24-car-assets.js','v24-maker-assets.js':'public/v24-maker-assets.js','v24-client.js':'public/v24-client.js','v24-server.js':'src/v24-server.js',
  'map-plays.test.cjs':'test/map-plays.test.cjs',
  'vault-music.js':'public/vault-music.js',
- 'v238.test.cjs':'test/v238.test.cjs','V2.38-Notes.md':'V2.38-Notes.md',
+ 'v238.test.cjs':'test/v238.test.cjs','V2.4-Notes.md':'V2.4-Notes.md',
  'offline-build.cjs':'offline/build.cjs',
  'offline-compact.cjs':'offline/build-compact.cjs',
  'offline-runtime.js':'offline/viewer-runtime.js',
@@ -37,7 +41,7 @@ const additions={
  'refresh-manifest.cjs':'refresh-manifest.cjs','dev.cjs':'dev.cjs'
 };
 for(const [name,destination] of Object.entries(additions))if(fs.existsSync(path.join(root,name))&&!manifest.files.some(f=>f.name===name))manifest.files.push({name,destination});
-manifest.version='2.38';
+manifest.version='2.4';
 for(const entry of manifest.files){const bytes=fs.readFileSync(path.join(root,entry.name));entry.sha256=crypto.createHash('sha256').update(bytes).digest('hex');if('size' in entry)entry.size=bytes.length;}
 fs.writeFileSync(file,JSON.stringify(manifest,null,2)+'\n');
-console.log('V2.38 manifest: '+manifest.files.length+' verified source files.');
+console.log('V2.4 manifest: '+manifest.files.length+' verified source files.');

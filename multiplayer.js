@@ -60,7 +60,7 @@
  };
  function status(message,error=false){$('roomStatus').textContent=message;$('roomStatus').classList.toggle('error',error);}
  function saveIdentity(){safeWrite(session,sessionKey,identity?JSON.stringify(identity):null);}
- function pose(){const c=W.vehicle,parked=ui.paused()||document.hidden;return {collisionAck:net.collisionSeq,x:c.x,y:c.y,z:c.z,yaw:c.yaw,vx:parked?0:c.vx,vy:parked?0:c.vy,vz:parked?0:c.vz,pitch:c.pitch,roll:c.roll,steer:c.steer,speed:parked?0:c.speed,car:W.garage.selected,upgradeLevel:W.getCarSpec().upgradeLevel||1,manualNukes:W.garage.manualNukes,flapSerial:c.flapSerial||0,trickAngle:c.trickAngle||0,trickSpin:!!c.trickSpin,color:W.garage.getColor(),nitro:!parked&&c.nitroTime>0,wallMode:c.wallMode||'',roadMode:!!c.roadMode,grounded:c.grounded,water:c.waterMode,brake:!!c.brake,parked};}
+ function pose(){const c=W.vehicle,parked=ui.paused()||document.hidden;return {grappleActive:!!c.grapple,grapple:c.grapple?{x:c.grapple.x,y:c.grapple.y,z:c.grapple.z}:null,infernoHeat:c.infernoHeat??1,collisionAck:net.collisionSeq,x:c.x,y:c.y,z:c.z,yaw:c.yaw,vx:parked?0:c.vx,vy:parked?0:c.vy,vz:parked?0:c.vz,pitch:c.pitch,roll:c.roll,steer:c.steer,speed:parked?0:c.speed,car:W.garage.selected,upgradeLevel:W.getCarSpec().upgradeLevel||1,manualNukes:W.garage.manualNukes,flapSerial:c.flapSerial||0,trickAngle:c.trickAngle||0,trickSpin:!!c.trickSpin,color:W.garage.getColor(),nitro:!parked&&c.nitroTime>0,wallMode:c.wallMode||'',roadMode:!!c.roadMode,grounded:c.grounded,water:c.waterMode,brake:!!c.brake,parked};}
  function applySpawn(state){W.resetVehicle(true);Object.assign(W.vehicle,{x:state.x,y:state.y,z:state.z,yaw:state.yaw,lastSafe:{x:state.x,z:state.z,yaw:state.yaw}});}
  function drawRoster(){
   $('chatBtn').disabled=!net.connected;if(!net.connected)closeChat(false);lastChatHint='';
@@ -95,6 +95,7 @@
   if(IslaRules.validColor(p.state.color))remote.mesh.paint.color.set(p.state.color).convertSRGBToLinear();remote.target={...p.state};remote.at=performance.now();remote.connected=p.connected;return remote;
  }
  function disconnectToSolo(message){closeChat(false);clearBubbles();chatReadyAt=chatPendingUntil=0;clearTimeout(retry);clearTimeout(connectTimeout);leaving=true;const old=socket;socket=null;old?.close();identity=null;saveIdentity();intent=null;connecting=false;net.active=net.connected=false;W.playSync?.clear();net.code='';net.id='';net.players=[];pendingAura=0;trafficTargets=null;clearRemotes();ui.restore();W.initTraffic();W.resetVehicle(true);drawRoster();status(message);}
+ net.sendV24=send;
  net.sendPlayContact=()=>{if(net.connected)send({type:'playContact',state:pose()});};
  net.leave=()=>{send({type:'leave'});disconnectToSolo('You left the global room. Your aura, cars, and paint are still saved.');closeRoom();ui.toast('Back to solo driving.');};
  function connect(){
@@ -107,7 +108,7 @@
   connectTimeout=setTimeout(()=>{if(socket===ws&&!net.connected){status('The server is taking a while. Retrying…');ws.close();}},70000);
   ws.onopen=()=>{if(socket!==ws)return;send({...identity?{type:'resume',v:IslaRules.protocol,name:identity.name,token:identity.token}:intent,...W.mapId==='playplace'?{playplaceRevision:9}:{},...W.mapId==='peaks'?{peaksRevision:5}:{}});};
   ws.onmessage=e=>{if(socket!==ws)return;let data;try{data=JSON.parse(e.data)}catch{return;}
-   if(data.type==='welcome'){
+   if(data.type==='welcome'){W.v24Receive?.(data.v24);
     const expected=W.buildings.map(b=>[b.id,Math.round(b.x*100),Math.round(b.z*100)]);
     if((data.mapId&&data.mapId!==W.mapId)||JSON.stringify(expected)!==JSON.stringify(data.buildings)){disconnectToSolo('This game version differs from the server. Refresh before joining.');openRoom();status('This game version differs from the server. Refresh before joining.',true);return;}
     clearTimeout(connectTimeout);attempt=0;connecting=false;net.active=net.connected=true;net.code=data.code;net.id=data.id;net.collisionSeq=data.collisionSeq||0;if(data.props)W.receiveThrownProps?.(data.props);if(data.rocket)W.acceptRocket?.(data.rocket);net.host=data.host;net.players=data.players;scoreSeq=data.scoreSeq;pendingAura=0;
@@ -122,8 +123,8 @@
     const ids=new Set(data.players.map(p=>p.id));for(const [id,r] of net.remotes)if(!ids.has(id)){disposeRemote(r);net.remotes.delete(id);}
    }else if(data.type==='collision'&&net.active){
     if(Number.isSafeInteger(data.seq)&&data.seq>net.collisionSeq&&['dx','dz','dvx','dvz'].every(k=>Number.isFinite(data[k]))){net.collisionSeq=data.seq;const c=W.vehicle;if(Number.isFinite(data.dvy)&&data.dvy>0){c.vy=Math.max(c.vy,0)+data.dvy;c.y+=.4;c.grounded=false;c.ramp=null;c.playSupport=null;c.playAir=true;c.roadMode=false;}c.x+=data.dx;c.z+=data.dz;c.vx+=data.dvx;c.vz+=data.dvz;c.speed=c.vx*Math.sin(c.yaw)+c.vz*Math.cos(c.yaw);c.roadFrame=null;W.onImpact?.(c.x,c.y+.7,c.z,Math.min(35,data.speed||0));lastSend=0;send({type:'state',state:pose()});}
-   }else if(data.type==='frame'&&net.active){
-    for(const p of data.players){if(p.id!==net.id)remoteFor(p);else{if(Number.isFinite(p.nukeRemaining))W.syncNukeTimer(p.nukeRemaining);if(p.rocket)W.acceptRocket?.(p.rocket);}}
+   }else if(data.type==='frame'&&net.active){W.v24Receive?.(data.v24);
+    for(const p of data.players){if(p.id!==net.id)remoteFor(p);else{if(Number.isFinite(p.state.infernoHeat)&&W.getCarSpec().inferno)W.vehicle.infernoHeat=p.state.infernoHeat;if(Number.isFinite(p.nukeRemaining))W.syncNukeTimer(p.nukeRemaining);if(p.rocket)W.acceptRocket?.(p.rocket);}}
     trafficTargets=data.traffic;if(data.props)W.receiveThrownProps?.(data.props);if(data.playground)W.playSync?.receive(data.playground);
    }else if(data.type==='rocket'){W.acceptRocket?.(data.rocket);}
    else if(data.type==='propLaunch'){W.receiveThrownProps?.([data.prop]);}

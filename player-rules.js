@@ -40,7 +40,7 @@
  }
  function hoseY(jet,d){return jet.start.y+.10*d-(jet.drop??.014)*d*d;}
  function inHose(jet,t){const dx=t.x-jet.start.x,dz=t.z-jet.start.z,d=dx*jet.dx+dz*jet.dz,cross=dx*jet.dz-dz*jet.dx,y=hoseY(jet,d);return d>=-1&&d<=jet.distance+1&&Math.abs(cross)<2.6&&Math.abs(t.y+.8-y)<2.5;}
- const rules=Object.freeze({hoseJets,hoseY,inHose,nuke,nukeShot,blastHits,blastTraffic,validateName,validColor,protocol:3,capacity:32,quickChat,validChat,chatDuration:6000,chatCooldown:3000});
+ const rules=Object.freeze({hoseJets,hoseY,inHose,nuke,nukeShot,blastHits,blastTraffic,validateName,validColor,protocol:4,capacity:32,quickChat,validChat,chatDuration:6000,chatCooldown:3000});
  globalThis.IslaRules=rules;
  if(typeof module!=='undefined'&&module.exports)module.exports=rules;
 })();
