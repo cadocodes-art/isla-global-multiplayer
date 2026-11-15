@@ -2,6 +2,7 @@
 const fs=require('node:fs'),path=require('node:path'),crypto=require('node:crypto');
 const root=__dirname,file=path.join(root,'isla-v16-upload.json'),manifest=JSON.parse(fs.readFileSync(file,'utf8'));
 const additions={
+ 'grapple-timer.test.cjs':'test/grapple-timer.test.cjs',
  'grappler-hotfix.test.cjs':'test/grappler-hotfix.test.cjs','Grappler-Fix-Notes.md':'Grappler-Fix-Notes.md',
  'v242-stone.js':'public/v242-stone.js','v242.test.cjs':'test/v242.test.cjs','V2.42-Notes.md':'V2.42-Notes.md',
  'playplace-models.js':'public/playplace-models.js','v241-grapple.js':'public/v241-grapple.js','v241.test.cjs':'test/v241.test.cjs','V2.42-Notes.md':'V2.42-Notes.md',

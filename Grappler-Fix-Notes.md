@@ -1,24 +1,21 @@
-ISLA V2.42 - GRAPPLER FIX
+ISLA V2.42 - GRAPPLE TIMER PATCH
 
-- The car stays upright while attached. Airborne pitch no longer accumulates
-  into an upside-down car, and air tricks cannot flip it during a grapple.
-- After lift-off, grappling gradually loses about 0.65 meters of height per
-  second. It returns to ordinary driving when it touches the ground.
-- Reattaching in midair keeps the exact current height, even on a taller
-  building. It adds no vertical boost, and the gradual descent continues.
-- A fresh hook from the ground still lifts gently by five meters; this is
-  only available again after landing, not while chaining between buildings.
-- Manual release adds a strong horizontal launch: 1.65 times current speed
-  plus 12 m/s, capped at 1.6 times that upgrade's nitro speed. It retains
-  the swing direction and does not boost the car upward. Release from a
-  standstill simply lets go. Automatic detachment never adds launch speed.
-- Nitro does not immediately erase launch momentum in the air. Normal
-  speed rules return on landing. Reset clears all grapple/launch state.
-- The controls are unchanged: F / GRAPPLE / RELEASE. Works on desktop,
-  mobile and each offline split-screen player independently.
-- The gray-brown Inferno stones and V2.42 corner-clearing orbits remain.
+- Every grapple is limited to 10 seconds, at every upgrade level.
+- After every grapple ends, there is a full five-second cooldown.
+  This includes manual launches, time expiry, landing, broken anchors,
+  losing the anchor, resetting and changing cars. Repeated reset does not
+  restart or bypass the cooldown. Missing a hook does not cost a cooldown.
+- The same on-screen ability button shows the remaining grapple time,
+  then COOLDOWN with seconds remaining. It is disabled until ready.
+- F and touch controls obey the same cooldown. Each split-screen player
+  has an independent timer. Timers advance during play and freeze when
+  the game is paused.
+- At the ten-second limit, the rope releases without a surprise boost.
+  Press F / RELEASE before it ends to use the stronger manual launch.
+- All preceding fixes remain: upright car, slow descent, no height snap
+  when re-hooking in midair, fast manual launch and gray-brown stone.
+- Saves, cars, upgrades, maps, accounts, and owner settings are preserved.
 
-Validation includes 100-second posture/descent tests at 30/60/120 Hz,
-real driving physics, taller-building re-hooks, nitro after launch,
-landing, resets and independent split-screen drivers. Existing saves,
-upgrades, maps, accounts and owner settings are preserved.
+Checks cover exact 10/5-second boundaries at 30/60/120 Hz, early release,
+lost anchors, repeated inputs, independent local players, reset, car
+changes, real driving physics and offline compression integrity.

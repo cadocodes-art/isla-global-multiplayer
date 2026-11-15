@@ -234,7 +234,7 @@
     {
       "name": "index.html",
       "destination": "public/index.html",
-      "sha256": "243eb61e5cae55466a8c78cbff46ef65076737fc22a4ee725e990154e63e3b96"
+      "sha256": "e2069c655a2353b1347db6adc1ed718ec6449f175d9d131d9f85a2245326a88b"
     },
     {
       "name": "player-collisions.js",
@@ -474,12 +474,12 @@
     {
       "name": "package.json",
       "destination": "package.json",
-      "sha256": "d06586aa4d8f772ae7b7e0351f7c1cd0afcbf2a04cb62e2fe745caeefcd72239"
+      "sha256": "65370dcd079fa09c05d179554046dfe8415727d7747f48944ce549afd2cce405"
     },
     {
       "name": "package-lock.json",
       "destination": "package-lock.json",
-      "sha256": "d21b1a6c56fe17c33be0252561eed5a086c1deb6effa3af8fe4eaa742e7e834e"
+      "sha256": "817c0360b14034c4bf65c2c5b180cf7cbb16886faa3af99e3c251455d72651da"
     },
     {
       "name": "prepare-cloudflare.cjs",
@@ -489,12 +489,12 @@
     {
       "name": "README.txt",
       "destination": "README.txt",
-      "sha256": "d73a7ea25d49d5f3faf3f2f9e0c649ee8a8110b866a1acacdf950bb87629edab"
+      "sha256": "75ff0c541d27ac02bbbea08f62bed3aee28a2b69b3dc4eba76c448e8a1b87dd4"
     },
     {
       "name": "v22-shared.js",
       "destination": "public/v22-shared.js",
-      "sha256": "de1082bf420577ffed09bf7c74fd40c64e8199b1fdb298a57b6e58f1c010640d"
+      "sha256": "e239d9af30404928aff97f2bc5180ecbc198e3e7ca2d8edf3f2de363f0b02527"
     },
     {
       "name": "v22-garage.js",
@@ -504,7 +504,7 @@
     {
       "name": "v22-gameplay.js",
       "destination": "public/v22-gameplay.js",
-      "sha256": "fff175d20270104d92405b9e82be64bc5037e3caa1e77a81c287e4591a10f5ef"
+      "sha256": "504b12f9b50a16224207bdf38f550fc06cbc5ab91be2a14e915ffde2e5c2dac6"
     },
     {
       "name": "v22-economy-client.js",
@@ -534,7 +534,7 @@
     {
       "name": "refresh-manifest.cjs",
       "destination": "refresh-manifest.cjs",
-      "sha256": "649947b9d27720522f7f8b930cbe45ce021b2ed3b1201a31ca7a585c8941b204"
+      "sha256": "202cff86ff45cf481c61416fd8095df7d7f709584a846546502c6efb590c3b84"
     },
     {
       "name": "dev.cjs",
@@ -789,7 +789,7 @@
     {
       "name": "v24-client.js",
       "destination": "public/v24-client.js",
-      "sha256": "86aaf65c97c4588bd3be8197f985d4f34effbd653043a5c8c3fa49254511f1f0"
+      "sha256": "7d481b7e5b7350ad825e062b0d643b3e4ab04339061f6e6b2dc536d544b546e6"
     },
     {
       "name": "v24-server.js",
@@ -814,7 +814,7 @@
     {
       "name": "v24-offline-source.json",
       "destination": "offline/v24-source.json",
-      "sha256": "3bd17f91dfe519516c44d024579055f6fd2b337f0edbe1195f331eaa5952be5f"
+      "sha256": "f8417536c35100a5c759777bcc5e01216df7701a669b696461d254ffa4a96d68"
     },
     {
       "name": "V2.4-Notes.md",
@@ -839,7 +839,7 @@
     {
       "name": "v241-grapple.js",
       "destination": "public/v241-grapple.js",
-      "sha256": "2fad06f76aef75db8c1f141280e4263f880d0bd5e2c63bccdb3724494f79fa8d"
+      "sha256": "d89a134f298a61797859b778ee7ba9ca45cfca930103b000f39a8eae216675a7"
     },
     {
       "name": "v241.test.cjs",
@@ -869,12 +869,17 @@
     {
       "name": "grappler-hotfix.test.cjs",
       "destination": "test/grappler-hotfix.test.cjs",
-      "sha256": "0c6369eac9645d2276da993b8ee886001b0a3038f4701955fdd792a199045aa5"
+      "sha256": "bf81a0d2baf92c4828da22147ec0e7730e43e206cbdd6155e5cd53002804cd39"
     },
     {
       "name": "Grappler-Fix-Notes.md",
       "destination": "Grappler-Fix-Notes.md",
-      "sha256": "2da694714aa93f1c7765c8038dbc052a921619bb8cf9fe3ad4edf515db944ac6"
+      "sha256": "a13a985037c3d799ede0dbd9846371cec4ccc2db6297a6c09e5864a0b06f6678"
+    },
+    {
+      "name": "grapple-timer.test.cjs",
+      "destination": "test/grapple-timer.test.cjs",
+      "sha256": "36f60256c8e41746f35b04e239b5deb09616e39fef85d40511b161a9f882ae4f"
     }
   ]
 }
