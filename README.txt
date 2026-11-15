@@ -1,30 +1,20 @@
-ISLA V2.42 - MANUAL ONLINE UPDATE
+ISLA V2.42 GRAPPLER FIX - UPLOAD INSTRUCTIONS
 
-If your repository already has V2.41:
-1. Download ISLA-V2.42-Online-Update.zip and extract it.
-2. Open the extracted ISLA-V2.42-Online-Update folder.
-3. In GitHub, open cadocodes-art/isla-global-multiplayer on the branch
-   connected to Cloudflare. Stay on the repository's main file list,
-   where package.json and prepare-cloudflare.cjs are shown.
-4. Choose Add file > Upload files. Drag ALL FILES INSIDE the extracted
-   folder onto the upload page. Do not upload the ZIP or enclosing folder.
-5. Commit the files. Cloudflare should build and deploy automatically.
-6. Refresh the game and check that the menu says V2.42.
+1. Extract ISLA-V2.42-Grappler-Fix-Online-Update.zip.
+2. Open the extracted ISLA-V2.42-Grappler-Fix-Online-Update folder.
+3. Open your GitHub repository's main file list, where package.json and
+   prepare-cloudflare.cjs are shown. Choose Add file > Upload files.
+4. Upload ALL FILES INSIDE the extracted folder, not the ZIP or its folder.
+5. Commit, let Cloudflare deploy, then refresh the game. The main menu
+   should show V2.42 with GRAPPLER FIX.
 
-If you have not uploaded V2.41 yet, use ISLA-V2.42-Complete-Source.zip
-instead. Upload all files inside its extracted folder the same way.
-
-Keep your existing Cloudflare settings:
-  Build command: npm run build
-  Deploy command: npx wrangler deploy
-  Preview command, if requested: npx wrangler versions upload
-  Root directory: blank (the repository root)
-Keep your current Worker, bindings, account database and owner setting.
-These ZIPs do not replace wrangler.jsonc. No worker deletion is needed.
+This small ZIP updates the previously supplied V2.42 source. If you have
+not installed V2.42, use ISLA-V2.42-Grappler-Fix-Complete-Source.zip instead.
+Keep the existing Worker, database, bindings, owner setting and commands.
+No Worker deletion or database migration is needed.
 
 OFFLINE
-Open ISLA-V2.42-Offline.html, or import that file into your HTML viewer.
-If you need to paste code, copy the entire contents of
-ISLA-V2.42-Offline-PASTE-SMALL-No-Music.txt.
-The compact version includes all 59 code modules and needs no server.
-Both builds preserve the existing offline save namespace.
+Open ISLA-V2.42-Grappler-Fix-Offline.html, or import it into an HTML viewer.
+For pasting, use the entire ISLA-V2.42-Grappler-Fix-Offline-PASTE-SMALL-No-Music.txt.
+Both are self-contained. Restricted viewers may keep saves only until
+their preview closes. The usual offline save namespace is preserved.

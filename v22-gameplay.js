@@ -7,7 +7,7 @@
  function airborne(c){return !c.grounded&&c.waterMode==='dry'&&!c.wall&& !W.cannonStatus?.();}
  const canFlap=c=>airborne(c)||(c.grounded&&c.waterMode==='dry'&&!c.wall&&!W.cannonStatus?.());
  function launch(c,vy){c.y+=.32;c.vy=Math.max(0,c.vy)+vy;c.grounded=false;c.ramp=null;c.roof=null;c.roadFrame=null;c.roadMode=false;c.playSupport=null;c.playAir=true;}
- W.performAirTrick=()=>{const c=W.vehicle;if(!canPlay()||!airborne(c)||trick)return false;trick={age:0,spin:Math.abs(lastInput.steer||0)>.2,sign:(lastInput.steer||1)>0?1:-1};return true;};
+ W.performAirTrick=()=>{const c=W.vehicle;if(!canPlay()||!airborne(c)||trick||c.grapple)return false;trick={age:0,spin:Math.abs(lastInput.steer||0)>.2,sign:(lastInput.steer||1)>0?1:-1};return true;};
  W.v22Ability=()=>{if(!canPlay())return false;const c=W.vehicle,s=W.getCarSpec(),key=s.id;if((cooldowns[key]||0)>clock)return false;
   if(s.flappy&&canFlap(c)&&(c.grounded?s.flaps:(c.flapsLeft??s.flaps))>0){if(c.grounded){c.flapsLeft=s.flaps;launch(c,0);}c.flapsLeft=(c.flapsLeft??s.flaps)-1;c.vy=Math.min(s.flapCap,Math.max(c.vy,-2)+s.flapImpulse);c.flapPulse=.42;c.flapSerial=(c.flapSerial||0)+1;cooldowns[key]=clock+.22;return true;}
   if(s.manualNukes&&W.garage.manualNukes){if(W.nukeRemaining()>.01)return false;if(W.net?.active)W.net.nukeAction?.();else fire();return true;}
@@ -40,7 +40,7 @@
   if(c.waterBurstLeft>0){c.waterBurstLeft=Math.max(0,c.waterBurstLeft-dt);if(c.waterMode==='skimming'){c.vx+=Math.sin(c.yaw)*(s.waterBurstAcceleration||12)*dt;c.vz+=Math.cos(c.yaw)*(s.waterBurstAcceleration||12)*dt;cap(c,s.boostLimit);}}
   const drifting=V.isDrifting(c,input);
   if(drifting){drift+=dt;if(s.driftRecharge&&c.nitroTime<=0)c.nitroCharge=Math.min(1,c.nitroCharge+s.driftRecharge*dt);}else{if(drift>=2&&time-lastDrift>3){W.awardV22('drift',{duration:Math.min(120,drift),speed:Math.max(7,Math.hypot(c.vx,c.vz)),target:'drift'});if(s.driftExitBoost&&time>(cooldowns.driftExit||0)){c.vx+=Math.sin(c.yaw)*s.driftExitBoost;c.vz+=Math.cos(c.yaw)*s.driftExitBoost;cap(c,s.boostLimit);cooldowns.driftExit=time+6;}lastDrift=time;}drift=0;if(s.driftRecovery&&c.grounded&&!input.handbrake){const sx=Math.sin(c.yaw),sz=Math.cos(c.yaw),lat=c.vx*sz-c.vz*sx,f=1-Math.exp(-s.driftRecovery*dt);c.vx-=sz*lat*f;c.vz+=sx*lat*f;}}
-  if(trick){trick.age+=dt;if(!airborne(c)){trick=null;}else if(trick.age>=.65){if(W.aura?.flight&&!W.aura.flight.trickBonus)W.aura.flight.trickBonus=.03+Math.random()*.01;trick=null;}}
+  if(trick){trick.age+=dt;if(!airborne(c)||c.grapple){trick=null;}else if(trick.age>=.65){if(W.aura?.flight&&!W.aura.flight.trickBonus)W.aura.flight.trickBonus=.03+Math.random()*.01;trick=null;}}
   c.trickAngle=trick?Math.min(1,trick.age/.65)*Math.PI*2*trick.sign:0;c.trickSpin=!!trick?.spin;
   c.flapPulse=Math.max(0,(c.flapPulse||0)-dt);c.nukePulse=Math.max(0,(c.nukePulse||0)-dt);
  };

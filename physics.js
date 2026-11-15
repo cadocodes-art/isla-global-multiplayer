@@ -140,7 +140,7 @@
    c.airtime+=dt;c.contact=0;c.pitch-=dt*(spec?.glider?.008:boosting?.015:.05);
   }
   c.vx+=ax*dt;c.vz+=az*dt;
-  if(boosting&&spec?.boostLimit&&!W.rocketCoasting?.()){const limit=!c.grounded&&c.waterMode==='dry'&&spec.glider?spec.airBoostLimit:spec.boostLimit,v=Math.hypot(c.vx,c.vz);if(v>limit){c.vx*=limit/v;c.vz*=limit/v;}}
+  if(boosting&&spec?.boostLimit&&!W.rocketCoasting?.()&&!(spec.grappler&&c.grappleLaunchCoast)){const limit=!c.grounded&&c.waterMode==='dry'&&spec.glider?spec.airBoostLimit:spec.boostLimit,v=Math.hypot(c.vx,c.vz);if(v>limit){c.vx*=limit/v;c.vz*=limit/v;}}
   c.x+=c.vx*dt;c.z+=c.vz*dt;c.y+=c.vy*dt;c.yaw+=c.yawRate*dt;
   if(ramp){if(W.rampAt(c.x,c.z)===ramp){const g=W.rampGradient(ramp,c.x,c.z);c.y=W.rampHeight(ramp,c.x,c.z)+.12+(boosting?.08:0);c.vy=g.x*c.vx+g.z*c.vz;}else{c.ramp=null;c.grounded=false;c.contact=0;c.airtime=dt;}}
   // Reaching shore ends the skim safely; submerged ground must not lift a sinking car.
