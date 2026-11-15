@@ -1,6 +1,6 @@
 {
   "name": "isla-drive-cloudflare",
-  "version": "2.42.2",
+  "version": "2.42.3",
   "private": true,
   "description": "ISLA V2.42 — new cars, Maker toys, owner dashboard and offline split-screen",
   "engines": {
@@ -16,7 +16,8 @@
     "test:v24": "npm run build && node --test test/v24-release.test.cjs && node v24-route-check.cjs",
     "test:v241": "npm run build && node --test test/v241.test.cjs test/v24-release.test.cjs && node v24-route-check.cjs",
     "test:v242": "npm run build && node --test test/v242.test.cjs test/v241.test.cjs test/v24-release.test.cjs && node v24-route-check.cjs",
-    "test:grappler": "npm run build && node --test test/grapple-timer.test.cjs test/grappler-hotfix.test.cjs test/v241.test.cjs test/v242.test.cjs"
+    "test:grappler": "npm run build && node --test test/grapple-timer.test.cjs test/grappler-hotfix.test.cjs test/v241.test.cjs test/v242.test.cjs",
+    "test:f1": "npm run build && node --test test/f1-acceleration.test.cjs"
   },
   "devDependencies": {
     "miniflare": "5.20261012.1-beta",

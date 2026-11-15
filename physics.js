@@ -92,7 +92,7 @@
    // Momentum carries the car; throttle cannot extend or restart this one-shot timer.
    c.grounded=false;c.contact=0;c.surface=spec?.amphibious?'BOAT MODE':'WATER SKIM';c.airtime=0;
    const drag=(spec?.amphibious?.055:.10)+.35*(spec?.waterBrake||1)*(input.handbrake?1:clamp(Number(input.brake)||0,0,1));
-   const boatPower=(spec?.amphibious||spec?.inferno)?((input.brake?(forward>.6?-14:-5):input.gas||boosting?Math.min(12,420/(Math.abs(forward)+12)):0)+thrust):thrust*.65;
+   const boatPower=spec?.id==='f1'&&thrust>0?IslaV22.f1NitroAcceleration(spec,forward,dt)+forward*drag:(spec?.amphibious||spec?.inferno)?((input.brake?(forward>.6?-14:-5):input.gas||boosting?Math.min(12,420/(Math.abs(forward)+12)):0)+thrust):thrust*.65;
    ax=-c.vx*drag-rx*lateral*.22*(spec?.waterGrip||1)+sx*boatPower;az=-c.vz*drag-rz*lateral*.22*(spec?.waterGrip||1)+sz*boatPower;
    c.yawRate=mix(c.yawRate,clamp(forward/(2.85*size)*Math.tan(steer)*.10*(spec?.waterSteer||1),-.28*(spec?.waterSteer||1),.28*(spec?.waterSteer||1)),1-Math.exp(-dt*3));
    c.y=waterLevel+skim.level+Math.sin(time*18)*.018;c.vy=0;
@@ -110,6 +110,7 @@
    acc-=(scaledForward*Math.abs(scaledForward)*.0016+Math.sign(forward)*(road?(near.p.road.surface==='gravel'?.36:.14):sand?.85:.43))*driveScale;
    if(input.handbrake)acc-=Math.sign(forward)*5.1/mass;
    let available=grip*9.81;acc=clamp(acc,-available*1.18,available+(boosting?4:0));
+   if(spec?.id==='f1'&&boosting&&!brake&&!input.handbrake)acc=IslaV22.f1NitroAcceleration(spec,forward,dt);
    let lateralAccel=clamp(-lateral*(input.handbrake?1.5:7.5),-available*(input.handbrake?.46:1),available*(input.handbrake?.46:1));
    // A ramp above an overpass supplies the launch slope, even while its underlying deck is flat.
    let slope=ramp?W.rampGradient(ramp,c.x,c.z):onBridge?{x:0,z:0}:W.approachSurface?.(c.x,c.z)!=null?{x:(surfaceHeight(c.x+1,c.z)-surfaceHeight(c.x-1,c.z))*.5,z:(surfaceHeight(c.x,c.z+1)-surfaceHeight(c.x,c.z-1))*.5}:W.slope(c.x,c.z);ax=sx*acc+rx*lateralAccel-9.81*slope.x;az=sz*acc+rz*lateralAccel-9.81*slope.z;
@@ -134,7 +135,7 @@
     c.yawRate=mix(c.yawRate,clamp(Number(input.steer)||0,-1,1)*(.8+(spec.airSteer||.3)),1-Math.exp(-dt*6));
    }else{
    if(spec?.glider&&absSpeed>18){c.vy=Math.max(c.vy,-(spec.descentLimit||7));c.yawRate=mix(c.yawRate,input.steer*(spec.airSteer||.28),1-Math.exp(-dt*1.5));ax-=rx*lateral*.7;az-=rz*lateral*.7;c.roll=mix(c.roll,-input.steer*.22,1-Math.exp(-dt*2));}
-   const airThrust=spec?.glider?(boosting&&!input.brake&&!input.handbrake?spec.airThrust*clamp((spec.airBoostLimit-Math.max(0,forward))/3,0,1):0):thrust*.5;
+   const airThrust=spec?.glider?(boosting&&!input.brake&&!input.handbrake?spec.airThrust*clamp((spec.airBoostLimit-Math.max(0,forward))/3,0,1):0):spec?.id==='f1'&&thrust>0?IslaV22.f1NitroAcceleration(spec,forward,dt):thrust*.5;
    ax+=sx*airThrust;az+=sz*airThrust;c.yawRate*=Math.exp(-dt*(boosting?.45:.7));
    }
    c.airtime+=dt;c.contact=0;c.pitch-=dt*(spec?.glider?.008:boosting?.015:.05);
